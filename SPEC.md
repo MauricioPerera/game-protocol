@@ -7,7 +7,9 @@
 >
 > **Implementación de referencia (este repo):** `tools/game-lint.js` + `tools/game-export.js` +
 > `tools/yaml-min.js`, con un documento de ejemplo en `examples/GAME.md`.
-> **Implementación original:** el motor mini-Pokémon GBA de *GB-AI Studio*, de donde nace este protocolo.
+> **Implementación original:** el motor mini-Pokémon GBA de
+> *[GB-AI Studio](https://github.com/MauricioPerera/gb-ai-studio)* ([demo](https://mauricioperera.github.io/gb-ai-studio/)),
+> de donde nace este protocolo.
 >
 > Nota: algunos detalles concretos (rango de IDs 16–63, felpudo en el tile 46, dimensiones GBA) pertenecen
 > a esa implementación de referencia; el **patrón** —tokens YAML + validación + export + consumo con

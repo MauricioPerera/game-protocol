@@ -5,7 +5,9 @@
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
 > Inspirado en el patrón [`design.md`](https://github.com/google-labs-code/design.md) de Google.
-> Nace de una implementación real: el motor mini-Pokémon GBA de **GB-AI Studio**.
+> Nace de una implementación real: el motor mini-Pokémon GBA de
+> **[GB-AI Studio](https://github.com/MauricioPerera/gb-ai-studio)** ([demo en vivo](https://mauricioperera.github.io/gb-ai-studio/)),
+> donde el contenido del juego se edita por datos y se valida/exporta con esta misma cadena de herramientas.
 
 📄 **La especificación completa está en [`SPEC.md`](./SPEC.md).**
 
