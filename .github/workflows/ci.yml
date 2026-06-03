@@ -1,0 +1,25 @@
+name: GAME Protocol CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Lint example (0 errores)
+        run: node tools/game-lint.js examples/GAME.md
+
+      - name: Export + comprobar sin-drift
+        run: |
+          node tools/game-export.js examples/GAME.md /tmp/gen.js
+          if ! diff -q /tmp/gen.js examples/game-data.generated.js; then
+            echo "::error::game-data.generated.js está desactualizado. Ejecuta: node tools/game-export.js examples/GAME.md examples/game-data.generated.js"
+            exit 1
+          fi
