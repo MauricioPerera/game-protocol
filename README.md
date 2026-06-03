@@ -42,8 +42,8 @@ game-lint.js (valida 27 reglas + cruces opcionales con el motor)
 ### Qué se vuelve dato
 
 Criaturas, ataques (con efectos), tipos, evolución, ítems, encuentros por zona, economía, balance,
-**arte** (paletas, siluetas, tiles), **interiores** (DSL ASCII + navegación), **entidades** del mundo
-(NPCs, entrenadores, warps), estado inicial del jugador y **textos** de sistema.
+**arte** (paletas, siluetas, tiles), **sonido** (sfx de eventos), **interiores** (DSL ASCII + navegación),
+**entidades** del mundo (NPCs, entrenadores, warps), estado inicial del jugador y **textos** de sistema.
 
 ### Qué sigue en código (por diseño)
 
@@ -77,9 +77,11 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 | Ruta | Rol |
 |---|---|
 | [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 27 reglas, frontera datos/código). |
-| [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (sin dependencias). |
-| [`tools/game-lint.js`](./tools/game-lint.js) | Validador (reglas + cruces opcionales con el motor vía `GAME_ENGINE`). |
-| [`tools/game-export.js`](./tools/game-export.js) | Compilador → `game-data.generated.js`. |
+| [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (isomorfo Node/navegador). |
+| [`tools/game-lint-core.js`](./tools/game-lint-core.js) | Reglas de validación puras (`lintGame`), isomorfas. |
+| [`tools/game-lint.js`](./tools/game-lint.js) | CLI del validador (cruces con el motor opcionales vía `GAME_ENGINE`). |
+| [`tools/game-build.js`](./tools/game-build.js) | Transformación `buildGame(data)` → `GAME`, pura e isomorfa. |
+| [`tools/game-export.js`](./tools/game-export.js) | CLI del compilador → `game-data.generated.js`. |
 | [`examples/GAME.md`](./examples/GAME.md) | Documento de ejemplo mínimo y autocontenido. |
 | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | CI: lint + sin-drift del generado. |
 

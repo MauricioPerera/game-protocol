@@ -923,6 +923,20 @@ window.GAME = {
     "intro": "Bienvenido a la demo del Protocolo GAME. Camina por la hierba alta para encontrar criaturas.",
     "sign": "Esto es un cartel del pueblo demo."
   },
+  "SFX": {
+    "encounter": {
+      "freq": 440,
+      "dur": 0.08
+    },
+    "hit": {
+      "freq": 660,
+      "dur": 0.07
+    },
+    "win": {
+      "freq": 523,
+      "dur": 0.12
+    }
+  },
   "ECONOMY": {
     "startMoney": 2000,
     "prices": {

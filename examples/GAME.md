@@ -61,6 +61,10 @@ player: { starter: LEAFY, level: 5, start: { x: 24, y: 24 }, inventory: { POTION
 text:
   intro: "Bienvenido a la demo del Protocolo GAME. Camina por la hierba alta para encontrar criaturas."
   sign:  "Esto es un cartel del pueblo demo."
+sfx:
+  encounter: { freq: 440, dur: 0.08 }
+  hit:       { freq: 660, dur: 0.07 }
+  win:       { freq: 523, dur: 0.12 }
 tileArt:
   16: [[1,1,2,1,1,0,3,1],[1,0,1,1,2,1,1,1],[2,1,1,3,1,1,1,0],[1,1,1,1,1,1,2,1],[1,3,1,0,1,1,1,1],[0,1,1,2,1,1,1,3],[1,1,1,1,1,0,1,1],[3,1,1,1,2,1,1,1]]
   17: [[1,1,1,1,1,1,1,1],[1,3,3,3,3,3,3,1],[1,3,4,4,4,4,3,1],[1,3,4,4,4,4,3,1],[1,3,4,4,4,4,3,1],[1,3,3,3,3,3,3,1],[1,2,2,2,2,2,2,1],[1,1,1,1,1,1,1,1]]

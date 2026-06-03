@@ -96,7 +96,7 @@ node tools/game-export.js            # GAME.md -> game-data.generated.js (window
 # index.html carga game-data.generated.js ANTES del motor; recargar para tomar cambios.
 ```
 
-- **`game-lint.js`** — valida el front-matter contra 27 reglas (§6); las reglas viven en
+- **`game-lint.js`** — valida el front-matter contra 28 reglas (§6); las reglas viven en
   `game-lint-core.js` (isomorfo: lo reutiliza un lint en vivo del navegador). Cruces con el motor opcionales.
   Sale con código **1** si hay errores (la CI lo bloquea); los *warnings* no bloquean.
 - **`game-export.js`** — compila los tokens al artefacto `game-data.generated.js`
@@ -147,6 +147,9 @@ encounters:
 
 economy: { startMoney: N }
 balance: { catchBase: N, catchScale: N, xpCurveMul: N, encounterRate: N }
+
+sfx:                                      # sonidos de eventos del juego
+  <event>: { freq: N, dur: N }            # freq en Hz, dur en segundos; el motor usa gsfx(<event>, …)
 ```
 
 ### Arte
@@ -185,7 +188,7 @@ text: { <key>: "cadena" }                 # textos de sistema (intro, cartel, in
 
 ## 5. Artefacto generado (`window.GAME`)
 
-`export` transforma los tokens (algunos directos, otros **derivados**) en 20 claves:
+`export` transforma los tokens (algunos directos, otros **derivados**) en 21 claves:
 
 | Clave de `window.GAME` | Origen | Transformación |
 |---|---|---|
@@ -206,6 +209,7 @@ text: { <key>: "cadena" }                 # textos de sistema (intro, cartel, in
 | `OVERWORLD` | `overworld` | directo |
 | `PLAYER` | `player` | directo |
 | `TEXT` | `text` | directo |
+| `SFX` | `sfx` | directo |
 | `TILES` | `tiles` | directo |
 | `SOLID_TILES` | `tiles` | **derivado**: IDs con `solid:true` |
 
@@ -224,7 +228,7 @@ un requisito duro.**
 
 ---
 
-## 6. Reglas de validación (27)
+## 6. Reglas de validación (28)
 
 | Regla | Nivel | Comprueba |
 |---|---|---|
@@ -253,6 +257,7 @@ un requisito duro.**
 | `tileart-ref` | error/warn | `tileArt.<id>` en rango 16-63 y presente en `tiles`. |
 | `tileart-dims` | error | Cada matriz es 8×8 con índices `0..palettesCount-1`. |
 | `text-valid` | error | Cada texto es una cadena no vacía. |
+| `sfx-valid` | error | Cada `sfx.*` tiene `freq` (>0 Hz) y `dur` (0–5 s). |
 | `economy-bounds` | error | Precios `> 0`; `catchBase + catchScale ≤ 1`. |
 | `dead-token` | warn | Cada clave de `balance` está referenciada en `simulator.js` (anti-drift). |
 
@@ -312,7 +317,8 @@ Para añadir una sección nueva (token), el patrón canónico es:
 | `tools/yaml-min.js` | Parser del subconjunto YAML (sin dependencias; isomorfo Node/navegador). |
 | `tools/game-lint-core.js` | **Reglas de validación** como función pura e isomorfa (`lintGame`). |
 | `tools/game-lint.js` | CLI del validador (envuelve `game-lint-core.js`; cruces con el motor opcionales). |
-| `tools/game-export.js` | Compilador → `game-data.generated.js`. |
+| `tools/game-build.js` | **Transformación** `buildGame(data)` → objeto `GAME`, pura e isomorfa (CLI + navegador). |
+| `tools/game-export.js` | CLI del compilador (envuelve `game-build.js`) → `game-data.generated.js`. |
 | `game-data.generated.js` | Artefacto `window.GAME` (auto-generado). |
 | `.github/workflows/game.yml` | CI: lint + sin-drift. |
 | `CLAUDE.md` / `SKILL.md` | Arquitectura del motor / recetas de extensión por datos. |
