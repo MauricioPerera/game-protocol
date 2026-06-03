@@ -96,7 +96,8 @@ node tools/game-export.js            # GAME.md -> game-data.generated.js (window
 # index.html carga game-data.generated.js ANTES del motor; recargar para tomar cambios.
 ```
 
-- **`game-lint.js`** — valida el front-matter contra 27 reglas (§6) y lo cruza con `simulator.js`.
+- **`game-lint.js`** — valida el front-matter contra 27 reglas (§6); las reglas viven en
+  `game-lint-core.js` (isomorfo: lo reutiliza un lint en vivo del navegador). Cruces con el motor opcionales.
   Sale con código **1** si hay errores (la CI lo bloquea); los *warnings* no bloquean.
 - **`game-export.js`** — compila los tokens al artefacto `game-data.generated.js`
   (`window.GAME = { … }`). **Auto-generado, nunca se edita a mano.**
@@ -232,7 +233,7 @@ un requisito duro.**
 | `section-order` | error/warn | Las `##` siguen el orden canónico; avisa de secciones no canónicas. |
 | `palette-range` | error | `tiles.*.pal` dentro de `0..palettesCount-1`. |
 | `palette-color-range` | error | Cada color es `[r,g,b]` en `0..31`. |
-| `solid-sync` | error/warn | `tiles.*.solid` ↔ `GBA_SOLID_TILES` del **código**. |
+| `solid-sync` | error/warn | `tiles.*.solid` ↔ el `Set` de sólidos del **motor** (cross-check opcional vía `GAME_ENGINE`). |
 | `type-symmetry` | warn | Si `A>B` es ×2, `B>A` debería ser ×0.5 (la diagonal se exceptúa). |
 | `move-type-valid` | error | `moves.*.type` ∈ `types`. |
 | `species-type-valid` | error | `species.*.type` ∈ `types`. |
@@ -308,8 +309,9 @@ Para añadir una sección nueva (token), el patrón canónico es:
 | Archivo | Rol |
 |---|---|
 | `GAME.md` | El documento de protocolo (tokens + doc). Fuente de verdad. |
-| `tools/yaml-min.js` | Parser del subconjunto YAML (sin dependencias). |
-| `tools/game-lint.js` | Validador (27 reglas + cruces con el código). |
+| `tools/yaml-min.js` | Parser del subconjunto YAML (sin dependencias; isomorfo Node/navegador). |
+| `tools/game-lint-core.js` | **Reglas de validación** como función pura e isomorfa (`lintGame`). |
+| `tools/game-lint.js` | CLI del validador (envuelve `game-lint-core.js`; cruces con el motor opcionales). |
 | `tools/game-export.js` | Compilador → `game-data.generated.js`. |
 | `game-data.generated.js` | Artefacto `window.GAME` (auto-generado). |
 | `.github/workflows/game.yml` | CI: lint + sin-drift. |
