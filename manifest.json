@@ -1,0 +1,669 @@
+{
+  "protocol": "GAME",
+  "spec": "0.1",
+  "description": "Formato generico para declarar contenido de juego como datos (hibrido YAML+Markdown). El core es agnostico al genero; cada genero es un perfil.",
+  "hybridContract": "Un GAME.md es a la vez contrato de datos (front-matter) y documentacion canonica (cuerpo Markdown). Linaje: design.md de Google.",
+  "dataVsLogic": "El spec declara QUE (tokens, referencias, derivaciones). El motor implementa COMO (render, input, formulas). Un agente edita el dato y valida con el linter; el motor es codigo.",
+  "pipeline": [
+    "lint (game-lint.js) → validar",
+    "export (game-export.js) → window.GAME",
+    "consumir con fallback embebido"
+  ],
+  "agentLoop": "editar GAME.md → node tools/game-lint.js GAME.md --agent → corregir con los `hint` → repetir hasta 0 errores → export.",
+  "cli": {
+    "lint": "node tools/game-lint.js [GAME.md] [--agent]",
+    "export": "node tools/game-export.js [GAME.md] [salida.js]",
+    "schema": "node tools/game-schema.js [profileId]",
+    "manifest": "node tools/game-manifest.js",
+    "conformance": "node test/conformance.js"
+  },
+  "profileSelection": "El front-matter declara `profile: <id>`. Sin el, se asume monster-rpg.",
+  "profiles": {
+    "adventure": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Tiles",
+        "Scene",
+        "Entities",
+        "Player",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [],
+      "rules": [
+        "rulePalettes",
+        "ruleTileArt",
+        "ruleScene",
+        "ruleEntities",
+        "rulePlayer",
+        "ruleText"
+      ],
+      "output": [
+        {
+          "key": "PALETTES",
+          "source": "token:palettes"
+        },
+        {
+          "key": "TILES",
+          "source": "token:tiles"
+        },
+        {
+          "key": "TILE_ART",
+          "source": "token:tileArt"
+        },
+        {
+          "key": "SCENE",
+          "source": "derived"
+        },
+        {
+          "key": "ENTITIES",
+          "source": "token:entities"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        },
+        {
+          "key": "WIN",
+          "source": "token:win"
+        }
+      ]
+    },
+    "crafting": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Materials",
+        "Items",
+        "Stations",
+        "Recipes",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "recipe-output",
+          "level": "error",
+          "from": "recipes.*.output",
+          "to": "items",
+          "optional": false
+        },
+        {
+          "rule": "recipe-station",
+          "level": "error",
+          "from": "recipes.*.station",
+          "to": "stations",
+          "optional": true
+        }
+      ],
+      "rules": [
+        "ruleRecipeInputs",
+        "ruleMaterials"
+      ],
+      "output": [
+        {
+          "key": "MATERIALS",
+          "source": "token:materials"
+        },
+        {
+          "key": "ITEMS",
+          "source": "token:items"
+        },
+        {
+          "key": "STATIONS",
+          "source": "token:stations"
+        },
+        {
+          "key": "RECIPES",
+          "source": "derived"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ]
+    },
+    "dungeon": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Tiles",
+        "Scenes",
+        "Player",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [],
+      "rules": [
+        "rulePalettes",
+        "ruleTileArt",
+        "ruleScenes",
+        "ruleText"
+      ],
+      "output": [
+        {
+          "key": "PALETTES",
+          "source": "token:palettes"
+        },
+        {
+          "key": "TILES",
+          "source": "token:tiles"
+        },
+        {
+          "key": "TILE_ART",
+          "source": "token:tileArt"
+        },
+        {
+          "key": "SCENES",
+          "source": "derived"
+        },
+        {
+          "key": "ANIMATE",
+          "source": "token:animate"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        },
+        {
+          "key": "WIN",
+          "source": "token:win"
+        }
+      ]
+    },
+    "monster-rpg": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Tiles",
+        "Types",
+        "Species",
+        "Maps",
+        "Player",
+        "Text",
+        "Economy & Balance",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "move-type-valid",
+          "level": "error",
+          "from": "moves.*.type",
+          "to": "types",
+          "allow": [
+            "NORMAL"
+          ],
+          "optional": false
+        },
+        {
+          "rule": "species-type-valid",
+          "level": "error",
+          "from": "species.*.type",
+          "to": "types",
+          "allow": [
+            "NORMAL"
+          ],
+          "optional": true
+        },
+        {
+          "rule": "moves-exist",
+          "level": "error",
+          "from": "species.*.moves[]",
+          "to": "moves",
+          "optional": false
+        },
+        {
+          "rule": "broken-ref",
+          "level": "error",
+          "from": "species.*.evolvesInto",
+          "to": "species",
+          "optional": true
+        },
+        {
+          "rule": "trainer-team-valid",
+          "level": "error",
+          "from": "trainers.*.team[]",
+          "to": "species",
+          "optional": false
+        },
+        {
+          "rule": "encounter-ref",
+          "level": "error",
+          "from": "encounters.*[]",
+          "to": "species",
+          "optional": false
+        },
+        {
+          "rule": "sprite-ref",
+          "level": "error",
+          "from": "species.*.sprite",
+          "to": "sprites",
+          "optional": true
+        },
+        {
+          "rule": "player-ref",
+          "level": "error",
+          "from": "player.starter",
+          "to": "species",
+          "optional": true
+        },
+        {
+          "rule": "player-ref",
+          "level": "warn",
+          "from": "player.inventory.*",
+          "to": "items",
+          "optional": false
+        }
+      ],
+      "rules": [
+        "rulePaletteRange",
+        "rulePaletteColorRange",
+        "ruleSolidSync",
+        "ruleTypeSymmetry",
+        "ruleTrainerBounds",
+        "ruleSpriteDims",
+        "ruleItemEffect",
+        "ruleMaps",
+        "ruleOverworld",
+        "ruleTileArt",
+        "ruleSfx",
+        "rulePlayer",
+        "ruleEconomy",
+        "ruleDeadToken"
+      ],
+      "output": [
+        {
+          "key": "TYPE_CHART",
+          "source": "token:types"
+        },
+        {
+          "key": "MOVES",
+          "source": "token:moves"
+        },
+        {
+          "key": "SPECIES",
+          "source": "token:species"
+        },
+        {
+          "key": "WILD_LIST",
+          "source": "derived"
+        },
+        {
+          "key": "EVOLUTIONS",
+          "source": "derived"
+        },
+        {
+          "key": "TRAINERS",
+          "source": "derived"
+        },
+        {
+          "key": "PALETTES",
+          "source": "derived"
+        },
+        {
+          "key": "SPRITE_PALETTES",
+          "source": "derived"
+        },
+        {
+          "key": "SPRITES",
+          "source": "token:sprites"
+        },
+        {
+          "key": "ITEMS",
+          "source": "token:items"
+        },
+        {
+          "key": "ENCOUNTERS",
+          "source": "derived"
+        },
+        {
+          "key": "MAPS",
+          "source": "derived"
+        },
+        {
+          "key": "OVERWORLD",
+          "source": "token:overworld"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TILE_ART",
+          "source": "token:tileArt"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        },
+        {
+          "key": "SFX",
+          "source": "token:sfx"
+        },
+        {
+          "key": "ECONOMY",
+          "source": "derived"
+        },
+        {
+          "key": "BALANCE",
+          "source": "token:balance"
+        },
+        {
+          "key": "TILES",
+          "source": "token:tiles"
+        },
+        {
+          "key": "SOLID_TILES",
+          "source": "derived"
+        }
+      ]
+    },
+    "papers-please": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Countries",
+        "Documents",
+        "Rules",
+        "Entrants",
+        "Days",
+        "Economy & Balance",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "day-entrant-ref",
+          "level": "error",
+          "from": "days.*.entrants[]",
+          "to": "entrants",
+          "optional": false
+        },
+        {
+          "rule": "day-rule-ref",
+          "level": "error",
+          "from": "days.*.rules[]",
+          "to": "rules",
+          "optional": false
+        },
+        {
+          "rule": "rule-doc-ref",
+          "level": "error",
+          "from": "rules.*.document",
+          "to": "documents",
+          "optional": true
+        },
+        {
+          "rule": "rule-country-ref",
+          "level": "error",
+          "from": "rules.*.country",
+          "to": "countries",
+          "optional": true
+        },
+        {
+          "rule": "rule-docs-ref",
+          "level": "error",
+          "from": "rules.*.documents[]",
+          "to": "documents",
+          "optional": false
+        }
+      ],
+      "rules": [
+        "ruleRuleType",
+        "ruleEntrants",
+        "ruleEconomy"
+      ],
+      "output": [
+        {
+          "key": "COUNTRIES",
+          "source": "token:countries"
+        },
+        {
+          "key": "DOCUMENTS",
+          "source": "token:documents"
+        },
+        {
+          "key": "RULES",
+          "source": "token:rules"
+        },
+        {
+          "key": "ENTRANTS",
+          "source": "token:entrants"
+        },
+        {
+          "key": "DAYS",
+          "source": "derived"
+        },
+        {
+          "key": "ECONOMY",
+          "source": "token:economy"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ]
+    },
+    "platformer": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Tilesets",
+        "Enemies",
+        "Levels",
+        "Player",
+        "Physics",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "enemy-ref",
+          "level": "error",
+          "from": "levels.*.enemies[]",
+          "to": "enemies",
+          "optional": false
+        },
+        {
+          "rule": "tileset-ref",
+          "level": "error",
+          "from": "levels.*.tileset",
+          "to": "tilesets",
+          "optional": true
+        },
+        {
+          "rule": "spawn-ref",
+          "level": "error",
+          "from": "player.spawnLevel",
+          "to": "levels",
+          "optional": true
+        }
+      ],
+      "rules": [
+        "ruleEnemyStats",
+        "rulePhysics",
+        "ruleLevelGoal"
+      ],
+      "output": [
+        {
+          "key": "TILESETS",
+          "source": "token:tilesets"
+        },
+        {
+          "key": "ENEMIES",
+          "source": "token:enemies"
+        },
+        {
+          "key": "LEVELS",
+          "source": "token:levels"
+        },
+        {
+          "key": "PHYSICS",
+          "source": "token:physics"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        },
+        {
+          "key": "SFX",
+          "source": "token:sfx"
+        }
+      ]
+    },
+    "roguelike": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Tiles",
+        "Generator",
+        "Player",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [],
+      "rules": [
+        "rulePalettes",
+        "ruleTileArt",
+        "ruleGenerator",
+        "ruleText"
+      ],
+      "output": [
+        {
+          "key": "PALETTES",
+          "source": "token:palettes"
+        },
+        {
+          "key": "TILES",
+          "source": "token:tiles"
+        },
+        {
+          "key": "TILE_ART",
+          "source": "token:tileArt"
+        },
+        {
+          "key": "GENERATOR",
+          "source": "token:generator"
+        },
+        {
+          "key": "ENEMY_POOL",
+          "source": "token:enemyPool"
+        },
+        {
+          "key": "ITEM_POOL",
+          "source": "token:itemPool"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        },
+        {
+          "key": "WIN",
+          "source": "token:win"
+        }
+      ]
+    },
+    "voxel": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Materials",
+        "Prefabs",
+        "Structures",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "prefab-fill-ref",
+          "level": "error",
+          "from": "prefabs.*.fill",
+          "to": "materials",
+          "optional": true
+        },
+        {
+          "rule": "prefab-cell-ref",
+          "level": "error",
+          "from": "prefabs.*.cells[].m",
+          "to": "materials",
+          "optional": false
+        },
+        {
+          "rule": "structure-prefab-ref",
+          "level": "error",
+          "from": "structures.*.place[].prefab",
+          "to": "prefabs",
+          "optional": false
+        }
+      ],
+      "rules": [
+        "ruleMaterials",
+        "rulePrefabs",
+        "ruleStructures"
+      ],
+      "output": [
+        {
+          "key": "MATERIALS",
+          "source": "token:materials"
+        },
+        {
+          "key": "PREFABS",
+          "source": "token:prefabs"
+        },
+        {
+          "key": "STRUCTURES",
+          "source": "token:structures"
+        },
+        {
+          "key": "VOXELS",
+          "source": "derived"
+        }
+      ]
+    }
+  }
+}

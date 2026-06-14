@@ -7,19 +7,60 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - { md: examples/GAME.md,            gen: examples/game-data.generated.js }
+          - { md: examples/platformer.GAME.md, gen: examples/platformer.generated.js }
+          - { md: examples/crafting.GAME.md,   gen: examples/crafting.generated.js }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Lint example (0 errores)
-        run: node tools/game-lint.js examples/GAME.md
+      - name: Lint ${{ matrix.example.md }} (0 errores)
+        run: node tools/game-lint.js ${{ matrix.example.md }}
 
-      - name: Export + comprobar sin-drift
+      - name: Export + comprobar sin-drift (${{ matrix.example.md }})
         run: |
-          node tools/game-export.js examples/GAME.md /tmp/gen.js
-          if ! diff -q /tmp/gen.js examples/game-data.generated.js; then
-            echo "::error::game-data.generated.js está desactualizado. Ejecuta: node tools/game-export.js examples/GAME.md examples/game-data.generated.js"
+          node tools/game-export.js ${{ matrix.example.md }} /tmp/gen.js
+          if ! diff -q /tmp/gen.js ${{ matrix.example.gen }}; then
+            echo "::error::${{ matrix.example.gen }} está desactualizado. Regenera con: node tools/game-export.js ${{ matrix.example.md }} ${{ matrix.example.gen }}"
+            exit 1
+          fi
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Parser (casos límite — falla fuerte, no en silencio)
+        run: node test/parser.js
+      - name: Un mismo core valida y compila varios géneros
+        run: node test/multi-genre.js
+      - name: Conformidad (ejemplos válidos + casos inválidos)
+        run: node test/conformance.js
+
+  agent-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Manifiesto y schemas al día (sin-drift)
+        run: |
+          node tools/game-manifest.js /tmp/manifest.json
+          if ! diff -q /tmp/manifest.json manifest.json; then
+            echo "::error::manifest.json desactualizado. Regenera con: node tools/game-manifest.js"
+            exit 1
+          fi
+          rm -rf /tmp/schemas && cp -r schemas /tmp/schemas-committed
+          node tools/game-schema.js
+          if ! diff -rq schemas /tmp/schemas-committed >/dev/null; then
+            echo "::error::schemas/ desactualizado. Regenera con: node tools/game-schema.js"
             exit 1
           fi

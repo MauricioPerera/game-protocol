@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/crafting.schema.json",
+  "title": "GAME.md front-matter — perfil crafting",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "crafting"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "materials": {
+      "type": "object"
+    },
+    "items": {
+      "type": "object"
+    },
+    "stations": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "recipes": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Materials",
+    "Items",
+    "Stations",
+    "Recipes",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "recipe-output",
+      "from": "recipes.*.output",
+      "to": "items"
+    },
+    {
+      "rule": "recipe-station",
+      "from": "recipes.*.station",
+      "to": "stations"
+    }
+  ],
+  "x-outputKeys": [
+    "MATERIALS",
+    "ITEMS",
+    "STATIONS",
+    "RECIPES",
+    "TEXT"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

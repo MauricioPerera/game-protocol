@@ -1,0 +1,51 @@
+# GAME Protocol
+
+> Formato generico para declarar **contenido de juego como datos** (un archivo `GAME.md`: front-matter YAML + cuerpo Markdown). El core es agnostico al genero; cada genero es un **perfil**. Pensado para **co-crear con agentes de IA**: el agente edita datos, el linter valida con un contrato maquina-verificable, el motor (codigo) consume el resultado.
+
+## Que es
+
+Un `GAME.md` es un **contrato hibrido** (linaje `design.md` de Google): a la vez datos legibles por maquina (front-matter) y documentacion canonica (Markdown). Separa **QUE** (tokens: tiles, criaturas, salas, reglas) de **COMO** (motor: render, input, formulas). El agente trabaja sobre el QUE; el motor es codigo que se escribe una vez por backend.
+
+## Bucle de trabajo para un agente
+
+1. Lee las capacidades: `node tools/game-manifest.js` (o [manifest.json](manifest.json)) — lista perfiles, tokens, grafo de referencias, claves de salida.
+2. Edita o crea un `GAME.md` con `profile: <id>` en el front-matter.
+3. Valida en modo agente: `node tools/game-lint.js TU.md --agent` — devuelve hallazgos con `hint` (como arreglar) y el siguiente paso. Objetivo: `errors=0`.
+4. Compila: `node tools/game-export.js TU.md salida.js` — produce `window.GAME` (funcion pura, deterministica).
+5. El motor consume `window.GAME` con fallback embebido (nunca rompe si falta un dato).
+
+## CLI
+
+- Validar (agente): `node tools/game-lint.js [GAME.md] --agent`
+- Compilar: `node tools/game-export.js [GAME.md] [salida.js]`
+- Capacidades: `node tools/game-manifest.js` → [manifest.json](manifest.json)
+- Conformidad: `node test/conformance.js`
+
+## Perfiles (generos)
+
+Cada uno declara `sections`, `required`, `refs` (grafo de referencias), `rules` y `derive` (salida). Detalle completo en [manifest.json](manifest.json).
+
+- `monster-rpg` — RPG de coleccion de criaturas (perfil original). [doc](profiles/monster-rpg.md)
+- `platformer` — plataformas (tilesets, enemigos, niveles, fisica).
+- `crafting` — crafteo (materiales, items, estaciones, recetas).
+- `papers-please` — inspeccion de documentos (sin tiles; reglas como datos).
+- `voxel` — estructuras voxel por composicion de prefabs (3D).
+- `adventure` — aventura top-down jugable (escena, entidades, meta).
+- `dungeon` — mazmorra multi-sala con combate y minimapa.
+- `roguelike` — mazmorra **procedural 3D** generada en tiempo real (el spec declara el generador, no las salas).
+
+## Crear un genero nuevo
+
+Un genero = un **perfil** (`profiles/<id>.js`) que exporta `{ id, sections, required, refs, rules, derive }`. El core no se toca. Patron: tabla `refs` (familia broken-ref), funciones `rules` (logica no uniforme), tabla `derive` (claves del `window.GAME`). Es algo que un agente puede autorar.
+
+## Reglas de oro
+
+- El spec declara datos; la logica del juego es del motor. No metas formulas/IA en el `GAME.md`.
+- Toda referencia entre tokens se valida (familia broken-ref). Si refieres algo, debe existir.
+- La salida es funcion pura de la fuente: CI rechaza drift. Misma fuente → mismo `window.GAME`.
+
+## Referencias
+
+- Spec del core: [SPEC.md](SPEC.md)
+- Reparto de reglas core/perfil: [RULE-SPLIT.md](RULE-SPLIT.md)
+- Ejemplos validos por perfil: [examples/](examples/)

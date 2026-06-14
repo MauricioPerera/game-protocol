@@ -1,0 +1,67 @@
+/**
+ * rule-hints.js — Pistas de arreglo accionables por regla, para el modo --agent del linter.
+ * Cada entrada dice, en una linea, COMO corregir el hallazgo. Un agente cierra el loop
+ * editar→lint→arreglar casi sin razonar. Reglas no listadas no llevan hint (no es error).
+ */
+module.exports = {
+  // --- core / estructurales ---
+  'parse-error': 'El front-matter no es YAML-subset valido. Las listas van en flujo [a, b] (no "- item"); cada linea lleva ":"; comas/":" dentro de texto van entre comillas.',
+  'frontmatter-present': 'Envuelve los tokens entre `---` al inicio y `---` antes del cuerpo Markdown.',
+  'required-fields': 'Anade el campo que falta al front-matter (p.ej. `version: "0.1"`, `name: ...`, `profile: <id>`).',
+  'profile-known': 'Usa un `profile` que exista en profiles/. Consulta manifest.json para la lista.',
+  'profile-load-error': 'El archivo del perfil existe pero tiene un error de sintaxis/carga. Revisa profiles/<id>.js.',
+  'section-order': 'Reordena los encabezados `##` segun `sections` del perfil (ver manifest.json) o renombra el no-canonico.',
+  'text-valid': 'El valor de cada clave de `text` debe ser una cadena no vacia.',
+  // --- familia broken-ref (referencias) ---
+  'broken-ref': 'El valor referenciado no existe en la coleccion destino. Crea esa entrada o corrige el nombre (ver `references` del perfil en manifest.json).',
+  'move-type-valid': 'El `type` del ataque debe existir en `types` (o ser NORMAL).',
+  'species-type-valid': 'El `type` de la especie debe existir en `types` (o ser NORMAL).',
+  'moves-exist': 'Cada ataque en `species.*.moves` debe estar declarado en `moves`.',
+  'trainer-team-valid': 'Cada especie del equipo del entrenador debe existir en `species`.',
+  'encounter-ref': 'Cada especie de `encounters` debe existir en `species`.',
+  'sprite-ref': 'El `sprite` referenciado debe existir en `sprites`.',
+  'player-ref': 'Revisa player.starter/inventory/level/start: deben referenciar entradas existentes y tener tipos validos.',
+  'warp-ref': 'El `to` del warp debe ser una escena existente.',
+  'warp-lock': 'El item de `warp.locked` debe ser otorgado por algun pickup, o el juego es imposible.',
+  'goal-lock': 'El item de `goal.locked` debe ser otorgado por algun pickup.',
+  // --- rangos / dimensiones ---
+  'palette-range': 'El indice de paleta debe estar en 0..palettesCount-1.',
+  'palette-color-range': 'Cada color es [r,g,b] con valores en 0..31.',
+  'sprite-dims': 'Los sprites deben ser matrices 16x16.',
+  'tileart-dims': 'tileArt debe ser 8x8 con indices de color en 0..palettesCount-1.',
+  'tileart-ref': 'El id de tileArt debe estar registrado en `tiles` y en el rango valido.',
+  'sfx-valid': 'Cada sfx necesita freq (>0 Hz) y dur (0-5 s).',
+  'economy-bounds': 'Los precios deben ser > 0; catchBase+catchScale en [0,1].',
+  'trainer-bounds': 'El premio del entrenador debe ser > 0.',
+  'item-effect-valid': 'effect en {heal,cure,catch}; heal requiere amount>0; cure requiere `cures`.',
+  // --- mapas / escenas / entidades ---
+  'map-dims': 'Las filas del mapa deben coincidir con platform.rows x platform.cols.',
+  'map-legend-ref': 'Cada simbolo de la leyenda (y fill) debe referenciar un tile y paleta validos.',
+  'map-meta': 'entry/exit/return dentro de limites; exit sobre un felpudo (tile 46).',
+  'scene-dims': 'Todas las filas de la escena deben tener el mismo ancho.',
+  'scene-legend-ref': 'Cada simbolo de la escena debe referenciar un tile existente.',
+  'entity-bounds': 'La entidad (npc/pickup/warp/goal/enemy) debe estar dentro de la escena.',
+  'entity-tile': 'El `tile` de la entidad debe existir en `tiles`.',
+  'entity-text': 'El `dialogue` del NPC debe ser una clave existente en `text`.',
+  'player-start': 'player.start debe caer dentro de la escena/escena inicial.',
+  // --- generador (roguelike) ---
+  'generator-missing': 'Anade el bloque `generator`.',
+  'generator-field': 'Completa los campos requeridos del generador (seed, roomW, roomH, maxDepth).',
+  'generator-size': 'roomW y roomH deben ser >= 5.',
+  'generator-tile': 'Los tiles que usa el generador (floor/wall/door/enemy/goal/stairs) deben existir en `tiles`.',
+  'enemypool-tile': 'El tile de cada enemigo del pool debe existir en `tiles`.',
+  'itempool-tile': 'El tile de cada item del pool debe existir en `tiles`.',
+  'itempool-kind': 'kind de item debe ser `heal` o `weapon`.',
+  'itempool-amount': 'Un item heal necesita amount > 0.',
+  'itempool-power': 'Un item weapon necesita power > 0.',
+  'player-tile': 'player.tile debe existir en `tiles`.',
+  'player-hp': 'player.hp debe ser > 0.',
+  'enemy-hp': 'El hp del enemigo debe ser > 0.',
+  'material-color': 'El color del material es [r,g,b] con valores 0..255.',
+  'prefab-size': 'El size del prefab son 3 enteros > 0.',
+  'prefab-cell': 'Cada celda del prefab tiene coord entera dentro del size.',
+  'structure-at': 'El `at` de un placement son 3 enteros.',
+  'rule-type-valid': 'El `type` de la regla debe ser uno soportado por el motor.',
+  'entrant-decision': 'La decision del solicitante debe ser approve/deny/detain.',
+  'recipe-inputs': 'Los inputs de la receta deben referenciar materiales existentes con cantidad > 0.',
+};

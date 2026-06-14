@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/papers-please.schema.json",
+  "title": "GAME.md front-matter — perfil papers-please",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "papers-please"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "countries": {
+      "type": "object"
+    },
+    "documents": {
+      "type": "object"
+    },
+    "rules": {
+      "type": "object"
+    },
+    "entrants": {
+      "type": "object"
+    },
+    "economy": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "days": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Countries",
+    "Documents",
+    "Rules",
+    "Entrants",
+    "Days",
+    "Economy & Balance",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "day-entrant-ref",
+      "from": "days.*.entrants[]",
+      "to": "entrants"
+    },
+    {
+      "rule": "day-rule-ref",
+      "from": "days.*.rules[]",
+      "to": "rules"
+    },
+    {
+      "rule": "rule-doc-ref",
+      "from": "rules.*.document",
+      "to": "documents"
+    },
+    {
+      "rule": "rule-country-ref",
+      "from": "rules.*.country",
+      "to": "countries"
+    },
+    {
+      "rule": "rule-docs-ref",
+      "from": "rules.*.documents[]",
+      "to": "documents"
+    }
+  ],
+  "x-outputKeys": [
+    "COUNTRIES",
+    "DOCUMENTS",
+    "RULES",
+    "ENTRANTS",
+    "DAYS",
+    "ECONOMY",
+    "TEXT"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

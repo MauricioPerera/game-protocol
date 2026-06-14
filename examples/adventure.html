@@ -1,0 +1,96 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GAME Protocol · adventure (juego completo desde la spec)</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+  #title{font-weight:600}#title b{color:#8fd6ff}
+  canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#000}
+  #msg{min-height:2.6em;max-width:576px;text-align:center;padding:6px 10px;background:#141a22;border-radius:6px}
+  #msg.win{color:#9fffa6;font-weight:600}
+  #hint{color:#6b7685;font-size:12px}
+</style>
+<div id="title"></div>
+<canvas id="c"></canvas>
+<div id="msg"></div>
+<div id="hint">← ↑ → ↓ moverse · Espacio: hablar / recoger</div>
+
+<!-- window.GAME = artefacto generado por game-export.js desde adventure.GAME.md -->
+<script src="adventure.generated.js"></script>
+<script src="engine-core.js"></script>
+<script>
+const G = window.GAME, SCALE = 6, TS = 8 * SCALE;
+const tilemap = G.SCENE.tilemap, attrs = G.SCENE.attrs;
+const H = tilemap.length, W = tilemap[0].length;
+const TILES = G.TILES, ART = G.TILE_ART, PAL = G.PALETTES, ENT = G.ENTITIES;
+
+const cv = document.getElementById('c'); cv.width = W * TS; cv.height = H * TS;
+const ctx = cv.getContext('2d');
+document.getElementById('title').innerHTML = `<b>${EngineCore.esc(G.name || 'adventure')}</b> — render 100% desde tileArt + palettes del GAME.md`;
+
+const _R = EngineCore.makeRenderer(ctx, { ART, PAL, SCALE });
+const rgb = _R.rgb, drawTile = _R.drawTile;
+
+// --- estado del juego ---
+const player = { col: G.PLAYER.start.col, row: G.PLAYER.start.row };
+const npc = (ENT.npcs || [])[0];
+let pickup = (ENT.pickups || [])[0], pickupTaken = false;
+const goal = ENT.goal;
+let hasItem = false, won = false;
+
+function setMsg(t, win) { const m = document.getElementById('msg'); m.textContent = t; m.className = win ? 'win' : ''; }
+
+function render() {
+  // capa base: la escena
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) drawTile(tilemap[r][c], attrs[r][c], c, r, false);
+  // entidades encima (índice 0 transparente -> se ve el suelo)
+  if (goal) drawTile(goal.tile, goal.pal, goal.col, goal.row, true);
+  if (pickup && !pickupTaken) drawTile(pickup.tile, pickup.pal, pickup.col, pickup.row, true);
+  if (npc) drawTile(npc.tile, npc.pal, npc.col, npc.row, true);
+  drawTile(G.PLAYER.tile, G.PLAYER.pal, player.col, player.row, true);
+}
+
+function solidAt(c, r) {
+  if (c < 0 || r < 0 || c >= W || r >= H) return true;
+  if (npc && c === npc.col && r === npc.row) return true;          // no atravesar al NPC
+  if (goal && c === goal.col && r === goal.row) return false;      // la puerta es una abertura
+  const t = tilemap[r][c];
+  return !!(TILES[String(t)] && TILES[String(t)].solid);
+}
+function adjacent(a, b) { return Math.abs(a.col - b.col) + Math.abs(a.row - b.row) === 1; }
+
+function tryMove(dc, dr) {
+  if (won) return;
+  const nc = player.col + dc, nr = player.row + dr;
+  if (goal && nc === goal.col && nr === goal.row) {                // intento de cruzar la meta
+    if (goal.locked && !hasItem) { setMsg(G.TEXT.locked || 'Cerrada.'); return; }
+    player.col = nc; player.row = nr; won = true; render();
+    setMsg((G.WIN && G.WIN.text) || '¡Ganaste!', true); return;
+  }
+  if (solidAt(nc, nr)) return;
+  player.col = nc; player.row = nr;
+  if (pickup && !pickupTaken && nc === pickup.col && nr === pickup.row) {
+    pickupTaken = true; hasItem = true; setMsg('Has recogido: ' + pickup.item);
+  }
+  render();
+}
+function interact() {
+  if (won) return;
+  if (npc && adjacent(player, npc)) setMsg(G.TEXT[npc.dialogue] || '...');
+}
+
+addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === 'ArrowLeft') tryMove(-1, 0);
+  else if (k === 'ArrowRight') tryMove(1, 0);
+  else if (k === 'ArrowUp') tryMove(0, -1);
+  else if (k === 'ArrowDown') tryMove(0, 1);
+  else if (k === ' ' || k === 'Spacebar') interact();
+  else return;
+  e.preventDefault();
+});
+
+setMsg(G.TEXT.intro || '');
+render();
+// bucle de render continuo (mantiene vivo el frame para captura/preview)
+(function loop(){ requestAnimationFrame(loop); render(); })();
+</script>
