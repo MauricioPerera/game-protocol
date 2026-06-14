@@ -1,7 +1,10 @@
 // AUTO-GENERADO por tools/game-export.js desde GAME.md — NO EDITAR A MANO.
 // Regenerar con:  node tools/game-export.js
+// profile: monster-rpg
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "name": "Demo Protocol Game",
+  "description": "Ejemplo minimo y autocontenido del Protocolo GAME (gameplay-as-data).",
   "platform": {
     "mode": "demo",
     "cols": 10,

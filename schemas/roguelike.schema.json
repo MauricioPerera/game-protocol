@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/roguelike.schema.json",
+  "title": "GAME.md front-matter — perfil roguelike",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "roguelike"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "palettes": {
+      "type": "object"
+    },
+    "tiles": {
+      "type": "object"
+    },
+    "tileArt": {
+      "type": "object"
+    },
+    "generator": {
+      "type": "object"
+    },
+    "enemyPool": {
+      "type": "array"
+    },
+    "itemPool": {
+      "type": "array"
+    },
+    "player": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "win": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Tiles",
+    "Generator",
+    "Player",
+    "Text",
+    "Do's and Don'ts"
+  ],
+  "x-references": [],
+  "x-outputKeys": [
+    "PALETTES",
+    "TILES",
+    "TILE_ART",
+    "GENERATOR",
+    "ENEMY_POOL",
+    "ITEM_POOL",
+    "PLAYER",
+    "TEXT",
+    "WIN"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

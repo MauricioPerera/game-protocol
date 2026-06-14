@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/voxel.schema.json",
+  "title": "GAME.md front-matter — perfil voxel",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "voxel"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "materials": {
+      "type": "object"
+    },
+    "prefabs": {
+      "type": "object"
+    },
+    "structures": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Materials",
+    "Prefabs",
+    "Structures",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "prefab-fill-ref",
+      "from": "prefabs.*.fill",
+      "to": "materials"
+    },
+    {
+      "rule": "prefab-cell-ref",
+      "from": "prefabs.*.cells[].m",
+      "to": "materials"
+    },
+    {
+      "rule": "structure-prefab-ref",
+      "from": "structures.*.place[].prefab",
+      "to": "prefabs"
+    }
+  ],
+  "x-outputKeys": [
+    "MATERIALS",
+    "PREFABS",
+    "STRUCTURES",
+    "VOXELS"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

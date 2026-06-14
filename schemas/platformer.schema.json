@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/platformer.schema.json",
+  "title": "GAME.md front-matter — perfil platformer",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "platformer"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "tilesets": {
+      "type": "object"
+    },
+    "enemies": {
+      "type": "object"
+    },
+    "levels": {
+      "type": "object"
+    },
+    "physics": {
+      "type": "object"
+    },
+    "player": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "sfx": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Tilesets",
+    "Enemies",
+    "Levels",
+    "Player",
+    "Physics",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "enemy-ref",
+      "from": "levels.*.enemies[]",
+      "to": "enemies"
+    },
+    {
+      "rule": "tileset-ref",
+      "from": "levels.*.tileset",
+      "to": "tilesets"
+    },
+    {
+      "rule": "spawn-ref",
+      "from": "player.spawnLevel",
+      "to": "levels"
+    }
+  ],
+  "x-outputKeys": [
+    "TILESETS",
+    "ENEMIES",
+    "LEVELS",
+    "PHYSICS",
+    "PLAYER",
+    "TEXT",
+    "SFX"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

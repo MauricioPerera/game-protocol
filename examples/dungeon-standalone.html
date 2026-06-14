@@ -1,0 +1,2750 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GAME Protocol · dungeon (multi-sala desde la spec)</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+  #title{font-weight:600}#title b{color:#8fd6ff}
+  #hud{display:flex;gap:18px;font-size:13px;color:#9fb0c3}#hud b{color:#ffd86b}
+  canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#000}
+  #msg{min-height:2.4em;max-width:600px;text-align:center;padding:6px 10px;background:#141a22;border-radius:6px}
+  #msg.win{color:#9fffa6;font-weight:600}
+  #hint{color:#6b7685;font-size:12px}
+  #mapwrap{position:fixed;top:14px;right:14px;background:#11161d;border:1px solid #2a3340;border-radius:8px;padding:8px 10px}
+  #mapwrap div{font-size:11px;color:#7b8696;margin-bottom:4px;text-align:center;letter-spacing:.5px}
+  #map{display:block;image-rendering:pixelated}
+</style>
+<div id="title"></div>
+<div id="hud"><span id="scene"></span><span id="hp"></span><span id="inv"></span></div>
+<canvas id="c"></canvas>
+<div id="mapwrap"><div>MAPA</div><canvas id="map"></canvas></div>
+<div id="msg"></div>
+<div id="hint">← ↑ → ↓ moverse · Espacio: hablar</div>
+
+<script>
+// AUTO-GENERADO por tools/game-export.js desde GAME.md — NO EDITAR A MANO.
+// Regenerar con:  node tools/game-export.js
+// profile: dungeon
+window.GAME = {
+  "generatedFrom": "GAME.md",
+  "name": "Mazmorra del Protocolo",
+  "description": null,
+  "platform": {},
+  "palettesCount": 16,
+  "PALETTES": {
+    "0": [
+      [
+        1,
+        1,
+        2
+      ],
+      [
+        9,
+        11,
+        14
+      ],
+      [
+        13,
+        15,
+        19
+      ],
+      [
+        7,
+        6,
+        6
+      ],
+      [
+        15,
+        12,
+        10
+      ],
+      [
+        21,
+        17,
+        13
+      ],
+      [
+        18,
+        11,
+        4
+      ],
+      [
+        27,
+        19,
+        8
+      ],
+      [
+        29,
+        27,
+        6
+      ],
+      [
+        31,
+        31,
+        18
+      ],
+      [
+        5,
+        16,
+        27
+      ],
+      [
+        14,
+        27,
+        31
+      ],
+      [
+        27,
+        8,
+        8
+      ],
+      [
+        31,
+        17,
+        17
+      ],
+      [
+        6,
+        22,
+        12
+      ],
+      [
+        31,
+        31,
+        31
+      ]
+    ]
+  },
+  "TILES": {
+    "17": {
+      "name": "wall",
+      "solid": true
+    },
+    "19": {
+      "name": "door",
+      "solid": false
+    },
+    "20": {
+      "name": "key",
+      "solid": false
+    },
+    "21": {
+      "name": "player",
+      "solid": false
+    },
+    "22": {
+      "name": "npc",
+      "solid": false
+    },
+    "48": {
+      "name": "floor",
+      "solid": false
+    },
+    "50": {
+      "name": "stairs",
+      "solid": false
+    },
+    "51": {
+      "name": "water",
+      "solid": true
+    },
+    "53": {
+      "name": "chest",
+      "solid": false
+    },
+    "54": {
+      "name": "enemy",
+      "solid": false
+    }
+  },
+  "TILE_ART": {
+    "17": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        5,
+        5,
+        4,
+        4,
+        5,
+        5,
+        0
+      ],
+      [
+        0,
+        5,
+        4,
+        4,
+        4,
+        4,
+        3,
+        0
+      ],
+      [
+        0,
+        4,
+        4,
+        3,
+        3,
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        4,
+        3,
+        3,
+        4,
+        4,
+        4,
+        0
+      ],
+      [
+        0,
+        5,
+        4,
+        4,
+        4,
+        3,
+        4,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        4,
+        3,
+        4,
+        5,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "19": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        7,
+        7,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        6,
+        6,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        6,
+        6,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        7,
+        7,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        8,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "20": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        8,
+        9,
+        9,
+        8,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        8,
+        9,
+        9,
+        8,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        8,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "21": [
+      [
+        0,
+        0,
+        10,
+        10,
+        10,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        10,
+        11,
+        11,
+        11,
+        11,
+        10,
+        0
+      ],
+      [
+        0,
+        10,
+        11,
+        15,
+        15,
+        11,
+        10,
+        0
+      ],
+      [
+        0,
+        10,
+        11,
+        11,
+        11,
+        11,
+        10,
+        0
+      ],
+      [
+        0,
+        0,
+        10,
+        10,
+        10,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        10,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        10,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "22": [
+      [
+        0,
+        0,
+        12,
+        12,
+        12,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        12,
+        13,
+        13,
+        13,
+        13,
+        12,
+        0
+      ],
+      [
+        0,
+        12,
+        13,
+        15,
+        15,
+        13,
+        12,
+        0
+      ],
+      [
+        0,
+        12,
+        13,
+        13,
+        13,
+        13,
+        12,
+        0
+      ],
+      [
+        0,
+        0,
+        12,
+        12,
+        12,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        12,
+        0,
+        0,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        12,
+        0,
+        0,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "48": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    ],
+    "50": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    ],
+    "51": [
+      [
+        10,
+        10,
+        11,
+        10,
+        10,
+        10,
+        11,
+        10
+      ],
+      [
+        10,
+        11,
+        10,
+        10,
+        11,
+        10,
+        10,
+        10
+      ],
+      [
+        11,
+        10,
+        10,
+        11,
+        10,
+        10,
+        10,
+        11
+      ],
+      [
+        10,
+        10,
+        11,
+        10,
+        10,
+        11,
+        10,
+        10
+      ],
+      [
+        10,
+        11,
+        10,
+        10,
+        10,
+        11,
+        10,
+        10
+      ],
+      [
+        11,
+        10,
+        10,
+        11,
+        10,
+        10,
+        10,
+        11
+      ],
+      [
+        10,
+        10,
+        11,
+        10,
+        10,
+        11,
+        10,
+        10
+      ],
+      [
+        10,
+        11,
+        10,
+        10,
+        11,
+        10,
+        10,
+        10
+      ]
+    ],
+    "53": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        8,
+        9,
+        9,
+        8,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        8,
+        8,
+        8,
+        8,
+        6,
+        0
+      ],
+      [
+        0,
+        7,
+        7,
+        7,
+        7,
+        7,
+        7,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        9,
+        9,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "54": [
+      [
+        0,
+        0,
+        12,
+        12,
+        12,
+        12,
+        0,
+        0
+      ],
+      [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        0
+      ],
+      [
+        12,
+        12,
+        15,
+        12,
+        12,
+        15,
+        12,
+        12
+      ],
+      [
+        12,
+        12,
+        15,
+        12,
+        12,
+        15,
+        12,
+        12
+      ],
+      [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      [
+        12,
+        0,
+        12,
+        0,
+        12,
+        0,
+        12,
+        0
+      ],
+      [
+        0,
+        12,
+        0,
+        12,
+        0,
+        12,
+        0,
+        12
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "SCENES": {
+    "sala": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "entry": {
+        "col": 2,
+        "row": 7
+      },
+      "map": {
+        "x": 1,
+        "y": 1
+      },
+      "npcs": [
+        {
+          "col": 3,
+          "row": 3,
+          "tile": 22,
+          "pal": 0,
+          "dialogue": "guide"
+        }
+      ],
+      "pickups": [],
+      "warps": [
+        {
+          "col": 6,
+          "row": 0,
+          "tile": 19,
+          "pal": 0,
+          "to": "tesoro",
+          "at": {
+            "col": 6,
+            "row": 1
+          },
+          "locked": "KEY"
+        },
+        {
+          "col": 10,
+          "row": 7,
+          "tile": 50,
+          "pal": 0,
+          "to": "sotano",
+          "at": {
+            "col": 10,
+            "row": 1
+          }
+        },
+        {
+          "col": 11,
+          "row": 4,
+          "tile": 19,
+          "pal": 0,
+          "to": "galeria",
+          "at": {
+            "col": 1,
+            "row": 4
+          }
+        }
+      ],
+      "enemies": [],
+      "goal": null,
+      "hazards": []
+    },
+    "sotano": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          51,
+          51,
+          51,
+          51,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          51,
+          51,
+          51,
+          51,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          51,
+          51,
+          51,
+          51,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "entry": {
+        "col": 10,
+        "row": 1
+      },
+      "map": {
+        "x": 1,
+        "y": 2
+      },
+      "npcs": [
+        {
+          "col": 2,
+          "row": 6,
+          "tile": 22,
+          "pal": 0,
+          "dialogue": "cellar"
+        }
+      ],
+      "pickups": [
+        {
+          "col": 8,
+          "row": 6,
+          "tile": 20,
+          "pal": 0,
+          "item": "KEY"
+        }
+      ],
+      "warps": [
+        {
+          "col": 1,
+          "row": 7,
+          "tile": 50,
+          "pal": 0,
+          "to": "sala",
+          "at": {
+            "col": 10,
+            "row": 6
+          }
+        }
+      ],
+      "enemies": [
+        {
+          "col": 7,
+          "row": 4,
+          "tile": 54,
+          "pal": 0,
+          "hp": 1,
+          "dir": 1
+        }
+      ],
+      "goal": null,
+      "hazards": []
+    },
+    "tesoro": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "entry": {
+        "col": 6,
+        "row": 1
+      },
+      "map": {
+        "x": 1,
+        "y": 0
+      },
+      "npcs": [
+        {
+          "col": 3,
+          "row": 4,
+          "tile": 22,
+          "pal": 0,
+          "dialogue": "keeper"
+        }
+      ],
+      "pickups": [],
+      "warps": [],
+      "enemies": [],
+      "goal": {
+        "col": 6,
+        "row": 4,
+        "tile": 53,
+        "pal": 0
+      },
+      "hazards": []
+    },
+    "galeria": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "entry": {
+        "col": 1,
+        "row": 4
+      },
+      "map": {
+        "x": 2,
+        "y": 1
+      },
+      "npcs": [
+        {
+          "col": 6,
+          "row": 3,
+          "tile": 22,
+          "pal": 0,
+          "dialogue": "galeria"
+        }
+      ],
+      "pickups": [],
+      "warps": [
+        {
+          "col": 0,
+          "row": 4,
+          "tile": 50,
+          "pal": 0,
+          "to": "sala",
+          "at": {
+            "col": 10,
+            "row": 4
+          }
+        },
+        {
+          "col": 6,
+          "row": 8,
+          "tile": 50,
+          "pal": 0,
+          "to": "cripta",
+          "at": {
+            "col": 6,
+            "row": 1
+          }
+        }
+      ],
+      "enemies": [
+        {
+          "col": 6,
+          "row": 6,
+          "tile": 54,
+          "pal": 0,
+          "hp": 2,
+          "dir": 1
+        },
+        {
+          "col": 9,
+          "row": 2,
+          "tile": 54,
+          "pal": 0,
+          "hp": 1,
+          "dir": 1,
+          "axis": "v"
+        }
+      ],
+      "goal": null,
+      "hazards": []
+    },
+    "cripta": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "entry": {
+        "col": 6,
+        "row": 1
+      },
+      "map": {
+        "x": 2,
+        "y": 2
+      },
+      "npcs": [
+        {
+          "col": 1,
+          "row": 7,
+          "tile": 22,
+          "pal": 0,
+          "dialogue": "cripta"
+        }
+      ],
+      "pickups": [],
+      "warps": [
+        {
+          "col": 6,
+          "row": 0,
+          "tile": 50,
+          "pal": 0,
+          "to": "galeria",
+          "at": {
+            "col": 6,
+            "row": 7
+          }
+        }
+      ],
+      "enemies": [
+        {
+          "col": 4,
+          "row": 5,
+          "tile": 54,
+          "pal": 0,
+          "hp": 2,
+          "dir": 1
+        },
+        {
+          "col": 9,
+          "row": 4,
+          "tile": 54,
+          "pal": 0,
+          "hp": 1,
+          "dir": 1,
+          "axis": "v"
+        },
+        {
+          "col": 3,
+          "row": 2,
+          "tile": 54,
+          "pal": 0,
+          "hp": 1,
+          "dir": 1
+        }
+      ],
+      "goal": null,
+      "hazards": []
+    }
+  },
+  "ANIMATE": {
+    "water": [
+      51
+    ]
+  },
+  "PLAYER": {
+    "start": {
+      "scene": "sala",
+      "col": 2,
+      "row": 7
+    },
+    "hp": 3,
+    "tile": 21,
+    "pal": 0
+  },
+  "TEXT": {
+    "intro": "Mazmorra — flechas para mover, Espacio para hablar. Baja por las escaleras, halla la llave y abre la puerta del norte.",
+    "guide": "Bienvenido. La puerta del norte esta cerrada. Baja por las escaleras de la derecha a buscar la llave.",
+    "cellar": "Cuidado con el agua. La llave esta al fondo a la derecha.",
+    "keeper": "Has llegado al tesoro. Tocalo para reclamarlo.",
+    "locked": "La puerta esta cerrada con llave.",
+    "got_key": "Has recogido: KEY",
+    "galeria": "Esta galeria lleva al este y baja a la cripta. Abajo acecha algo: pulsa Espacio junto a el para atacar.",
+    "cripta": "La criatura patrulla. Golpeala dos veces o esquivala.",
+    "hit": "Te golpearon. Vuelves a la entrada.",
+    "defeat": "Enemigo derrotado.",
+    "fallen": "Has caido. Reapareces al inicio."
+  },
+  "WIN": {
+    "text": "Tesoro reclamado. Mazmorra completada, 100% definida en GAME.md."
+  }
+};
+
+</script>
+<script>
+/**
+ * engine-core.js — Toolkit compartido por los motores de demo (adventure / dungeon / roguelike).
+ * Centraliza lo que se duplicaba: el color de paleta, el dibujo de un tile (tileArt 8x8) y el
+ * escapado HTML. NO es parte del protocolo: es codigo de motor reutilizable.
+ *   EngineCore.esc(s)                              -> string seguro para innerHTML
+ *   EngineCore.makeRenderer(ctx, {ART, PAL, SCALE}) -> { rgb, drawTile, TS }
+ */
+(function () {
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function makeRenderer(ctx, opt) {
+    const ART = opt.ART, PAL = opt.PAL, SCALE = opt.SCALE, TS = 8 * SCALE;
+    function rgb(p, i) {
+      const c = (PAL[p] || [])[i] || [0, 0, 0];
+      return 'rgb(' + Math.round(c[0] * 255 / 31) + ',' + Math.round(c[1] * 255 / 31) + ',' + Math.round(c[2] * 255 / 31) + ')';
+    }
+    // remap(idx, tileId) opcional: permite efectos por-tile (p.ej. el shimmer del agua) sin duplicar drawTile.
+    function drawTile(id, p, col, row, transparent0, remap) {
+      const a = ART[id]; if (!a) return;
+      for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+        let i = a[y][x];
+        if (transparent0 && i === 0) continue;
+        if (remap) i = remap(i, id);
+        ctx.fillStyle = rgb(p, i);
+        ctx.fillRect(col * TS + x * SCALE, row * TS + y * SCALE, SCALE, SCALE);
+      }
+    }
+    return { rgb: rgb, drawTile: drawTile, TS: TS };
+  }
+  const api = { esc: esc, makeRenderer: makeRenderer };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  if (typeof window !== 'undefined') window.EngineCore = api;
+})();
+
+</script>
+<script>
+const G = window.GAME, SCALE = 6, TS = 8 * SCALE;
+const ART = G.TILE_ART, PAL = G.PALETTES, TILES = G.TILES;
+const ANIM = new Set((G.ANIMATE && G.ANIMATE.water) || []);
+document.getElementById('title').innerHTML = `<b>${EngineCore.esc(G.name || 'Mazmorra')}</b> — dungeon multi-sala, render desde tileArt del GAME.md`;
+
+let cur = G.PLAYER.start.scene;
+let player = { col: G.PLAYER.start.col, row: G.PLAYER.start.row };
+const inv = new Set();
+const collected = new Set();   // "scene/item" recogidos
+const visited = new Set([cur]);
+let hp = G.PLAYER.hp || 3, invuln = 0;
+const enemyState = {};   // por escena: copia mutable de enemies con {alive,dir,hp,col,row}
+let won = false, frame = 0;
+function enemiesOf(name) {
+  if (!enemyState[name]) enemyState[name] = (G.SCENES[name].enemies || []).map(e => ({ col: e.col, row: e.row, tile: e.tile, pal: e.pal, hp: e.hp || 1, dir: e.dir || 1, axis: e.axis || 'h', alive: true }));
+  return enemyState[name];
+}
+
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+function scene() { return G.SCENES[cur]; }
+function sizeCanvas() { const s = scene(); cv.width = s.tilemap[0].length * TS; cv.height = s.tilemap.length * TS; }
+sizeCanvas();
+
+const _R = EngineCore.makeRenderer(ctx, { ART, PAL, SCALE });
+const rgb = _R.rgb;
+// shimmer del agua: intercambia los indices 10/11 en tiles de ANIM segun el frame
+const waterRemap = (i, id) => (ANIM.has(id) && ((frame >> 3) & 1) && (i === 10 || i === 11)) ? (i === 10 ? 11 : 10) : i;
+const drawTile = (id, p, col, row, t0) => _R.drawTile(id, p, col, row, t0, waterRemap);
+
+function render() {
+  const s = scene(), tm = s.tilemap, at = s.attrs;
+  for (let r = 0; r < tm.length; r++) for (let c = 0; c < tm[0].length; c++) drawTile(tm[r][c], at[r][c], c, r, false);
+  for (const w of s.warps) drawTile(w.tile, w.pal, w.col, w.row, true);
+  for (const p of s.pickups) if (!collected.has(cur + '/' + p.item)) drawTile(p.tile, p.pal, p.col, p.row, true);
+  for (const n of s.npcs) drawTile(n.tile, n.pal, n.col, n.row, true);
+  for (const e of enemiesOf(cur)) if (e.alive) drawTile(e.tile, e.pal, e.col, e.row, true);
+  if (s.goal) drawTile(s.goal.tile, s.goal.pal, s.goal.col, s.goal.row, true);
+  if (!(invuln > 0 && ((frame >> 2) & 1))) drawTile(G.PLAYER.tile, G.PLAYER.pal, player.col, player.row, true);
+}
+
+function setMsg(t, win) { const m = document.getElementById('msg'); m.textContent = t; m.className = win ? 'win' : ''; }
+function updHud() {
+  document.getElementById('scene').textContent = 'Sala: ' + cur;
+  document.getElementById('hp').innerHTML = 'Vida: <b style="color:#ff7b7b">' + '♥'.repeat(Math.max(0, hp)) + '</b>';
+  document.getElementById('inv').innerHTML = 'Inventario: ' + (inv.size ? [...inv].map(i => '<b>' + EngineCore.esc(i) + '</b>').join(', ') : '—');
+}
+
+function solid(c, r) {
+  const s = scene(), tm = s.tilemap;
+  if (c < 0 || r < 0 || r >= tm.length || c >= tm[0].length) return true;
+  for (const n of s.npcs) if (n.col === c && n.row === r) return true;
+  for (const w of s.warps) if (w.col === c && w.row === r) return false; // warps siempre pisables
+  if (s.goal && s.goal.col === c && s.goal.row === r) return false;
+  return !!(TILES[String(tm[r][c])] && TILES[String(tm[r][c])].solid);
+}
+function enterScene(name, at) { cur = name; player = { col: at.col, row: at.row }; visited.add(name); sizeCanvas(); updHud(); renderMap(); }
+
+// --- MINIMAPA: dibuja las salas por su map.x/y, conexiones por warps, actual resaltada, niebla de guerra ---
+const mapCanvas = document.getElementById('map'), mctx = mapCanvas.getContext('2d');
+function renderMap() {
+  const scenes = G.SCENES;
+  const placed = Object.entries(scenes).filter(([, s]) => s.map);
+  if (!placed.length) { document.getElementById('mapwrap').style.display = 'none'; return; }
+  let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+  for (const [, s] of placed) { minx = Math.min(minx, s.map.x); miny = Math.min(miny, s.map.y); maxx = Math.max(maxx, s.map.x); maxy = Math.max(maxy, s.map.y); }
+  const cell = 36, box = 26, pad = 8;
+  mapCanvas.width = (maxx - minx + 1) * cell + pad * 2; mapCanvas.height = (maxy - miny + 1) * cell + pad * 2;
+  const cx = s => pad + (s.map.x - minx) * cell + cell / 2, cy = s => pad + (s.map.y - miny) * cell + cell / 2;
+  mctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  const discovered = new Set(visited);
+  for (const name of visited) for (const w of (scenes[name].warps || [])) discovered.add(w.to);
+  mctx.lineWidth = 2;
+  for (const [name, s] of placed) { if (!visited.has(name)) continue;
+    for (const w of s.warps) { const t = scenes[w.to]; if (!t || !t.map) continue;
+      mctx.strokeStyle = visited.has(w.to) ? '#54657d' : '#2b333f';
+      mctx.beginPath(); mctx.moveTo(cx(s), cy(s)); mctx.lineTo(cx(t), cy(t)); mctx.stroke(); } }
+  mctx.font = 'bold 9px system-ui'; mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
+  for (const [name, s] of placed) {
+    const x = cx(s) - box / 2, y = cy(s) - box / 2; let label;
+    if (name === cur) { mctx.fillStyle = '#ffd86b'; mctx.fillRect(x, y, box, box); mctx.fillStyle = '#11161d'; label = name.slice(0, 3); }
+    else if (visited.has(name)) { mctx.fillStyle = '#3f5167'; mctx.fillRect(x, y, box, box); mctx.fillStyle = '#e6edf5'; label = name.slice(0, 3); }
+    else if (discovered.has(name)) { mctx.strokeStyle = '#54657d'; mctx.strokeRect(x, y, box, box); mctx.fillStyle = '#7b8696'; label = '?'; }
+    else continue;
+    mctx.fillText(label, cx(s), cy(s));
+  }
+}
+
+function move(dc, dr) {
+  if (won) return;
+  const s = scene(), nc = player.col + dc, nr = player.row + dr;
+  const w = s.warps.find(w => w.col === nc && w.row === nr);
+  if (w) {
+    if (w.locked && !inv.has(w.locked)) { setMsg(G.TEXT.locked || 'Cerrada.'); return; }
+    enterScene(w.to, w.at); setMsg('Entras en: ' + w.to); return;
+  }
+  if (solid(nc, nr)) return;
+  player = { col: nc, row: nr };
+  for (const p of s.pickups) if (!collected.has(cur + '/' + p.item) && p.col === nc && p.row === nr) {
+    collected.add(cur + '/' + p.item); inv.add(p.item); setMsg(G.TEXT.got_key || ('Recogido: ' + p.item)); updHud();
+  }
+  if (enemiesOf(cur).some(e => e.alive && e.col === nc && e.row === nr)) hurt();
+  if (s.goal && s.goal.col === nc && s.goal.row === nr) { won = true; setMsg((G.WIN && G.WIN.text) || '¡Ganaste!', true); }
+}
+function interact() {
+  if (won) return;
+  const s = scene();
+  for (const e of enemiesOf(cur)) if (e.alive && Math.abs(e.col - player.col) + Math.abs(e.row - player.row) === 1) {
+    e.hp--; if (e.hp <= 0) { e.alive = false; setMsg(G.TEXT.defeat || 'Enemigo derrotado.'); } else setMsg('Golpeas al enemigo · ' + e.hp + ' HP'); return;
+  }
+  for (const n of s.npcs) if (Math.abs(n.col - player.col) + Math.abs(n.row - player.row) === 1) { setMsg(G.TEXT[n.dialogue] || '...'); return; }
+}
+function solidForEnemy(c, r) {
+  const tm = scene().tilemap;
+  if (c < 0 || r < 0 || r >= tm.length || c >= tm[0].length) return true;
+  return !!(TILES[String(tm[r][c])] && TILES[String(tm[r][c])].solid);
+}
+function patrol() {
+  for (const e of enemiesOf(cur)) {
+    if (!e.alive) continue;
+    const dx = e.axis === 'v' ? 0 : e.dir, dy = e.axis === 'v' ? e.dir : 0;
+    let nc = e.col + dx, nr = e.row + dy;
+    if (solidForEnemy(nc, nr)) { e.dir *= -1; nc = e.col - dx; nr = e.row - dy; if (solidForEnemy(nc, nr)) continue; }
+    e.col = nc; e.row = nr;
+    if (e.col === player.col && e.row === player.row) hurt();
+  }
+}
+function hurt() {
+  if (invuln > 0 || won) return;
+  hp--; invuln = 40; updHud();
+  if (hp <= 0) { gameOver(); return; }
+  setMsg(G.TEXT.hit || 'Te golpearon.'); player = { col: scene().entry.col, row: scene().entry.row };
+}
+function gameOver() {
+  hp = G.PLAYER.hp || 3; invuln = 60; setMsg(G.TEXT.fallen || 'Has caido.');
+  enterScene(G.PLAYER.start.scene, { col: G.PLAYER.start.col, row: G.PLAYER.start.row });
+}
+
+addEventListener('keydown', e => {
+  const k = e.key;
+  if (k === 'ArrowLeft') move(-1,0); else if (k === 'ArrowRight') move(1,0);
+  else if (k === 'ArrowUp') move(0,-1); else if (k === 'ArrowDown') move(0,1);
+  else if (k === ' ') interact(); else return;
+  e.preventDefault();
+});
+
+setMsg(G.TEXT.intro || ''); updHud(); renderMap();
+(function loop(){ requestAnimationFrame(loop); frame++; if (invuln > 0) invuln--; if (frame % 24 === 0) patrol(); render(); })();
+</script>

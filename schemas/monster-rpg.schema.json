@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/monster-rpg.schema.json",
+  "title": "GAME.md front-matter — perfil monster-rpg",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "monster-rpg"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "types": {
+      "type": "object"
+    },
+    "moves": {
+      "type": "object"
+    },
+    "species": {
+      "type": "object"
+    },
+    "sprites": {
+      "type": "object"
+    },
+    "items": {
+      "type": "object"
+    },
+    "overworld": {
+      "type": "object"
+    },
+    "player": {
+      "type": "object"
+    },
+    "tileArt": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "sfx": {
+      "type": "object"
+    },
+    "balance": {
+      "type": "object"
+    },
+    "tiles": {
+      "type": "object"
+    },
+    "trainers": {
+      "type": "object"
+    },
+    "encounters": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Tiles",
+    "Types",
+    "Species",
+    "Maps",
+    "Player",
+    "Text",
+    "Economy & Balance",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "move-type-valid",
+      "from": "moves.*.type",
+      "to": "types",
+      "allow": [
+        "NORMAL"
+      ]
+    },
+    {
+      "rule": "species-type-valid",
+      "from": "species.*.type",
+      "to": "types",
+      "allow": [
+        "NORMAL"
+      ]
+    },
+    {
+      "rule": "moves-exist",
+      "from": "species.*.moves[]",
+      "to": "moves"
+    },
+    {
+      "rule": "broken-ref",
+      "from": "species.*.evolvesInto",
+      "to": "species"
+    },
+    {
+      "rule": "trainer-team-valid",
+      "from": "trainers.*.team[]",
+      "to": "species"
+    },
+    {
+      "rule": "encounter-ref",
+      "from": "encounters.*[]",
+      "to": "species"
+    },
+    {
+      "rule": "sprite-ref",
+      "from": "species.*.sprite",
+      "to": "sprites"
+    },
+    {
+      "rule": "player-ref",
+      "from": "player.starter",
+      "to": "species"
+    },
+    {
+      "rule": "player-ref",
+      "from": "player.inventory.*",
+      "to": "items"
+    }
+  ],
+  "x-outputKeys": [
+    "TYPE_CHART",
+    "MOVES",
+    "SPECIES",
+    "WILD_LIST",
+    "EVOLUTIONS",
+    "TRAINERS",
+    "PALETTES",
+    "SPRITE_PALETTES",
+    "SPRITES",
+    "ITEMS",
+    "ENCOUNTERS",
+    "MAPS",
+    "OVERWORLD",
+    "PLAYER",
+    "TILE_ART",
+    "TEXT",
+    "SFX",
+    "ECONOMY",
+    "BALANCE",
+    "TILES",
+    "SOLID_TILES"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

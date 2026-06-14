@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GAME Protocol · voxel → Three.js</title>
+<style>html,body{margin:0;height:100%;background:#0e1116;overflow:hidden}
+#hud{position:fixed;top:10px;left:12px;font:13px/1.4 system-ui;color:#cdd6e4;z-index:10}
+#hud b{color:#8fd6ff}</style>
+<div id="hud">cargando…</div>
+<!-- window.GAME viene del artefacto generado por game-export.js (fuente: voxel.GAME.md) -->
+<script src="voxel.generated.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// --- mismo adaptador que adapters/three-voxel.js (VOXELS neutral -> Three.js) ---
+function voxelsToInstancedMesh(structure, materials, THREE) {
+  const voxels = (structure && structure.voxels) || [];
+  const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshStandardMaterial({ roughness:0.85 }), voxels.length);
+  const m4 = new THREE.Matrix4(), color = new THREE.Color();
+  voxels.forEach((v,i) => {
+    m4.makeTranslation(v.x+0.5, v.y+0.5, v.z+0.5); mesh.setMatrixAt(i, m4);
+    const rgb = (materials[v.m]||{}).color || [255,0,255];
+    color.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255); mesh.setColorAt(i, color);
+  });
+  return mesh;
+}
+
+const struct = window.GAME.VOXELS.hut;
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0e1116);
+const cam = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 100);
+cam.position.set(7, 6, 8);
+const r = new THREE.WebGLRenderer({ antialias:true }); r.setSize(innerWidth, innerHeight);
+r.setPixelRatio(devicePixelRatio); document.body.appendChild(r.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sun = new THREE.DirectionalLight(0xffffff, 1.1); sun.position.set(5,10,7); scene.add(sun);
+scene.add(new THREE.GridHelper(20, 20, 0x335, 0x223));
+
+const hut = voxelsToInstancedMesh(struct, window.GAME.MATERIALS, THREE);
+const b = struct.bounds; // centrar la cámara en la estructura
+const cx=(b.min[0]+b.max[0]+1)/2, cy=(b.min[1]+b.max[1]+1)/2, cz=(b.min[2]+b.max[2]+1)/2;
+scene.add(hut);
+const ctrl = new OrbitControls(cam, r.domElement); ctrl.target.set(cx,cy,cz); ctrl.update();
+
+document.getElementById('hud').innerHTML =
+  `<b>${window.GAME.generatedFrom || 'voxel.GAME.md'}</b> → Three.js · estructura <b>hut</b> · ` +
+  `${struct.count} voxels · materiales: ${Object.keys(window.GAME.MATERIALS).join(', ')}`;
+
+addEventListener('resize', () => { cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix(); r.setSize(innerWidth,innerHeight); });
+(function loop(){ requestAnimationFrame(loop); hut.rotation.y += 0.003; r.render(scene, cam); })();
+</script>
