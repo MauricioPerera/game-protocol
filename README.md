@@ -110,6 +110,17 @@ y *pull requests* bienvenidos (ver [`CONTRIBUTING.md`](./CONTRIBUTING.md) y el
 > entre versiones viven en [`MIGRATION.md`](./MIGRATION.md); el changelog de versiones
 > en [`CHANGELOG.md`](./CHANGELOG.md).
 
+### Features de `v1.0.0`
+
+El release `v1.0.0` cierra la fase MEDIANO sobre la base CORTO. Lo que entra:
+
+- **Perfil `tower-defense`** — nuevo género con 8 claves de balance (`TOWERS`, `DMG_CHART`, `ENEMIES`, `ARMORS`, `WAVES`, `MAPS`, `ECONOMY`, `BALANCE`) + arte; demo jugable en `examples/tower-defense.html`. Lleva el total a **9 perfiles** cargables (ver [SPEC §6](./SPEC.md)).
+- **Deprecation policy** — nivel `deprecated` en el linter + regla `version-migration` (el linter *migra, no rechaza*) + `MIGRATION.md` con recetas de renombrado + `manifest.json` exponiendo `migrations`/`deprecatedRules`. Contrato completo en [SPEC §7.1](./SPEC.md).
+- **Performance + helpers compartidos** — `tools/shared-helpers.js` (una sola definición reusada por manifest/schema/perfiles); `lintGame` sobre 10K datos < 50ms (mediana ~3ms); edge cases del parser (clave duplicada, string sin cerrar, indentación con TAB, guard de profundidad).
+- **Governance** — `CODE_OF_CONDUCT.md`, `CODEOWNERS`, plantillas de issue/PR (`.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md`).
+- **buildGame 9/9** — `test/buildGame-content.js` cubre los 9 perfiles con aserciones de forma por clave derivada.
+- **Docs finales alineados** — SPEC/README/CONTRIBUTING/MIGRATION/CHANGELOG sincronizados a `v1.0.0`.
+
 ### Fase MEDIANO completada ✅
 
 La fase MEDIANO del roadmap (sobre la base de CORTO) está verde cuando **todos**

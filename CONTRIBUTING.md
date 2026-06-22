@@ -55,6 +55,21 @@ migrar. Depreca primero, rompe después.
 - **Sin dependencias.** Las herramientas son Node puro; nada de `npm install`.
 - **Validable y sin drift.** Toda sección nueva trae su regla de lint; el generado se regenera siempre.
 
+## Testing
+
+Todo cambio va acompañado de pruebas y todas deben pasar en CI:
+
+```bash
+npm test        # parser, multi-genre, conformance, all-examples, cli-errors,
+                # buildGame-content, render-png, build-standalone, lifecycle, perf-smoke
+```
+
+- **`test/conformance.js`** cubre ≥1 caso inválido por regla por perfil — si añades o cambias una regla, añade su caso inválido.
+- **`test/all-examples.js`** verifica los pares `(GAME.md, generado)` con lint 0 errores + export sin-drift — si tocas el export, regenera el artefacto.
+- **`test/lifecycle.js`** verifica el ciclo de vida de deprecación (receta `MIGRATION.md`, regla de PR breaking, `SPEC §7.1`, `manifest.json`) — si tocas la política, actualiza el test.
+- **`test/buildGame-content.js`** cubre los 9 perfiles con aserciones de forma por clave derivada — si añades un perfil, extiéndelo.
+- Sin-drift: `node tools/game-manifest.js /tmp/m.json && diff -q /tmp/m.json manifest.json` y `node tools/game-schema.js && git diff --quiet schemas/`.
+
 ## Estructura
 
 - `SPEC.md` — la especificación.

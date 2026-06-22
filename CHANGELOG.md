@@ -71,6 +71,34 @@ independiente y reacha `1.0.0`.
 - `tools/rule-hints.js`: hint para `version-migration`.
 - `package.json` `test` + CI `ci.yml`: añaden `test/lifecycle.js` y `test/perf-smoke.js`.
 
+### Breaking changes
+- **Política de versionado (no remoción de tokens).** Desde `1.0.0` los cambios breaking al core
+  y a los perfiles son bump **major** y **exigen** una deprecation previa (marcar
+  `deprecated: {since, removedIn}` + entrada `### Deprecated` en `CHANGELOG.md`). En `0.x` los
+  breaking eran bump **minor** (`0.1` → `0.2`). Esto cambia el contrato para *futuros* cambios;
+  no remueve ni renombra ningún token en este release. Ver [SPEC §7](./SPEC.md) y [§7.1](./SPEC.md).
+- **Regla `version-migration`** (reemplaza a `version-compatible`): un `GAME.md` con `version`
+  **mayor** que la soportada por el tooling ahora es **error** (antes era warn/ignorado). Los
+  `GAME.md` existentes en `0.1` siguen en 0 errores (warn → `MIGRATION.md`). Acción requerida
+  solo si declarabas una versión futura.
+
+### Caveats
+- **`version` del protocolo vs. release del paquete.** La *versión del protocolo* (`SPEC.md`
+  header y el campo `version` que declaran los `GAME.md`) sigue siendo `0.1`; el *release del
+  paquete* (`package.json`) reacha `1.0.0`. Son independientes: una futura edición del spec
+  moverá la versión del protocolo; hasta entonces, `0.1` sigue siendo la versión soportada
+  (`manifest.json` → `migrations.supported: ["0.1"]`).
+- **`render-png.js`** solo soporta el perfil `adventure` (lee `G.SCENE.tilemap`/`attrs`). Un
+  generado de otro perfil sale con exit `2` y mensaje accionable, no con un `TypeError` crudo.
+- **Sin dependencias.** Las herramientas son Node puro (>=18); no hay `npm install`. En Windows,
+  `.gitattributes` (`* text=auto eol=lf`) mitiga el drift CRLF del generado.
+
+### Seguridad (heredada de la fase INMEDIATO, documentada en `0.1.0`)
+- S1: prototype pollution en el parser YAML (`__proto__`, `constructor`).
+- S2: path traversal + RCE vía perfil inválido (validación `/^[a-z0-9-]+$/`).
+- S3: `new Function()` en `render-png.js` → `require()` con path-check.
+- Estas correcciones se publicaron en `0.1.0` y se mantienen en `1.0.0`.
+
 ## [0.1.0] — 2026-06-22 — fase CORTO
 
 ### Added

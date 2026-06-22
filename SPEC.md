@@ -141,10 +141,21 @@ A **profile** is a declarative description of a genre's vocabulary. It specifies
 5. **Derived keys** — how `export` turns tokens into the runtime object.
 6. **Profile-specific rules** — checks that only make sense in this genre.
 
-The core ships with reference profiles under `profiles/`:
+The core ships with **9 reference profiles** under `profiles/` (each a loadable `.js` module; `monster-rpg` and `tower-defense` also carry a human-readable `.md` companion). They exist to prove the core is genre-agnostic — every genre is expressed as a profile, never as a core change:
 
-- `profiles/monster-rpg.md` — the original creature-collector vocabulary (species, types, moves, evolution, trainers, encounters, catch rates). This is the *first* application profile, not the protocol itself.
-- `profiles/tower-defense.md` — a second genre, included to demonstrate that the core is genre-agnostic.
+| Profile | Genre | Key derived keys (subset) |
+|---|---|---|
+| `profiles/monster-rpg.js` (`monster-rpg.md`) | creature-collector RPG | `SPECIES`, `TYPE_CHART`, `MOVES`, `EVOLUTIONS`, `ENCOUNTERS`, `MAPS`, `ECONOMY` |
+| `profiles/adventure.js` | tile-based adventure / escape room | `SCENE`, `ENTITIES`, `PLAYER`, `TEXT`, `WIN` |
+| `profiles/dungeon.js` | dungeon crawler | `SCENES`, `ANIMATE`, `PLAYER`, `TEXT`, `WIN` |
+| `profiles/platformer.js` | 2D platformer | `TILESETS`, `ENEMIES`, `LEVELS`, `PHYSICS`, `SFX` |
+| `profiles/crafting.js` | crafting / recipe tree | `MATERIALS`, `ITEMS`, `STATIONS`, `RECIPES` |
+| `profiles/papers-please.js` | border-control / document inspection | `COUNTRIES`, `DOCUMENTS`, `RULES`, `ENTRANTS`, `DAYS` |
+| `profiles/roguelike.js` | procedural roguelike | `GENERATOR`, `ENEMY_POOL`, `ITEM_POOL`, `PLAYER`, `WIN` |
+| `profiles/voxel.js` | voxel / 3D structures | `MATERIALS`, `PREFABS`, `STRUCTURES`, `VOXELS` |
+| `profiles/tower-defense.js` (`tower-defense.md`) | tower defense | `TOWERS`, `DMG_CHART`, `ENEMIES`, `ARMORS`, `WAVES`, `MAPS`, `ECONOMY`, `BALANCE` |
+
+`monster-rpg` is the *first* application profile (the protocol grew out of a real mini-Pokémon engine), not the protocol itself. `tower-defense` was the second genre added, deliberately orthogonal to the first, to demonstrate that the core is genre-agnostic; the remaining seven broaden the coverage to platformer, crafting, document-inspection, roguelike and voxel genres.
 
 > **Design intent.** If you can express a new genre as a profile without touching the core, the core is doing its job. If you cannot, that is a core bug.
 

@@ -10,14 +10,26 @@
   a.card:hover{border-color:#8fd6ff;background:#19212b}
   a.card b{display:block;color:#8fd6ff;font-size:16px;margin-bottom:4px}
   a.card span{font-size:12px;color:#7b8696}
+  .badge{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:1px 7px;border-radius:10px}
+  .play{background:#1c2a1c;color:#9ad97a}
+  .spec{background:#1c2530;color:#6b8aa8}
+  h2{margin:0 0 -6px;font-size:12px;color:#6b7685;text-transform:uppercase;letter-spacing:.08em;align-self:flex-start}
 </style>
-<h1><b>GAME Protocol</b> · demos jugables desde la spec</h1>
-<p>Cada demo se renderiza desde su <code>GAME.md</code> (gráficos incluidos) consumido por un motor delgado.</p>
+<h1><b>GAME Protocol</b> · 9 perfiles desde la spec</h1>
+<p>Cada perfil es un <code>.js</code> cargable bajo <code>profiles/</code>. Los marcados <span class="badge play">jugable</span> tienen demo renderizada desde su <code>GAME.md</code>; los marcados <span class="badge spec">spec</span> abren el documento <code>GAME.md</code> que los define.</p>
+<h2>Demos jugables</h2>
 <div class="row">
-  <a class="card" href="examples/roguelike.html"><b>Roguelike ▶</b><span>salas procedurales · perfil roguelike<br>flechas + Espacio</span></a>
-  <a class="card" href="examples/dungeon.html"><b>Mazmorra ▶</b><span>5 salas · combate + mapa · perfil dungeon<br>flechas + Espacio</span></a>
-  <a class="card" href="examples/adventure.html"><b>Escape Room ▶</b><span>juego completo · perfil adventure<br>flechas + Espacio</span></a>
-  <a class="card" href="examples/tower-defense.html"><b>Tower Defense ▶</b><span>visor estático · perfil tower-defense<br>torres + oleadas + economía</span></a>
-  <a class="card" href="examples/voxel-three.html"><b>Voxel · Three.js ▶</b><span>estructura voxel → render 3D<br>arrastra para orbitar</span></a>
+  <a class="card" href="examples/roguelike.html"><b>Roguelike ▶</b><span>salas procedurales · perfil roguelike<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
+  <a class="card" href="examples/dungeon.html"><b>Mazmorra ▶</b><span>5 salas · combate + mapa · perfil dungeon<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
+  <a class="card" href="examples/adventure.html"><b>Escape Room ▶</b><span>juego completo · perfil adventure<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
+  <a class="card" href="examples/tower-defense.html"><b>Tower Defense ▶</b><span>visor estático · perfil tower-defense<br>torres + oleadas + economía</span><div class="badge play">jugable</div></a>
+  <a class="card" href="examples/voxel-three.html"><b>Voxel · Three.js ▶</b><span>estructura voxel → render 3D<br>arrastra para orbitar</span><div class="badge play">jugable</div></a>
 </div>
-<p style="font-size:12px;color:#5a6472">Si llegaste aquí desde un listado de archivos, recarga la pestaña del preview.</p>
+<h2>Perfiles (documento spec)</h2>
+<div class="row">
+  <a class="card" href="examples/GAME.md"><b>monster-rpg</b><span>creature-collector · perfil raíz<br>species, types, moves, evolutions</span><div class="badge spec">spec</div></a>
+  <a class="card" href="examples/platformer.GAME.md"><b>platformer</b><span>2D platformer<br>tilesets, enemies, levels, physics</span><div class="badge spec">spec</div></a>
+  <a class="card" href="examples/crafting.GAME.md"><b>crafting</b><span>árbol de recetas<br>materials, items, stations, recipes</span><div class="badge spec">spec</div></a>
+  <a class="card" href="examples/papers-please.GAME.md"><b>papers-please</b><span>control de fronteras<br>countries, documents, rules, days</span><div class="badge spec">spec</div></a>
+</div>
+<p style="font-size:12px;color:#5a6472">9 perfiles cargables en total (ver <code>manifest.json</code> y SPEC §6). Si llegaste aquí desde un listado de archivos, recarga la pestaña del preview.</p>

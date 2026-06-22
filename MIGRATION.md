@@ -23,6 +23,20 @@ la major siguiente. Cuando el tooling ve un `version` **mayor** del que soporta,
   tooling actual es compatible. Si tu `version` no está ahí, este documento te dice cómo
   llegar.
 
+### Tabla semver (resumen)
+
+El régimen completo, con ejemplos, vive en [SPEC §7.0](./SPEC.md). Resumen operativo:
+
+| Cambio | `0.x` (pre-`1.0`) | `1.0`+ (core congelado) |
+|---|---|---|
+| Aditivo (token/sección/regla nueva) | patch `0.1.0 → 0.1.1` | minor `1.0.0 → 1.1.0` |
+| Fix / aclaración (sin cambio de forma) | patch `0.1.0 → 0.1.1` | patch `1.0.0 → 1.0.1` |
+| Renombrar/reshape (breaking) | minor `0.1 → 0.2` (+ deprecation recomendada) | major `1.0 → 2.0` (deprecation obligatoria en `1.x`) |
+| Remover token/regla core | minor `0.1 → 0.2` (deprecation recomendada) | major `1.0 → 2.0` (deprecation obligatoria en `1.x`) |
+
+Ruta típica de versiones del protocolo: `0.1` → `0.2` → … → `0.9` → `1.0` (freeze del core).
+Cada salto breaking entre `0.x` publica su entrada en §3 y, si renombra, su receta en §4.
+
 ## 2. Cómo leer una entrada de migración
 
 Cada entrada sigue esta forma:
