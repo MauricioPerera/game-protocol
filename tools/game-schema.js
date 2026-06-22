@@ -8,6 +8,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { describeSrc } = require('./profile-helpers');
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 const OUT_DIR = path.resolve(__dirname, '../schemas');
 
@@ -16,14 +17,6 @@ function tokenType(name) {
   if (name === 'palettesCount') return { type: 'integer', minimum: 0 };
   if (/Pool$/.test(name) || name === 'rows') return { type: 'array' };
   return { type: 'object' };
-}
-function describeSrc(s) {
-  if (s.collection && s.field) return s.collection + '.*.' + s.field;
-  if (s.collection && s.arrayField) return s.collection + '.*.' + s.arrayField + '[]' + (s.itemField ? ('.' + s.itemField) : '');
-  if (s.listMap) return s.listMap + '.*[]';
-  if (s.singleton && s.field) return s.singleton + '.' + s.field;
-  if (s.singleton && s.mapField) return s.singleton + '.' + s.mapField + '.*';
-  return JSON.stringify(s);
 }
 
 function schemaFor(p) {

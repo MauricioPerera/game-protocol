@@ -11,24 +11,13 @@
 
   function dimsOf(scene) { const rows = scene.rows || []; return { w: rows.length ? String(rows[0]).length : 0, h: rows.length }; }
 
-  function rulePalettes({ data, add }) {
-    for (const [pi, pal] of Object.entries(data.palettes || {})) {
-      if (!Array.isArray(pal)) continue;
-      for (const c of pal)
-        if (!Array.isArray(c) || c.length !== 3 || c.some(v => typeof v !== 'number' || v < 0 || v > 31))
-          add('error', 'palette-color-range', 'palette ' + pi + ': color invalido ' + JSON.stringify(c));
-    }
-  }
-  function ruleTileArt({ data, add }) {
-    const tiles = data.tiles || {}; const palCount = data.palettesCount || 0;
-    for (const [id, mat] of Object.entries(data.tileArt || {})) {
-      if (!(id in tiles)) add('warn', 'tileart-ref', 'tileArt ' + id + ' no declarado en `tiles`');
-      if (!Array.isArray(mat) || mat.length !== 8 || mat.some(r => !Array.isArray(r) || r.length !== 8))
-        add('error', 'tileart-dims', 'tileArt ' + id + ' no es 8x8');
-      else if (mat.some(r => r.some(v => typeof v !== 'number' || v < 0 || v >= palCount)))
-        add('error', 'tileart-dims', 'tileArt ' + id + ' tiene indice de color fuera de 0..' + (palCount - 1));
-    }
-  }
+  // Helpers compartidos (tools/profile-helpers.js): rulePalettes/ruleTileArt eran duplicados
+  // literales en 4 perfiles; ahora se reusan. Resolución isomorfa Node + navegador.
+  const H = (typeof require !== 'undefined' && require('../tools/profile-helpers')) ||
+            (typeof window !== 'undefined' && window.ProfileHelpers) || {};
+
+  function rulePalettes(ctx) { H.rulePalettes(ctx); }
+  function ruleTileArt(ctx) { H.ruleTileArt(ctx); }
   function ruleScenes({ data, add }) {
     const tiles = data.tiles || {}; const text = data.text || {};
     const scenes = data.scenes || {};

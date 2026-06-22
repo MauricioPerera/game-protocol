@@ -50,11 +50,18 @@ function colorAt(idx, palIdx) { const c = (PAL[palIdx] || [])[idx] || [0, 0, 0];
 
 // estado inicial: jugador en start, llave y NPC presentes, meta presente
 const player = G.PLAYER, npc = (ENT.npcs||[])[0], pickup = (ENT.pickups||[])[0], goal = ENT.goal;
+// P2: precomputa un Map<"c,r", entity> una sola vez. Antes entityAt hacía 4 comparaciones
+// por celda por cada píxel (llamada PW*PH veces); ahora es O(1) lookup. El orden de
+// prioridad (player > npc > pickup > goal) se preserva insertando en ese orden: la 1ª
+// inserción gana y no se sobrescribe.
+const entityMap = new Map();
+function putEntity(e, c, r) { if (e && c != null && r != null) { const k = c + ',' + r; if (!entityMap.has(k)) entityMap.set(k, e); } }
+putEntity(player, player && player.start && player.start.col, player && player.start && player.start.row);
+putEntity(npc, npc && npc.col, npc && npc.row);
+putEntity(pickup, pickup && pickup.col, pickup && pickup.row);
+putEntity(goal, goal && goal.col, goal && goal.row);
 function entityAt(c, r) { // devuelve {tile,pal} de la entidad superior en la celda, o null
-  if (player && player.start.col===c && player.start.row===r) return player;
-  if (npc && npc.col===c && npc.row===r) return npc;
-  if (pickup && pickup.col===c && pickup.row===r) return pickup;
-  if (goal && goal.col===c && goal.row===r) return goal;
+  return entityMap.get(c + ',' + r) || null;
   return null;
 }
 

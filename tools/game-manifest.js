@@ -7,6 +7,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { describeSrc } = require('./profile-helpers');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 
@@ -21,15 +22,6 @@ const KNOWN = new Set(['--help', '-h']);
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
 const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
 if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
-
-function describeSrc(s) {
-  if (s.collection && s.field) return s.collection + '.*.' + s.field;
-  if (s.collection && s.arrayField) return s.collection + '.*.' + s.arrayField + '[]' + (s.itemField ? ('.' + s.itemField) : '');
-  if (s.listMap) return s.listMap + '.*[]';
-  if (s.singleton && s.field) return s.singleton + '.' + s.field;
-  if (s.singleton && s.mapField) return s.singleton + '.' + s.mapField + '.*';
-  return JSON.stringify(s);
-}
 
 function profileEntry(p) {
   return {

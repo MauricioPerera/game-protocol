@@ -6,6 +6,9 @@
  * Robustez (falla FUERTE, no en silencio):
  *  - respeta comillas al partir comas y el separador `:` en flujo (admite comas y `:` en strings);
  *  - LANZA error claro ante secuencias de bloque (`- item`) y lineas de front-matter sin `:`;
+ *  - LANZA ante clave duplicada, string sin cerrar, tab en indentacion, sobre-indentacion;
+ *  - guarda la recursion de parseBlock a 64 niveles (anidamiento profundo lanza error claro,
+ *    no desborda la pila);
  *  - tolera CRLF;
  *  - no convierte enteros con cero a la izquierda (007) en numero.
  * No soporta (por diseño): anchors/aliases, multilinea. Las listas van en flujo: [a, b].
@@ -18,7 +21,11 @@ function splitFrontMatter(text) {
 }
 function parseScalar(s) {
   s = s.trim();
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.slice(1, -1);
+  if ((s.startsWith('"') && s.endsWith('"') && s.length >= 2) || (s.startsWith("'") && s.endsWith("'") && s.length >= 2)) return s.slice(1, -1);
+  // string sin cerrar: empieza con comilla pero no cierra (antes se devolvía como string
+  // crudo, silenciosamente). Se lanza para fallar fuerte.
+  if (s.startsWith('"') || s.startsWith("'"))
+    throw new Error('yaml-min: string sin cerrar: "' + s + '"');
   if (s === 'true') return true;
   if (s === 'false') return false;
   if (/^-?0\d/.test(s)) return s;                       // 007, -012 → string (no perder ceros)
@@ -79,14 +86,26 @@ function parseYamlSubset(src) {
   const lines = String(src).replace(/\r\n?/g, '\n').split('\n');
   let i = 0;
   const indentOf = l => (l.match(/^ */) || [''])[0].length;
-  function parseBlock(indent) {
+  // Guard de profundidad: limita la recursión de parseBlock a MAX_DEPTH niveles. Ante un
+  // anidamiento patológico (input adversarial) lanza un error claro en vez de desbordar la
+  // pila (RangeError opaco). 64 niveles cubren cualquier GAME.md real con margen amplio.
+  const MAX_DEPTH = 64;
+  function parseBlock(indent, depth) {
+    if (depth == null) depth = 0;
+    if (depth > MAX_DEPTH)
+      throw new Error('yaml-min: anidamiento profundo > ' + MAX_DEPTH + ' niveles (profundidad ' + depth + ')');
     const obj = Object.create(null);
     while (i < lines.length) {
       const line = lines[i];
       if (line.trim() === '' || /^\s*#/.test(line)) { i++; continue; }
+      // tab en indentación: antes se tragaba el tab (indentOf cuenta sólo espacios), ahora
+      // falla fuerte — YAML prohíbe tabs para indentar.
+      if (/^ *\t/.test(line))
+        throw new Error('yaml-min: tab en indentacion (linea ' + (i + 1) + '): usa solo espacios. "' + line.replace(/\t/g, '\\t') + '"');
       const ind = indentOf(line);
       if (ind < indent) break;
-      if (ind > indent) { i++; continue; }
+      if (ind > indent)
+        throw new Error('yaml-min: sobre-indentacion (linea ' + (i + 1) + '): indent ' + ind + ' > esperado ' + indent + '. Linea "' + line + '" sin padre que la abra.');
       const content = line.trim();
       if (content.startsWith('- ') || content === '-')
         throw new Error('yaml-min: secuencia de bloque ("- item") no soportada en linea ' + (i + 1) + ': "' + content + '". Usa lista de flujo: [a, b].');
@@ -96,20 +115,22 @@ function parseYamlSubset(src) {
       const key = parseScalar(content.slice(0, ci));
       if (key === '__proto__' || key === 'constructor' || key === 'prototype')
         throw new Error('yaml-min: clave prohibida "' + key + '" en linea ' + (i + 1) + ' (prototype pollution)');
+      if (key in obj)
+        throw new Error('yaml-min: clave duplicada "' + key + '" en linea ' + (i + 1));
       const rest = content.slice(ci + 1).trim();
       i++;
       if (rest === '') {
         let child = indent + 2, j = i;
         while (j < lines.length && lines[j].trim() === '') j++;
         if (j < lines.length) child = indentOf(lines[j]);
-        obj[key] = child > indent ? parseBlock(child) : {};
+        obj[key] = child > indent ? parseBlock(child, depth + 1) : {};
       } else {
         obj[key] = parseValue(rest);
       }
     }
     return obj;
   }
-  return parseBlock(0);
+  return parseBlock(0, 0);
 }
 const _api = { splitFrontMatter, parseYamlSubset };
 if (typeof module !== 'undefined' && module.exports) module.exports = _api;

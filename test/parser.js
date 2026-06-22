@@ -44,5 +44,34 @@ ok(throws(() => parseYamlSubset('a: { sin_dos_puntos }')),
 ok(eq(parseYamlSubset('m:\n  k: { a: 1, b: [2, 3] }').m.k, { a: 1, b: [2, 3] }),
   'flujo anidado map+list');
 
+// --- Edge cases nuevos (S3.3): antes corrompian en silencio o desbordaban la pila ---
+// clave duplicada: antes sobrescribía silenciosamente, ahora lanza.
+ok(throws(() => parseYamlSubset('a: 1\na: 2')),
+  'clave duplicada lanza error');
+
+// string sin cerrar: antes devolvía el string crudo ('"unclosed'), ahora lanza.
+ok(throws(() => parseYamlSubset('a: "unclosed')),
+  'string sin cerrar lanza error');
+
+// indent TAB: antes el tab se tragaba (indentOf cuenta solo espacios), ahora lanza.
+ok(throws(() => parseYamlSubset('a: 1\n\tb: 2')),
+  'indent TAB lanza error');
+
+// sobre-indentacion: antes saltaba la linea en silencio (i++; continue), ahora lanza.
+ok(throws(() => parseYamlSubset('a: 1\n    b: 2')),
+  'sobre-indentacion lanza error');
+
+// anidamiento profundo: antes desbordaba la pila (RangeError opaco), ahora lanza error claro.
+// Construye 70 niveles con indentacion que compone (+2 por nivel): a0 → a1 → … → a69 → leaf.
+  let deep = '';
+  for (let d = 0; d < 70; d++) deep += '  '.repeat(d) + 'a' + d + ':\n';
+  deep += '  '.repeat(70) + 'leaf: 1';
+  ok(throws(() => parseYamlSubset(deep)),
+  'anidamiento profundo (>64) lanza error claro (no stack overflow)');
+
+// el guard no falsea anidamientos legitimos (3 niveles sigue funcionando).
+ok(eq(parseYamlSubset('a:\n  b:\n    c: 1').a.b.c, 1),
+  'anidamiento 3 niveles sigue parseando');
+
 console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests del parser pasan') : (fail + ' FALLOS de ' + (pass + fail))));
 process.exit(fail === 0 ? 0 : 1);

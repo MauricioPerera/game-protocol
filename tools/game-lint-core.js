@@ -26,9 +26,16 @@
 
   // ---- FAMILIA broken-ref: maquinaria genérica de resolución de referencias ----
   // Una entrada `ref` declara de dónde salen los valores (src) y contra qué se validan (target).
-  function targetSet(target, data) {
-    const keys = Object.keys(data[target.collection] || {});
-    return new Set(keys.concat(target.allow || []));
+  // P3: el Set de claves válidas del target se cachea por `collection` dentro de una misma
+  // llamada a lintGame. Antes se reconstruía en cada processRef (O(refs * keys)); ahora si
+  // varias refs apuntan a la misma colección, el Set se construye una sola vez (O(keys) total).
+  function targetSet(target, data, cache) {
+    const col = target.collection;
+    if (cache && cache.has(col)) return cache.get(col);
+    const keys = Object.keys(data[col] || {});
+    const set = new Set(keys.concat(target.allow || []));
+    if (cache) cache.set(col, set);
+    return set;
   }
   // Recolecta [{ value, owner }] según la forma de la fuente.
   function refValues(src, data) {
@@ -52,12 +59,28 @@
     }
     return out;
   }
-  function processRef(entry, data, add) {
-    const set = targetSet(entry.target, data);
+  function processRef(entry, data, add, setCache) {
+    const set = targetSet(entry.target, data, setCache);
     for (const { value, owner } of refValues(entry.src, data)) {
       if (entry.optional && (value == null || value === '')) continue;
       if (!set.has(value)) add(entry.level, entry.rule, entry.msg(value, owner));
     }
+  }
+
+  // P1: pre-tokeniza el motor una sola vez por llamada a lintGame. Extrae los tokens que el
+  // motor "usa": literales string (cubre gBal('k') y ['k']) y accesos miembro `.k` (cubre
+  // `.k\b`). ruleDeadToken consulta este Set en O(1) por clave de balance, en vez de lanzar
+  // una RegExp por clave contra todo el fuente (O(B*E) → O(E+B)). Fiel a los 3 patrones
+  // originales: no incluye identificadores sueltos (`.k` exige el punto).
+  function engineTokenSet(engineSource) {
+    const src = String(engineSource);
+    const set = new Set();
+    const strRe = /'([^'\\]*(?:\\.[^'\\]*)*)'|"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+    let m;
+    while ((m = strRe.exec(src))) set.add(m[1] !== undefined ? m[1] : m[2]);
+    const propRe = /\.([A-Za-z_$][A-Za-z0-9_$]*)/g;
+    while ((m = propRe.exec(src))) set.add(m[1]);
+    return set;
   }
 
   // Compara dos versiones semver-lite ('0.1' vs '0.2') → -1/0/+1.
@@ -144,14 +167,20 @@
       if (typeof v !== 'string' || v.trim() === '') add('error', 'text-valid', 'text.' + k + ' debe ser una cadena no vacía');
 
     // ---- FAMILIA broken-ref dirigida por el descriptor del perfil ----
-    for (const entry of (profile.refs || [])) processRef(entry, data, add);
+    // P3: setCache evita reconstruir el Set de claves de una misma colección cuando varias
+    // refs apuntan a ella. Se crea por llamada a lintGame (no se comparte entre llamadas).
+    const setCache = new Map();
+    for (const entry of (profile.refs || [])) processRef(entry, data, add, setCache);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
     // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`
     // para declarar su ciclo de vida. El core emite un hallazgo level=deprecated (NO es
     // error: no rompe el gate) con since/removedIn y un msg accionable, y de todos modos
     // ejecuta la regla — sigue aplicando hasta que se remueva en `removedIn`.
+    // P1: si hay engineSource, se pre-tokeniza UNA vez aquí y se expone vía ctx.engineTokens.
+    // ruleDeadToken lo consume en O(1) por clave (antes: RegExp por clave contra todo el fuente).
     const ctx = { data, body, opts, add };
+    if (opts.engineSource) ctx.engineTokens = engineTokenSet(opts.engineSource);
     for (const rule of (profile.rules || [])) {
       if (rule && rule.deprecated) {
         const name = rule.name || 'unknown';

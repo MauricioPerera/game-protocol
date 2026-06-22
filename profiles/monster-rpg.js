@@ -15,6 +15,12 @@
   if (typeof window !== 'undefined') (window.GameProfiles = window.GameProfiles || {})['monster-rpg'] = api;
 })(function () {
 
+  // Helpers compartidos (tools/profile-helpers.js): rulePalettes/ruleTileArt eran duplicados
+  // literales en 4 perfiles; ahora se reusan. monster-rpg pasa sus variantes: paletas en dos
+  // secciones (palettes + spritePalettes) y tileArt con rango de id 16..63. Resolución isomorfa.
+  const H = (typeof require !== 'undefined' && require('../tools/profile-helpers')) ||
+            (typeof window !== 'undefined' && window.ProfileHelpers) || {};
+
   // ---------- FAMILIA broken-ref: 8 reglas como datos ----------
   const refs = [
     { rule: 'move-type-valid', level: 'error',
@@ -55,17 +61,7 @@
         add('error', 'palette-range', 'tile ' + id + ' usa paleta ' + t.pal + ' fuera de 0..' + (palCount - 1));
   }
 
-  function rulePaletteColorRange({ data, add }) {
-    for (const section of ['palettes', 'spritePalettes']) {
-      for (const [pi, pal] of Object.entries(data[section] || {})) {
-        if (!Array.isArray(pal)) continue;
-        for (const c of pal) {
-          if (!Array.isArray(c) || c.length !== 3 || c.some(v => typeof v !== 'number' || v < 0 || v > 31))
-            add('error', 'palette-color-range', section + ' ' + pi + ': color invalido ' + JSON.stringify(c));
-        }
-      }
-    }
-  }
+  function rulePaletteColorRange(ctx) { H.rulePalettes(ctx, ['palettes', 'spritePalettes']); }
 
   function ruleSolidSync({ data, add, opts }) {
     const tiles = data.tiles || {};
@@ -180,18 +176,7 @@
     }
   }
 
-  function ruleTileArt({ data, add }) {
-    const tiles = data.tiles || {}; const palCount = data.palettesCount || 0;
-    for (const [id, mat] of Object.entries(data.tileArt || {})) {
-      const n = Number(id);
-      if (!(id in tiles)) add('warn', 'tileart-ref', 'tileArt define el tile ' + id + ' que no está en el registro `tiles`');
-      if (n < 16 || n > 63) add('error', 'tileart-ref', 'tileArt id ' + id + ' fuera del rango de tiles 16..63');
-      if (!Array.isArray(mat) || mat.length !== 8 || mat.some(r => !Array.isArray(r) || r.length !== 8))
-        add('error', 'tileart-dims', 'tileArt ' + id + ' no es 8x8');
-      else if (mat.some(r => r.some(v => typeof v !== 'number' || v < 0 || v >= palCount)))
-        add('error', 'tileart-dims', 'tileArt ' + id + ' tiene un índice de color fuera de 0..' + (palCount - 1));
-    }
-  }
+  function ruleTileArt(ctx) { H.ruleTileArt(ctx, { idRange: [16, 63] }); }
 
   function ruleSfx({ data, add }) {
     for (const [k, s] of Object.entries(data.sfx || {})) {
@@ -221,14 +206,16 @@
     }
   }
 
-  function ruleDeadToken({ data, add, opts }) {
-    if (!opts.engineSource) return;
+  // P1: consume el Set de tokens del motor pre-tokenizado por lintGame (ctx.engineTokens),
+  // construido UNA vez por llamada desde opts.engineSource. Antes lanzaba una RegExp por
+  // clave de balance contra todo el fuente (O(B*E)); ahora es O(B) lookups O(1) sobre el Set.
+  // Fiel a los 3 patrones originales: el Set contiene literales string (gBal('k'), ['k']) y
+  // accesos miembro `.k`; no incluye identificadores sueltos (`.k` exige el punto).
+  function ruleDeadToken({ data, add, engineTokens }) {
+    if (!engineTokens) return;
     const bal = data.balance || {};
-    for (const k of Object.keys(bal)) {
-      const e = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const used = new RegExp("gBal\\(['\"]" + e + "['\"]|\\." + e + "\\b|\\[['\"]" + e + "['\"]\\]").test(String(opts.engineSource));
-      if (!used) add('warn', 'dead-token', 'balance.' + k + ' declarado en GAME.md pero no referenciado en el motor');
-    }
+    for (const k of Object.keys(bal))
+      if (!engineTokens.has(k)) add('warn', 'dead-token', 'balance.' + k + ' declarado en GAME.md pero no referenciado en el motor');
   }
 
   // ---------- COMPILACIÓN: derivaciones del dominio (consumidas por game-build-core) ----------
