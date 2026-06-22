@@ -27,11 +27,12 @@ function usage() {
   console.log('Options:');
   console.log('  --agent    Enrich findings with hints and next steps (for LLM agents)');
   console.log('  --help     Show this help message');
+  console.log('Exit codes: 0=OK, 1=validacion (errores), 2=input/perfil/sintaxis');
 }
 const KNOWN = new Set(['--agent', '--help', '-h']);
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
 const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
-if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 
 const agentMode = args.includes('--agent');
 const file = args.find(a => !a.startsWith('-')) || 'GAME.md';
@@ -73,10 +74,14 @@ const errors = findings.filter(f => f.level === 'error').length;
 const warns = findings.filter(f => f.level === 'warn').length;
 
 // Modo agente: enriquece cada hallazgo con una pista de arreglo accionable y un siguiente paso.
+// Toda regla lleva hint: si no tiene uno especifico en rule-hints.js, se entrega un fallback
+// generico que orienta al agente hacia el descriptor del perfil (cumple el DoD: ningun
+// hallazgo sin hint, para cualquier regla de cualquier perfil).
+const FALLBACK_HINT = "Sin hint especifico: consulta `references` y `rules` del perfil en manifest.json (node tools/game-manifest.js) para entender el contrato de esta regla.";
 let outFindings = findings;
 if (agentMode) {
   const hints = require('./rule-hints');
-  outFindings = findings.map(f => Object.assign({}, f, hints[f.rule] ? { hint: hints[f.rule] } : {}));
+  outFindings = findings.map(f => Object.assign({}, f, { hint: hints[f.rule] || FALLBACK_HINT }));
 }
 
 const report = {

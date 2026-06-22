@@ -55,11 +55,12 @@ function usage() {
   console.log('Usage: node tools/game-schema.js [profileId]');
   console.log('Options:');
   console.log('  --help     Show this help message');
+  console.log('Exit codes: 0=OK, 2=input (flag desconocido)');
 }
 const KNOWN = new Set(['--help', '-h']);
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
 const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
-if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 const arg = args.find(a => !a.startsWith('-'));
 const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js'));
 let n = 0;

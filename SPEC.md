@@ -82,6 +82,18 @@ A file with no `profile` is validated only against the core structural rules (§
 
 The *set of derived keys* and how each is derived is defined by the profile, not the core.
 
+### 3.1 CLI exit codes
+
+Every CLI in `tools/` shares one exit-code contract (also shown by each `--help`):
+
+| Code | Meaning | When |
+|---|---|---|
+| `0` | OK | The command succeeded (lint: 0 errors; export/manifest/schema: file written; render-png: PNG written). |
+| `1` | Validation | `game-lint.js` only: the source parsed and loaded, but the linter found `error`-level findings. |
+| `2` | Input / profile / syntax | File unreadable, front-matter missing or unparseable, `profile` unknown or unloadable, unknown CLI flag, or (for `render-png.js`) a generated file whose profile the renderer does not support. |
+
+`game-export.js`, `game-manifest.js`, `game-schema.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
+
 ## 4. Core validation rules (genre-agnostic)
 
 These rules apply to **every** `GAME.md` regardless of profile. Profiles add their own (§6).

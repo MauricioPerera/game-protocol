@@ -24,11 +24,12 @@ function usage() {
   console.log('Usage: node tools/game-export.js [GAME.md] [salida.js]');
   console.log('Options:');
   console.log('  --help     Show this help message');
+  console.log('Exit codes: 0=OK, 2=input/perfil/sintaxis (no se exporta en otro caso)');
 }
 const KNOWN = new Set(['--help', '-h']);
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
 const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
-if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 
 const positional = args.filter(a => !a.startsWith('-'));
 const file = positional[0] || path.join(__dirname, '..', 'GAME.md');

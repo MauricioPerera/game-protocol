@@ -44,6 +44,11 @@ module.exports = {
   'entity-tile': 'El `tile` de la entidad debe existir en `tiles`.',
   'entity-text': 'El `dialogue` del NPC debe ser una clave existente en `text`.',
   'player-start': 'player.start debe caer dentro de la escena/escena inicial.',
+  // --- overworld / cross-checks con el motor (monster-rpg) ---
+  'overworld-ref': 'En cada area de `overworld`: NPC/trainer/warp con col/row numericos dentro de 0..platform.cols-1; NPC con `dialogue` (sin comas, el parser de flujo las corta); `warp.target` debe ser un area de overworld o un mapa declarado; `trainer.name` debe existir en `trainers`.',
+  'type-symmetry': 'La tabla `types` debe ser simetrica: si A->B es x2, entonces B->A debe ser x0.5 (y viceversa x0.5 <-> x2). Corrige el multiplicador inverso.',
+  'solid-sync': 'El flag `solid` de cada tile en GAME.md debe coincidir con el Set SOLID_TILES del motor. Pon el tile en SOLID_TILES si es solid, o quitalo / cambia `solid: false` si es caminable. (Cross-check opcional via GAME_ENGINE.)',
+  'dead-token': 'La clave de `balance` no aparece en el motor (gBal(...), .clave o ["clave"]). Referenciala en el codigo del motor o elimina la declaracion de GAME.md. (Cross-check opcional via GAME_ENGINE.)',
   // --- generador (roguelike) ---
   'generator-missing': 'Anade el bloque `generator`.',
   'generator-field': 'Completa los campos requeridos del generador (seed, roomW, roomH, maxDepth).',

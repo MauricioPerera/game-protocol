@@ -12,11 +12,12 @@ function usage() {
   console.log('Usage: node tools/build-standalone.js <archivo.html> [...]');
   console.log('Options:');
   console.log('  --help     Show this help message');
+  console.log('Exit codes: 0=OK, 2=input (flag desconocido / falta archivo.html)');
 }
 const KNOWN = new Set(['--help', '-h']);
 if (inputs.includes('--help') || inputs.includes('-h')) { usage(); process.exit(0); }
 const unknown = inputs.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
-if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 const htmlInputs = inputs.filter(a => !a.startsWith('-'));
 if (!htmlInputs.length) { console.error('Error: falta <archivo.html>'); usage(); process.exit(2); }
 

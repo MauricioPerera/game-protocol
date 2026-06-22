@@ -6,12 +6,13 @@ function usage() {
   console.log('Usage: node tools/render-png.js [genFile] [outFile]');
   console.log('Options:');
   console.log('  --help     Show this help message');
+  console.log('Exit codes: 0=OK, 2=input/perfil/sintaxis (perfil no soportado, genFile invalido)');
 }
 const args = process.argv.slice(2);
 const KNOWN = new Set(['--help', '-h']);
 if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
 const unknown = args.filter(a => a.startsWith('-') && !KNOWN.has(a));
-if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 
 const genFile = args.find(a => !a.startsWith('-')) || 'examples/adventure.generated.js';
 const outFile = (args.filter(a => !a.startsWith('-')))[1] || 'examples/adventure-render.png';
@@ -35,6 +36,12 @@ catch (e) { delete global.window; console.error('No se pudo cargar ' + genFile +
 delete global.window;
 const G = win.GAME;
 if (!G) { console.error('genFile no definió window.GAME: ' + genFile); process.exit(2); }
+// render-png solo soporta el perfil adventure, cuyo generado expone G.SCENE (tilemap+attrs).
+// Otros perfiles exponen G.MAPS / G.SCENES / etc.; desestructurar sin esto da un TypeError opaco.
+if (!G.SCENE || !Array.isArray(G.SCENE.tilemap) || !Array.isArray(G.SCENE.attrs)) {
+  console.error("Error: render-png sólo soporta el perfil 'adventure' (G.SCENE no encontrado). El generado pasado parece ser de otro perfil.");
+  process.exit(2);
+}
 const tm = G.SCENE.tilemap, at = G.SCENE.attrs, ART = G.TILE_ART, PAL = G.PALETTES, ENT = G.ENTITIES;
 const H = tm.length, W = tm[0].length;
 const PW = W * 8, PH = H * 8;
