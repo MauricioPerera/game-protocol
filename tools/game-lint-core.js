@@ -9,8 +9,13 @@
  * Todo el vocabulario de un género vive en un perfil (p.ej. profiles/monster-rpg.js).
  *
  * lintGame(data, body, opts) -> [{ level, rule, msg }]
- *   opts.profile : descriptor de perfil { id, sections, required, refs, rules }.
- *                  Si falta, solo se aplican las reglas estructurales del core.
+ *   opts.profile     : descriptor de perfil { id, sections, required, refs, rules, specVersion }.
+ *                      Si falta, solo se aplican las reglas estructurales del core.
+ *   opts.profileId   : id del perfil que se intentó cargar. Si se pasa y opts.profile es
+ *                      nulo, el core emite `profile-known` (perfil desconocido) sin necesidad
+ *                      del wrapper CLI — así un consumidor directo (browser/otra tool) recibe
+ *                      el hallazgo. El wrapper sigue encargándose de `profile-load-error`
+ *                      (error de sintaxis), que requiere fs y no corresponde al core.
  *   opts.engineSource / opts.requireEngine / opts.frontMatterPresent : como antes.
  */
 (function (factory) {
@@ -66,9 +71,29 @@
     // frontmatter-present
     if (opts.frontMatterPresent === false) add('error', 'frontmatter-present', 'Falta el front-matter YAML (--- ... ---).');
 
+    // profile-known (movido del wrapper CLI al core): si el consumidor declaró un
+    // profileId pero no resolvió un perfil cargado (opts.profile nulo), el core lo
+    // reporta. Así lintGame directo (sin wrapper) emite la regla. El wrapper delega
+    // pasando opts.profileId; el caso de sintaxis rota (profile-load-error) lo sigue
+    // manejando el wrapper y NO pasa profileId, para no duplicar hallazgo.
+    if (opts.profileId && !opts.profile)
+      add('error', 'profile-known', 'perfil desconocido: ' + opts.profileId);
+
     // required-fields (el perfil puede ampliar la lista; el core exige version+name)
     const required = profile.required || ['version', 'name'];
     for (const f of required) if (!(f in data)) add('error', 'required-fields', 'Falta el campo obligatorio: ' + f);
+
+    // version-compatible (core): data.version debe coincidir con la specVersion
+    // soportada por el tooling. La esperada es profile.specVersion si el perfil la
+    // declara, si no, la versión soportada por defecto del core ('0.1'). Sólo corre
+    // si `version` está presente (si falta, required-fields ya lo reportó).
+    const SUPPORTED_VERSION = '0.1';
+    if ('version' in data) {
+      const expected = profile.specVersion || SUPPORTED_VERSION;
+      if (data.version !== expected)
+        add('error', 'version-compatible',
+            'version ' + data.version + ' no compatible con core/perfil ' + expected);
+    }
 
     // section-order (el orden canónico lo aporta el perfil; sin perfil no se valida)
     if (profile.sections) {

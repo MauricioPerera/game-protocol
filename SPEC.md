@@ -90,7 +90,8 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 |---|---|---|
 | `frontmatter-present` | error | `---` fences present and parseable |
 | `required-fields` | error | `version`, `name`, `profile` exist |
-| `profile-known` | error | `profile` resolves to a loadable profile |
+| `profile-known` | error | `profile` resolves to a loadable profile (emitted by `lintGame` when `opts.profileId` is passed but no profile loaded) |
+| `version-compatible` | error | `version` matches the spec version supported by the tooling (`profile.specVersion`, core default `0.1`) |
 | `section-order` | error/warn | `##` sections match the order declared by the profile |
 | `broken-ref` | error | Every cross-reference resolves to a declared token |
 | `dims` | error | Matrix/grid tokens match their declared dimensions |
@@ -100,6 +101,8 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 | `no-drift` | error (CI) | Generated artifact matches current `GAME.md` |
 
 > `broken-ref`, `dims`, `range` are **rule families**: the profile supplies *which* tokens they apply to and *what* the bounds/dimensions are. The core supplies the checking machinery.
+
+> `profile-known` and `version-compatible` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access and does not belong in the isomorphic core.
 
 ## 5. Cross-validation with the engine (optional)
 

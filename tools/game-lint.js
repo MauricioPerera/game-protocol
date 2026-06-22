@@ -54,7 +54,10 @@ const { profile, error: profileError } = loadProfile(profileId);
 const preFindings = [];
 if (parseError) preFindings.push({ level: 'error', rule: 'parse-error', msg: parseError });
 if (profileError) preFindings.push({ level: 'error', rule: 'profile-load-error', msg: 'el perfil ' + profileId + ' tiene un error: ' + profileError });
-else if (!profile) preFindings.push({ level: 'error', rule: 'profile-known', msg: 'perfil desconocido: ' + profileId });
+// `profile-known` ahora lo emite el core (lintGame) vía opts.profileId cuando el
+// perfil no resuelve. Sólo pasamos profileId al core cuando NO hubo error de carga
+// (sintaxis): si no, profile-load-error ya cubre el caso y pasar profileId duplicaría.
+const coreProfileId = profileError ? null : profileId;
 
 let engineSource = null;
 if (process.env.GAME_ENGINE) {
@@ -63,7 +66,7 @@ if (process.env.GAME_ENGINE) {
 }
 
 const findings = preFindings.concat(
-  lintGame(data, body || '', { profile, engineSource, requireEngine: false, frontMatterPresent: !!fm })
+  lintGame(data, body || '', { profile, profileId: coreProfileId, engineSource, requireEngine: false, frontMatterPresent: !!fm })
 );
 
 const errors = findings.filter(f => f.level === 'error').length;
