@@ -1,0 +1,89 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GAME Protocol · tower-defense (visor estático desde la spec)</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px}
+  h1{margin:0;font-size:18px}h1 b{color:#8fd6ff}
+  p.sub{margin:0;color:#7b8696;font-size:12px;max-width:620px;text-align:center}
+  .panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:920px}
+  .card{background:#141a22;border:1px solid #2a3340;border-radius:8px;padding:12px 14px;min-width:200px}
+  .card h2{margin:0 0 8px;font-size:13px;color:#8fd6ff;text-transform:uppercase;letter-spacing:.05em}
+  canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#070a0f;border-radius:6px;display:block}
+  table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:2px 6px;font-size:12px;color:#aeb6c2}
+  th{color:#6b7685;font-weight:600}
+  .tag{display:inline-block;padding:1px 6px;border-radius:10px;background:#1c2530;font-size:11px;color:#8fd6ff;margin:1px}
+  .gold{color:#ffd479}.lives{color:#ff9a9a}.muted{color:#5a6472}
+  #warn{color:#5a6472;font-size:12px;min-height:1em}
+</style>
+<h1><b>GAME Protocol</b> · tower-defense</h1>
+<p class="sub">Visor mínimo (no jugable): render estático 100% desde <code>tower-defense.generated.js</code> (window.GAME). Sin simulación — eso es lógica del motor, fuera de scope del spec.</p>
+<div class="panel">
+  <canvas id="grid" width="360" height="200"></canvas>
+  <div class="card"><h2>Towers</h2><table id="towers"><tr><th>name</th><th>cost</th><th>dmg</th><th>range</th><th>rate</th><th>type</th></tr></table></div>
+  <div class="card"><h2>Waves</h2><table id="waves"><tr><th>lvl</th><th>spawns</th><th>reward</th></tr></table></div>
+  <div class="card"><h2>Economy & Balance</h2><div id="econ"></div></div>
+</div>
+<div id="warn"></div>
+
+<!-- window.GAME = artefacto generado por game-export.js desde tower-defense.GAME.md -->
+<script src="tower-defense.generated.js"></script>
+<script>
+const G = window.GAME || {};
+const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+const TOWERS = G.TOWERS || {}, ENEMIES = G.ENEMIES || {}, WAVES = G.WAVES || {};
+const ECON = G.ECONOMY || {}, BAL = G.BALANCE || {}, ARMORS = G.ARMORS || [];
+
+// --- Tower grid (canvas, estático) ---
+const cv = document.getElementById('grid'), ctx = cv.getContext('2d');
+const CELL = 20, COLS = Math.floor(cv.width / CELL), ROWS = Math.floor(cv.height / CELL);
+ctx.fillStyle = '#070a0f'; ctx.fillRect(0, 0, cv.width, cv.height);
+ctx.strokeStyle = '#1a222d'; ctx.lineWidth = 1;
+for (let c = 0; c <= COLS; c++) { ctx.beginPath(); ctx.moveTo(c*CELL+0.5,0); ctx.lineTo(c*CELL+0.5,ROWS*CELL); ctx.stroke(); }
+for (let r = 0; r <= ROWS; r++) { ctx.beginPath(); ctx.moveTo(0,r*CELL+0.5); ctx.lineTo(COLS*CELL,r*CELL+0.5); ctx.stroke(); }
+// camino decorativo (las torres se colocan fuera del camino en una defensa real)
+ctx.strokeStyle = '#3a4658'; ctx.lineWidth = 3; ctx.beginPath();
+ctx.moveTo(CELL/2, CELL/2); ctx.lineTo((COLS-0.5)*CELL, (ROWS-0.5)*CELL); ctx.stroke();
+// coloca cada torre como un badge en una celda distinta
+const names = Object.keys(TOWERS);
+const colors = ['#8fd6ff','#ffd479','#9fffa6'];
+names.slice(0, COLS*ROWS).forEach((n, i) => {
+  const col = i % COLS, row = Math.floor(i / COLS);
+  ctx.fillStyle = colors[i % colors.length];
+  ctx.fillRect(col*CELL+4, row*CELL+4, CELL-8, CELL-8);
+  ctx.fillStyle = '#0b0e13'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText(n.slice(0,4), col*CELL+CELL/2, row*CELL+CELL/2+3);
+});
+document.getElementById('warn').textContent =
+  names.length ? '' : 'Sin torres en GAME.md (G.TOWERS vacío).';
+
+// --- Towers table ---
+const tt = document.getElementById('towers');
+for (const [n, t] of Object.entries(TOWERS)) {
+  const tr = document.createElement('tr'); tr.innerHTML =
+    `<td>${esc(n)}</td><td>${t.cost}</td><td>${t.damage}</td><td>${t.range}</td><td>${t.rate}</td><td>${esc(t.dmgType)}</td>`;
+  tt.appendChild(tr);
+}
+
+// --- Waves timeline ---
+const wt = document.getElementById('waves');
+for (const [lvl, w] of Object.entries(WAVES)) {
+  const spawns = (w.spawns || []).map(s => `${s.count}×${esc(s.enemy)}`).join(', ') || '<span class="muted">—</span>';
+  const tr = document.createElement('tr'); tr.innerHTML =
+    `<td>${esc(lvl)}</td><td>${spawns}</td><td>${w.reward == null ? '<span class="muted">—</span>' : w.reward}</td>`;
+  wt.appendChild(tr);
+}
+
+// --- Economy & Balance ---
+const econ = document.getElementById('econ');
+const lines = [];
+if (Object.keys(ECON).length) {
+  lines.push(`Gold inicial: <span class="gold">${ECON.startGold}</span>`);
+  lines.push(`Vidas iniciales: <span class="lives">${ECON.startLives}</span>`);
+}
+if (Object.keys(BAL).length) {
+  lines.push(`Sell ratio: ${BAL.sellRatio}`);
+  lines.push(`Interest rate: ${BAL.interestRate}`);
+}
+if (ARMORS.length) lines.push('Armors: ' + ARMORS.map(a => '<span class="tag">'+esc(a)+'</span>').join(''));
+econ.innerHTML = (lines.length ? lines.join('<br>') : '<span class="muted">—</span>');
+</script>

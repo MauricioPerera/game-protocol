@@ -605,6 +605,117 @@
         }
       ]
     },
+    "tower-defense": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Towers",
+        "DamageTypes",
+        "Enemies",
+        "Waves",
+        "Maps",
+        "Economy & Balance",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name"
+      ],
+      "references": [
+        {
+          "rule": "tower-dmgtype-valid",
+          "level": "error",
+          "from": "towers.*.dmgType",
+          "to": "dmgTypes",
+          "optional": false
+        },
+        {
+          "rule": "wave-enemy-valid",
+          "level": "error",
+          "from": "waves.*.spawns[].enemy",
+          "to": "enemies",
+          "optional": false
+        },
+        {
+          "rule": "tower-sprite-ref",
+          "level": "error",
+          "from": "towers.*.sprite",
+          "to": "sprites",
+          "optional": true
+        },
+        {
+          "rule": "enemy-sprite-ref",
+          "level": "error",
+          "from": "enemies.*.sprite",
+          "to": "sprites",
+          "optional": true
+        }
+      ],
+      "rules": [
+        "ruleTowerBounds",
+        "ruleEnemyBounds",
+        "ruleWaves",
+        "ruleEconomy",
+        "ruleDmgChart",
+        "ruleMaps",
+        "ruleSpriteDims",
+        "ruleTileArt"
+      ],
+      "output": [
+        {
+          "key": "TOWERS",
+          "source": "token:towers"
+        },
+        {
+          "key": "DMG_CHART",
+          "source": "token:dmgTypes"
+        },
+        {
+          "key": "ENEMIES",
+          "source": "token:enemies"
+        },
+        {
+          "key": "ARMORS",
+          "source": "derived"
+        },
+        {
+          "key": "WAVES",
+          "source": "derived"
+        },
+        {
+          "key": "MAPS",
+          "source": "derived"
+        },
+        {
+          "key": "ECONOMY",
+          "source": "token:economy"
+        },
+        {
+          "key": "BALANCE",
+          "source": "token:balance"
+        },
+        {
+          "key": "PALETTES",
+          "source": "derived"
+        },
+        {
+          "key": "SPRITE_PALETTES",
+          "source": "derived"
+        },
+        {
+          "key": "SPRITES",
+          "source": "token:sprites"
+        },
+        {
+          "key": "TILE_ART",
+          "source": "token:tileArt"
+        },
+        {
+          "key": "TILES",
+          "source": "token:tiles"
+        }
+      ]
+    },
     "voxel": {
       "specVersion": "0.1",
       "sections": [

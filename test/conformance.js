@@ -17,7 +17,7 @@ let pass = 0, fail = 0;
 const ok = (cond, label, extra) => { if (cond) { pass++; console.log('PASS  ' + label); } else { fail++; console.log('FAIL  ' + label); if (extra) console.log('        ' + extra); } };
 
 // ---- VALIDO: ejemplos por perfil → 0 errores ----
-const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md'];
+const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md'];
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
@@ -29,13 +29,18 @@ for (const e of examples) {
 // ---- INVALIDO: cada caso debe disparar la regla esperada ----
 // hasRule cuenta presencia de la regla a cualquier nivel (algunas reglas son warn-only:
 // type-symmetry, dead-token, entity-text, goal-missing, win-text, entrant-doc-field,
-// prefab-empty, tileart-ref en dungeon/roguelike). No exige que sea la ÚNICA disparada.
+// prefab-empty, tileart-ref en dungeon/roguelike, dmgtype-symmetry, wave-monotonic en
+// tower-defense). No exige que sea la ÚNICA disparada.
 const lintData = (data, pid, opts) => lintGame(data, '', Object.assign({ profile: loadProfile(pid), frontMatterPresent: true }, opts || {}));
 const hasRule = (f, rule) => f.some(x => x.rule === rule);
 // Base front-matter válido (evita required-fields / version-compatible).
 const B = pid => ({ version: '0.1', name: 'x', profile: pid });
 const M8 = () => Array.from({ length: 8 }, () => Array(8).fill(0)); // tileArt 8x8 válido
 const GEN = { seed: 1, roomW: 5, roomH: 5, maxDepth: 1 }; // generator roguelike válido
+// Base tower-defense válida: armors + un dmgType con su armor, para que las reglas de
+// bounds aisladas no arrastren findings de broken-ref (tower-dmgtype-valid / dmgtype-armor-valid).
+const TD = (o) => Object.assign({ version: '0.1', name: 'x', profile: 'tower-defense',
+  armors: ['LIGHT'], dmgTypes: { PHYSICAL: { LIGHT: 1.0 } } }, o);
 
 const invalid = [
   // ---- adventure (15) ----
@@ -143,6 +148,36 @@ const invalid = [
   { p: 'roguelike', rule: 'player-hp', data: { ...B('roguelike'), generator: { ...GEN }, player: { hp: -1 } } },
   { p: 'roguelike', rule: 'text-valid', data: { ...B('roguelike'), text: { x: '  ' } } },
 
+  // ---- tower-defense (18) ----
+  // broken-ref family
+  { p: 'tower-defense', rule: 'tower-dmgtype-valid', data: TD({ towers: { T: { cost: 10, range: 1, damage: 1, rate: 1, dmgType: 'NOPE' } } }) },
+  { p: 'tower-defense', rule: 'wave-enemy-valid', data: TD({ waves: { 1: { spawns: [{ enemy: 'NOPE', count: 1, gap: 0 }] } } }) },
+  { p: 'tower-defense', rule: 'tower-sprite-ref', data: TD({ towers: { T: { cost: 10, range: 1, damage: 1, rate: 1, dmgType: 'PHYSICAL', sprite: 'NOPE' } }, sprites: {} }) },
+  { p: 'tower-defense', rule: 'enemy-sprite-ref', data: TD({ enemies: { E: { hp: 1, speed: 1, armor: 'LIGHT', bounty: 1, sprite: 'NOPE' } }, sprites: {} }) },
+  // tower bounds
+  { p: 'tower-defense', rule: 'tower-cost-valid', data: TD({ towers: { T: { cost: -5, range: 1, damage: 1, rate: 1, dmgType: 'PHYSICAL' } } }) },
+  { p: 'tower-defense', rule: 'tower-range', data: TD({ towers: { T: { cost: 1, range: 0, damage: 1, rate: 1, dmgType: 'PHYSICAL' } } }) },
+  { p: 'tower-defense', rule: 'tower-damage', data: TD({ towers: { T: { cost: 1, range: 1, damage: -1, rate: 1, dmgType: 'PHYSICAL' } } }) },
+  { p: 'tower-defense', rule: 'tower-rate', data: TD({ towers: { T: { cost: 1, range: 1, damage: 1, rate: 0, dmgType: 'PHYSICAL' } } }) },
+  // enemies
+  { p: 'tower-defense', rule: 'enemy-bounds', data: TD({ enemies: { E: { hp: -1, speed: 1, armor: 'LIGHT', bounty: 1 } } }) },
+  { p: 'tower-defense', rule: 'enemy-armor-valid', data: TD({ enemies: { E: { hp: 1, speed: 1, armor: 'NOPE', bounty: 1 } } }) },
+  // waves
+  { p: 'tower-defense', rule: 'wave-valid', data: TD({ enemies: { E: { hp: 1, speed: 1, armor: 'LIGHT', bounty: 1 } }, waves: { 1: { spawns: [{ enemy: 'E', count: 0, gap: 0 }] } } }) },
+  { p: 'tower-defense', rule: 'wave-monotonic', data: TD({ enemies: { E: { hp: 10, speed: 1, armor: 'LIGHT', bounty: 1 } }, waves: { 1: { spawns: [{ enemy: 'E', count: 10, gap: 0 }] }, 2: { spawns: [{ enemy: 'E', count: 1, gap: 0 }] } } }) },
+  // economy
+  { p: 'tower-defense', rule: 'economy-balance', data: TD({ economy: { startGold: -5, startLives: 20 }, balance: { sellRatio: 0.5, interestRate: 0 } }) },
+  // dmg chart
+  { p: 'tower-defense', rule: 'dmgtype-armor-valid', data: { version: '0.1', name: 'x', profile: 'tower-defense', armors: ['LIGHT'], dmgTypes: { PHYSICAL: { NOPE: 1.0 } } } },
+  { p: 'tower-defense', rule: 'dmgtype-mult', data: { version: '0.1', name: 'x', profile: 'tower-defense', armors: ['LIGHT'], dmgTypes: { PHYSICAL: { LIGHT: -1 } } } },
+  { p: 'tower-defense', rule: 'dmgtype-symmetry', data: { version: '0.1', name: 'x', profile: 'tower-defense', armors: ['LIGHT', 'MEDIUM'], dmgTypes: { PHYSICAL: { LIGHT: 1.0, MEDIUM: 1.0 } } } },
+  // maps
+  { p: 'tower-defense', rule: 'map-legend-ref', data: TD({ maps: { m: { rows: ['..'], legend: { X: { tile: 999, pal: 0 } } } } }) },
+  { p: 'tower-defense', rule: 'path-contiguous', data: TD({ platform: { rows: 3, cols: 3 }, maps: { m: { rows: ['...', '...', '...'], path: [{ col: 0, row: 0 }, { col: 2, row: 0 }] } } }) },
+  // sprites / tileArt (shared with other tile-based profiles)
+  { p: 'tower-defense', rule: 'sprite-dims', data: TD({ sprites: { S: [[0]] } }) },
+  { p: 'tower-defense', rule: 'tileart-dims', data: TD({ tileArt: { 20: [[0]] } }) },
+
   // ---- voxel (8) ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
   { p: 'voxel', rule: 'prefab-fill-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], fill: 'NOPE' } } } },
@@ -163,7 +198,7 @@ for (const c of invalid) {
 }
 
 console.log('\n— Cobertura inválidos por perfil —');
-const order = ['adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'voxel'];
+const order = ['adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
 console.log('  TOTAL invalidos: ' + invalid.length + '  (validos: ' + examples.length + ')');
 

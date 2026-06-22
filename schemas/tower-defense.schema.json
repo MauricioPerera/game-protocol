@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/tower-defense.schema.json",
+  "title": "GAME.md front-matter — perfil tower-defense",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "tower-defense"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "towers": {
+      "type": "object"
+    },
+    "dmgTypes": {
+      "type": "object"
+    },
+    "enemies": {
+      "type": "object"
+    },
+    "economy": {
+      "type": "object"
+    },
+    "balance": {
+      "type": "object"
+    },
+    "sprites": {
+      "type": "object"
+    },
+    "tileArt": {
+      "type": "object"
+    },
+    "tiles": {
+      "type": "object"
+    },
+    "waves": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Towers",
+    "DamageTypes",
+    "Enemies",
+    "Waves",
+    "Maps",
+    "Economy & Balance",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "tower-dmgtype-valid",
+      "from": "towers.*.dmgType",
+      "to": "dmgTypes"
+    },
+    {
+      "rule": "wave-enemy-valid",
+      "from": "waves.*.spawns[].enemy",
+      "to": "enemies"
+    },
+    {
+      "rule": "tower-sprite-ref",
+      "from": "towers.*.sprite",
+      "to": "sprites"
+    },
+    {
+      "rule": "enemy-sprite-ref",
+      "from": "enemies.*.sprite",
+      "to": "sprites"
+    }
+  ],
+  "x-outputKeys": [
+    "TOWERS",
+    "DMG_CHART",
+    "ENEMIES",
+    "ARMORS",
+    "WAVES",
+    "MAPS",
+    "ECONOMY",
+    "BALANCE",
+    "PALETTES",
+    "SPRITE_PALETTES",
+    "SPRITES",
+    "TILE_ART",
+    "TILES"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}
