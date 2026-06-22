@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Una propuesta (RFC, borrador `v0.1`)** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v1.0.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -84,33 +84,63 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 | [`tools/game-export.js`](./tools/game-export.js) | CLI del compilador → `game-data.generated.js`. |
 | [`examples/GAME.md`](./examples/GAME.md) | Documento de ejemplo mínimo y autocontenido. |
 | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | CI: lint + sin-drift del generado. |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Cómo proponer cambios + política breaking/versionado. |
+| [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) | Código de conducta del proyecto. |
+| [`CODEOWNERS`](./CODEOWNERS) | Owners automáticos por ruta (`/tools/*`, `/profiles/*`). |
+| [`.github/ISSUE_TEMPLATE/`](./.github/ISSUE_TEMPLATE) | Plantillas de bug report y feature request. |
+| [`.github/PULL_REQUEST_TEMPLATE.md`](./.github/PULL_REQUEST_TEMPLATE.md) | Plantilla de PR (changelog, testing, breaking). |
 
 ---
 
 ## Estado
 
-**Borrador (`v0.1`).** Es una propuesta abierta a discusión: nombres de secciones, reglas de validación
-y el subconjunto YAML están sujetos a cambio. Comentarios y *pull requests* bienvenidos
-(ver [`CONTRIBUTING.md`](./CONTRIBUTING.md)).
+**Release `v1.0.0`** — cierre de la fase MEDIANO (sobre la base CORTO). El *package*
+alcanza `1.0.0`: a partir de aquí los cambios breaking al core y a los perfiles siguen
+la política de versionado de [SPEC §7](./SPEC.md) (bump **major** + deprecation previa
+en la major anterior, ver [SPEC §7.1](./SPEC.md)). La *versión del protocolo* (`SPEC.md`
+header) y la `version` que declaran los `GAME.md` siguen siendo `0.1` hasta que una
+edición futura del spec las mueva; el *release* del paquete es independiente. Comentarios
+y *pull requests* bienvenidos (ver [`CONTRIBUTING.md`](./CONTRIBUTING.md) y el
+[Código de Conducta](./CODE_OF_CONDUCT.md)).
+
+> **Nota sobre breaking changes (`0.1` → `1.0.0`).** En `0.x` los cambios breaking eran
+> bump **minor** (`0.1` → `0.2`); desde el release `1.0.0` son bump **major** y
+> **exigen** una deprecation previa (marcar `deprecated: {since, removedIn}` en la regla
+> y dejar una entrada `### Deprecated` en `CHANGELOG.md`). Las recetas de renombrado
+> entre versiones viven en [`MIGRATION.md`](./MIGRATION.md); el changelog de versiones
+> en [`CHANGELOG.md`](./CHANGELOG.md).
+
+### Fase MEDIANO completada ✅
+
+La fase MEDIANO del roadmap (sobre la base de CORTO) está verde cuando **todos**
+estos puntos pasan simultáneamente (ver [`PLAN-MEDIANO.md`](./PLAN-MEDIANO.md)):
+
+- [x] **Perfil `tower-defense`** — nuevo género (8 claves: TOWERS/DMG_CHART/ENEMIES/ARMORS/WAVES/MAPS/ECONOMY/BALANCE) con reglas, perfil y ejemplo. → `S1`.
+- [x] **Deprecation policy** — nivel `deprecated` en el linter + regla `version-migration` + `MIGRATION.md` + `manifest.json` expone `migrations`/`deprecatedRules`. → `S2`.
+- [x] **Performance + helpers** — helpers compartidos (`tools/shared-helpers.js`), P1/P2/P3 (lint <50ms/10K datos) y edge cases del parser. → `S3`.
+- [x] **Governance** — `CODE_OF_CONDUCT.md`, `CODEOWNERS`, plantillas de issue/PR. → `S4.1`.
+- [x] **buildGame contenido 9/9** — `test/buildGame-content.js` cubre los 9 perfiles (tower-defense + 8). → `S4.2`.
+- [x] **Docs finales** — README/SPEC/CONTRIBUTING alineados a `v1.0.0`. → `S4.3`.
+- [x] **Tag `v1.0.0`** — `package.json` en `1.0.0` y `git tag v1.0.0`. → `S4.4`.
+- [x] **Tests verde** — `npm test` corre las suites (parser, multi-genre, conformance, all-examples, cli-errors, buildGame-content, render-png, build-standalone, lifecycle, perf-smoke).
+
+```bash
+npm test                                   # las suites
+node tools/game-manifest.js /tmp/m.json && diff -q /tmp/m.json manifest.json   # sin drift
+node tools/game-schema.js && git diff --quiet schemas/                        # sin drift
+git tag -l | grep v1.0.0                                                    # release tag
+```
 
 ### Fase CORTO completada ✅
 
-La fase CORTO del roadmap está verde cuando **todos** estos puntos pasan simultáneamente
-(ver [`PLAN-CORTO.md`](./PLAN-CORTO.md) §5 para los comandos exactos):
+La base CORTO (sobre la que se apoya MEDIANO):
 
-- [x] **CI 8/8** — `node test/all-examples.js` pasa los 8 `(md, gen)` pares: lint 0 errores + export sin-drift.
+- [x] **CI 8/8** — `node test/all-examples.js` pasa los `(md, gen)` pares: lint 0 errores + export sin-drift.
 - [x] **SPEC ↔ código sync** — sin reglas core ficticias; perfiles de SPEC §6 == `manifest.json`.
 - [x] **`lintGame` directo (sin wrapper)** — emite `profile-known`, `version-migration`, `required-fields` sobre `profile` (y nivel `deprecated` para reglas con ciclo de vida).
-- [x] **Conformance por regla** — `node test/conformance.js` cubre ≥1 caso inválido por regla por perfil (99 inválidos).
+- [x] **Conformance por regla** — `node test/conformance.js` cubre ≥1 caso inválido por regla por perfil.
 - [x] **Hints 100%** — toda regla emitida en `--agent` lleva `hint` (o fallback genérico).
 - [x] **Exit codes** — contrato `0/1/2` documentado (SPEC §3.1) y verificado por `test/cli-errors.js`.
-- [x] **Tests verde** — `npm test` corre los 8 suites: parser, multi-genre, conformance, all-examples, cli-errors, buildGame-content, render-png, build-standalone.
-
-```bash
-npm test                                   # los 8 suites
-node tools/game-manifest.js /tmp/m.json && diff -q /tmp/m.json manifest.json   # sin drift
-node tools/game-schema.js && git diff --quiet schemas/                        # sin drift
-```
 
 ## Licencia
 

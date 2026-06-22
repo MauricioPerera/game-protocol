@@ -155,6 +155,24 @@ The core ships with reference profiles under `profiles/`:
 - **The linter migrates, not rejects.** The core rule `version-migration` compares `data.version` against `profile.specVersion` (core default `0.1`): a GAME.md written for an older version is a **warning** pointing at `MIGRATION.md`, not an error — old files keep linting clean while the author migrates. A GAME.md using a version newer than the tooling is an **error** (upgrade the tooling).
 - **Extension fields** use an `x-` prefix and are ignored by validation, allowing experiments without forking the spec.
 
+### 7.0 Semver by example
+
+The two versioning regimes, concretely:
+
+| Change | `0.x` (pre-`1.0`) | `1.0`+ (frozen core) |
+|---|---|---|
+| New token / section / rule (additive) | **patch** `0.1.0 → 0.1.1` | **minor** `1.0.0 → 1.1.0` |
+| Fix / clarification (no shape change) | **patch** `0.1.0 → 0.1.1` | **patch** `1.0.0 → 1.0.1` |
+| Rename / reshape a token or rule (breaking) | **minor** `0.1 → 0.2` (+ deprecation recommended) | **major** `1.0 → 2.0` (deprecation **mandatory** in `1.x` first) |
+| Remove a core token / rule | **minor** `0.1 → 0.2` (deprecation recommended) | **major** `1.0 → 2.0` (deprecation **mandatory** in `1.x` first) |
+
+Worked examples:
+
+- **Add `BALANCE` to a profile (additive).** `0.x`: `0.1.0 → 0.1.1`; `1.0`+: `1.0.0 → 1.1.0`. Old `GAME.md` files keep linting clean (the new token is optional with a fallback).
+- **Rename `MOVES` → `ACTIONS` (breaking).** `0.x`: bump to `0.2`, mark `MOVES` `deprecated: {since: 0.2, removedIn: 0.3}`, add `MIGRATION.md` recipe; `1.0`+: mark deprecated in `1.1` (`removedIn: 2.0`), actually remove in `2.0`.
+- **Tighten a `range` bound from `1..99` to `1..50` (breaking, narrows valid inputs).** Treated as a reshape: same path as the rename row above. Files that used values in `51..99` must migrate.
+- **Fix `version-migration` false positive (fix, no shape change).** `patch` in both regimes.
+
 ### 7.1 Deprecation policy
 
 The protocol has a lifecycle: tokens, rules, and profiles can be **deprecated** (slated for removal) before they are **removed**. Deprecation is a contract between maintainers and authors — it says "this still works today, but migrate; it disappears in `removedIn`."

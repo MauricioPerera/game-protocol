@@ -78,11 +78,41 @@ const ok = (cond, label, extra) => {
   ok(G.VOXELS.hut.voxels[0].m === 'STONE', 'voxel  voxel[0].m = STONE');
 }
 
-// ---- (C) Broad: 8 ejemplos → buildGame contiene todas las claves de profile.derive ----
+// ---- (C) Targeted: tower-defense → 8 claves del dominio (TOWERS/DMG_CHART/ENEMIES/ARMORS/WAVES/MAPS/ECONOMY/BALANCE) ----
+{
+  const p = loadProfile('tower-defense');
+  const t = fs.readFileSync(path.join(REPO, 'examples', 'tower-defense.GAME.md'), 'utf8').replace(/\r\n/g, '\n');
+  const { fm } = splitFrontMatter(t);
+  const data = fm ? parseYamlSubset(fm) : {};
+  const G = buildGame(data, p);
+  const TD_KEYS = ['TOWERS', 'DMG_CHART', 'ENEMIES', 'ARMORS', 'WAVES', 'MAPS', 'ECONOMY', 'BALANCE'];
+  for (const k of TD_KEYS) {
+    ok(k in G, 'tower-defense  ' + k + ' presente', 'faltan: ' + k);
+  }
+  //Forma mínima: TOWERS.rifle, DMG_CHART con armor matrix, ENEMIES.RUNNER, WAVES.1 con spawns, ECONOMY.startGold, BALANCE.sellRatio
+  ok(G.TOWERS && G.TOWERS.rifle && G.TOWERS.rifle.cost === 50, 'tower-defense  TOWERS.rifle.cost = 50',
+     JSON.stringify(G.TOWERS && G.TOWERS.rifle));
+  ok(G.DMG_CHART && G.DMG_CHART.PHYSICAL && G.DMG_CHART.PHYSICAL.LIGHT === 1.0,
+     'tower-defense  DMG_CHART.PHYSICAL.LIGHT = 1.0', JSON.stringify(G.DMG_CHART));
+  ok(G.ENEMIES && G.ENEMIES.RUNNER && G.ENEMIES.RUNNER.hp === 10, 'tower-defense  ENEMIES.RUNNER.hp = 10',
+     JSON.stringify(G.ENEMIES && G.ENEMIES.RUNNER));
+  ok(G.ARMORS && Array.isArray(G.ARMORS) && G.ARMORS.length === 3, 'tower-defense  ARMORS = [LIGHT,MEDIUM,HEAVY]',
+     JSON.stringify(G.ARMORS));
+  ok(G.WAVES && G.WAVES['1'] && Array.isArray(G.WAVES['1'].spawns) && G.WAVES['1'].spawns.length === 1,
+     'tower-defense  WAVES.1.spawns = [RUNNER x5]', JSON.stringify(G.WAVES && G.WAVES['1']));
+  ok(G.WAVES['1'].spawns[0].enemy === 'RUNNER' && G.WAVES['1'].spawns[0].hp === 10,
+     'tower-defense  WAVES.1.spawns[0] expande hp del enemy', JSON.stringify(G.WAVES['1'].spawns[0]));
+  ok(G.ECONOMY && G.ECONOMY.startGold === 200 && G.ECONOMY.startLives === 20,
+     'tower-defense  ECONOMY = {startGold:200, startLives:20}', JSON.stringify(G.ECONOMY));
+  ok(G.BALANCE && G.BALANCE.sellRatio === 0.7 && G.BALANCE.interestRate === 0.05,
+     'tower-defense  BALANCE = {sellRatio:0.7, interestRate:0.05}', JSON.stringify(G.BALANCE));
+}
+
+// ---- (D) Broad: 9 ejemplos → buildGame contiene todas las claves de profile.derive ----
 const examples = [
   ['GAME.md', 'monster-rpg'], ['platformer.GAME.md', 'platformer'], ['crafting.GAME.md', 'crafting'],
   ['papers-please.GAME.md', 'papers-please'], ['voxel.GAME.md', 'voxel'], ['adventure.GAME.md', 'adventure'],
-  ['dungeon.GAME.md', 'dungeon'], ['roguelike.GAME.md', 'roguelike'],
+  ['dungeon.GAME.md', 'dungeon'], ['roguelike.GAME.md', 'roguelike'], ['tower-defense.GAME.md', 'tower-defense'],
 ];
 const META_KEYS = new Set(['generatedFrom', 'name', 'description', 'platform', 'palettesCount']);
 for (const [mdFile, pid] of examples) {

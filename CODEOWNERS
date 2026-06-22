@@ -1,0 +1,11 @@
+# Cada ruta lista a su(s) owner. GitHub pide review automático al abrir un PR
+# que toque esas rutas. Una línea por regla; la última coincidencia gana.
+
+# Mantenedor por defecto: todo el repo
+*                           mauricio.perera@gmail.com
+
+# Núcleo y herramientas de validación/compilación — review obligatorio
+/tools/                     mauricio.perera@gmail.com
+
+# Perfiles de dominio (vocabulario por género) — review obligatorio
+/profiles/                  mauricio.perera@gmail.com

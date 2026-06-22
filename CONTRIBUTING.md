@@ -2,6 +2,9 @@
 
 Esto es una **propuesta abierta** (RFC, `v0.1`). Toda crítica al diseño es bienvenida.
 
+> Antes de participar, lee y respeta el [Código de Conducta](./CODE_OF_CONDUCT.md).
+> Reportes de violaciones: **mauricio.perera@gmail.com**.
+
 ## Cómo proponer cambios
 
 - **Discusión de diseño** (una sección nueva, una regla, el subconjunto YAML): abre un *issue* con el
@@ -57,5 +60,17 @@ migrar. Depreca primero, rompe después.
 - `SPEC.md` — la especificación.
 - `MIGRATION.md` — recetas de migración entre versiones (renombrado de tokens/reglas).
 - `CHANGELOG.md` — registro de versiones; `[Unreleased]` agrupa lo pendiente.
+- `CODE_OF_CONDUCT.md` — código de conducta.
+- `CODEOWNERS` — owners automáticos por ruta (`/tools/*`, `/profiles/*`).
+- `.github/ISSUE_TEMPLATE/`, `.github/PULL_REQUEST_TEMPLATE.md` — plantillas.
 - `tools/` — implementación de referencia (parser, lint, export).
+- `profiles/` — perfiles de dominio (vocabulario por género).
 - `examples/` — documento de ejemplo + su artefacto generado.
+
+## Deprecación (resumen)
+
+Deprecar **no rompe**: el nivel `deprecated` del linter no es error (lint queda en
+0 errores), da una major de gracia y un hint accionable con `since`/`removedIn`.
+Romper **sí**: remueve y exige migrar. **Depreca primero, rompe después.** Ver
+[SPEC §7.1](./SPEC.md) para el contrato completo y `manifest.json`
+(`deprecatedRules` por perfil) para el ciclo de vida expuesto a agentes.
