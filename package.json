@@ -8,7 +8,7 @@
     "lint": "node tools/game-lint.js examples/GAME.md",
     "export": "node tools/game-export.js examples/GAME.md examples/game-data.generated.js",
     "examples": "node test/all-examples.js",
-    "test": "node test/parser.js && node test/multi-genre.js && node test/conformance.js && node test/all-examples.js && node test/cli-errors.js && node test/buildGame-content.js && node test/render-png.js && node test/build-standalone.js && node test/lifecycle.js && node test/perf-smoke.js",
+    "test": "node test/parser.js && node test/multi-genre.js && node test/conformance.js && node test/all-examples.js && node test/cli-errors.js && node test/buildGame-content.js && node test/render-png.js && node test/build-standalone.js && node test/lifecycle.js && node test/perf-smoke.js && node test/mutation-manual.js",
     "bench": "node test/perf-bench.js"
   }
 }
