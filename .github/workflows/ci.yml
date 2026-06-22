@@ -47,6 +47,14 @@ jobs:
         run: node test/conformance.js
       - name: Todos los ejemplos (lint + export + sin-drift)
         run: node test/all-examples.js
+      - name: CLI errores (exit codes, --help, flags, parse-error, profile)
+        run: node test/cli-errors.js
+      - name: buildGame contenido (claves derivadas por perfil)
+        run: node test/buildGame-content.js
+      - name: render-png (rechazo perfil + PNG adventure)
+        run: node test/render-png.js
+      - name: build-standalone (inlining local + CDN intacto)
+        run: node test/build-standalone.js
 
   agent-artifacts:
     runs-on: ubuntu-latest

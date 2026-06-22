@@ -1,0 +1,8 @@
+# Normaliza EOL a LF en el working tree en todos los OS (mitiga drift CRLF en Windows
+# con core.autocrlf=true). Los artefactos generados (.generated.js, manifest.json,
+# schemas/, *-standalone.html) son producto de tools/*.js que escriben LF; sin esto,
+# un checkout en Windows los deja en CRLF y `git diff` ruido sin cambio de contenido.
+* text=auto eol=lf
+
+# Binarios: nunca normalizar.
+*.png binary

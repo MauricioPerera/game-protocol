@@ -93,6 +93,25 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 y el subconjunto YAML están sujetos a cambio. Comentarios y *pull requests* bienvenidos
 (ver [`CONTRIBUTING.md`](./CONTRIBUTING.md)).
 
+### Fase CORTO completada ✅
+
+La fase CORTO del roadmap está verde cuando **todos** estos puntos pasan simultáneamente
+(ver [`PLAN-CORTO.md`](./PLAN-CORTO.md) §5 para los comandos exactos):
+
+- [x] **CI 8/8** — `node test/all-examples.js` pasa los 8 `(md, gen)` pares: lint 0 errores + export sin-drift.
+- [x] **SPEC ↔ código sync** — sin reglas core ficticias; perfiles de SPEC §6 == `manifest.json`.
+- [x] **`lintGame` directo (sin wrapper)** — emite `profile-known`, `version-compatible`, `required-fields` sobre `profile`.
+- [x] **Conformance por regla** — `node test/conformance.js` cubre ≥1 caso inválido por regla por perfil (99 inválidos).
+- [x] **Hints 100%** — toda regla emitida en `--agent` lleva `hint` (o fallback genérico).
+- [x] **Exit codes** — contrato `0/1/2` documentado (SPEC §3.1) y verificado por `test/cli-errors.js`.
+- [x] **Tests verde** — `npm test` corre los 8 suites: parser, multi-genre, conformance, all-examples, cli-errors, buildGame-content, render-png, build-standalone.
+
+```bash
+npm test                                   # los 8 suites
+node tools/game-manifest.js /tmp/m.json && diff -q /tmp/m.json manifest.json   # sin drift
+node tools/game-schema.js && git diff --quiet schemas/                        # sin drift
+```
+
 ## Licencia
 
 [MIT](./LICENSE).

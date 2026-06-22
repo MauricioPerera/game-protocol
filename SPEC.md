@@ -94,6 +94,15 @@ Every CLI in `tools/` shares one exit-code contract (also shown by each `--help`
 
 `game-export.js`, `game-manifest.js`, `game-schema.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
 
+**Usage notes.**
+
+- Every CLI accepts `--help` / `-h` (prints usage + the exit-code line above and exits `0`) and rejects unknown flags with a clear `flag desconocido` message on stderr (exit `2`).
+- `game-lint.js` prints a JSON report on stdout. A non-existent file exits `2` (`No se pudo leer <file>`); a parseable file with a broken front-matter exits `1` and the report contains a `parse-error` finding; an unknown/invalid `profile` exits `1` with a `profile-known` (unknown id) or `profile-load-error` (invalid id / broken syntax) finding.
+- `game-export.js` writes the generated artifact only on success (`0`). A non-existent source, unparseable front-matter, or an unknown/invalid profile all exit `2` with a one-line stderr message; no artifact is written.
+- `build-standalone.js` inlines every local `<script src="...">` (relative path resolved against the HTML file's directory) and leaves `http(s)://` CDN scripts untouched. A missing input file or a missing local script exits `2`; the latter still reports `externos sin inlinar` so the build is auditable.
+- `render-png.js` only supports the `adventure` profile (it reads `G.SCENE.tilemap`/`attrs`). A generated file of another profile, a missing `genFile`, or a `genFile` outside `examples/` exits `2` with an actionable message (not a raw `TypeError`).
+- All exit codes are verified by `test/cli-errors.js` (run in CI).
+
 ## 4. Core validation rules (genre-agnostic)
 
 These rules apply to **every** `GAME.md` regardless of profile. Profiles add their own (§6).

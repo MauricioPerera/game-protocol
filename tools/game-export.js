@@ -35,7 +35,10 @@ const positional = args.filter(a => !a.startsWith('-'));
 const file = positional[0] || path.join(__dirname, '..', 'GAME.md');
 const outFile = positional[1] || path.join(__dirname, '..', 'game-data.generated.js');
 
-let text = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
+let text;
+try { text = fs.readFileSync(file, 'utf8'); }
+catch (e) { console.error('No se pudo leer ' + file); process.exit(2); }
+text = text.replace(/\r\n/g, '\n');
 const { fm } = splitFrontMatter(text);
 if (!fm) { console.error('GAME.md sin front-matter YAML.'); process.exit(2); }
 

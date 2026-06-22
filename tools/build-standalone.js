@@ -23,7 +23,9 @@ if (!htmlInputs.length) { console.error('Error: falta <archivo.html>'); usage();
 
 for (const inFile of htmlInputs) {
   const dir = path.dirname(inFile);
-  let html = fs.readFileSync(inFile, 'utf8');
+  let html;
+  try { html = fs.readFileSync(inFile, 'utf8'); }
+  catch (e) { console.error('No se pudo leer ' + inFile); process.exit(2); }
   let inlined = 0, missing = [];
   html = html.replace(/<script src="([^"]+)"><\/script>/g, (m, src) => {
     if (/^https?:\/\//.test(src)) return m;                 // CDN: se deja como esta
