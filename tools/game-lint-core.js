@@ -79,8 +79,12 @@
     if (opts.profileId && !opts.profile)
       add('error', 'profile-known', 'perfil desconocido: ' + opts.profileId);
 
-    // required-fields (el perfil puede ampliar la lista; el core exige version+name)
-    const required = profile.required || ['version', 'name'];
+    // required-fields (el perfil puede ampliar la lista; el core exige version+name+profile).
+    // SPEC §2/§4: `profile` es un token obligatorio del front-matter. El core lo incluye en
+    // la lista por defecto: cuando un consumidor llama a lintGame SIN descriptor de perfil
+    // (opts.profile nulo), se exige `profile`. Si un perfil cargado aporta su propio
+    // `required`, se usa ése (el wrapper CLI ya resuelve el perfil desde `data.profile`).
+    const required = profile.required || ['version', 'name', 'profile'];
     for (const f of required) if (!(f in data)) add('error', 'required-fields', 'Falta el campo obligatorio: ' + f);
 
     // version-compatible (core): data.version debe coincidir con la specVersion
