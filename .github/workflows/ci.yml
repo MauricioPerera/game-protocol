@@ -7,28 +7,30 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        example:
-          - { md: examples/GAME.md,            gen: examples/game-data.generated.js }
-          - { md: examples/platformer.GAME.md, gen: examples/platformer.generated.js }
-          - { md: examples/crafting.GAME.md,   gen: examples/crafting.generated.js }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Lint ${{ matrix.example.md }} (0 errores)
-        run: node tools/game-lint.js ${{ matrix.example.md }}
-
-      - name: Export + comprobar sin-drift (${{ matrix.example.md }})
+      # Itera TODOS los examples/*.GAME.md (y examples/GAME.md). No toca CI al añadir ejemplos.
+      # Mapping: examples/GAME.md -> game-data.generated.js ; X.GAME.md -> X.generated.js
+      - name: Lint + export + sin-drift (todos los ejemplos)
         run: |
-          node tools/game-export.js ${{ matrix.example.md }} /tmp/gen.js
-          if ! diff -q /tmp/gen.js ${{ matrix.example.gen }}; then
-            echo "::error::${{ matrix.example.gen }} está desactualizado. Regenera con: node tools/game-export.js ${{ matrix.example.md }} ${{ matrix.example.gen }}"
-            exit 1
-          fi
+          set -e
+          for md in examples/GAME.md examples/*.GAME.md; do
+            base=$(basename "$md" .md)
+            if [ "$base" = "GAME" ]; then gen="examples/game-data.generated.js"; else gen="examples/${base%.GAME}.generated.js"; fi
+            echo "::group::Lint $md"
+            node tools/game-lint.js "$md"
+            echo "::endgroup::"
+            node tools/game-export.js "$md" /tmp/gen.js
+            if ! diff -q /tmp/gen.js "$gen"; then
+              echo "::error::$gen está desactualizado. Regenera con: node tools/game-export.js $md $gen"
+              exit 1
+            fi
+            echo "ok  $md == $gen"
+          done
 
   tests:
     runs-on: ubuntu-latest
@@ -43,6 +45,8 @@ jobs:
         run: node test/multi-genre.js
       - name: Conformidad (ejemplos válidos + casos inválidos)
         run: node test/conformance.js
+      - name: Todos los ejemplos (lint + export + sin-drift)
+        run: node test/all-examples.js
 
   agent-artifacts:
     runs-on: ubuntu-latest

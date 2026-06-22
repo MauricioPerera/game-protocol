@@ -90,7 +90,6 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 |---|---|---|
 | `frontmatter-present` | error | `---` fences present and parseable |
 | `required-fields` | error | `version`, `name`, `profile` exist |
-| `version-valid` | error | `version` is semver and supported by tooling |
 | `profile-known` | error | `profile` resolves to a loadable profile |
 | `section-order` | error/warn | `##` sections match the order declared by the profile |
 | `broken-ref` | error | Every cross-reference resolves to a declared token |

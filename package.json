@@ -7,6 +7,7 @@
   "scripts": {
     "lint": "node tools/game-lint.js examples/GAME.md",
     "export": "node tools/game-export.js examples/GAME.md examples/game-data.generated.js",
-    "test": "node test/parser.js && node test/multi-genre.js && node test/conformance.js"
+    "examples": "node test/all-examples.js",
+    "test": "node test/parser.js && node test/multi-genre.js && node test/conformance.js && node test/all-examples.js"
   }
 }
