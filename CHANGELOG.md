@@ -1,5 +1,33 @@
 # Changelog
 
+## [Unreleased] — MEDIANO S2 (deprecation policy + versionado)
+
+### Added
+- Nivel `deprecated` en el linter (`game-lint-core.js`): una regla marcada
+  `rule.deprecated = {since, removedIn}` emite un hallazgo `level: "deprecated"` con
+  `since`/`removedIn` y msg accionable. **No es error** (no rompe el gate); la regla sigue
+  aplicando hasta `removedIn`. → `H-2.4`, `H-3.5`.
+- Regla `version-migration` (reemplaza a `version-compatible`): `data.version` vs
+  `profile.specVersion` → **warn** si el GAME.md es anterior (consulta `MIGRATION.md`),
+  **error** si es posterior al tooling. El linter migra, no rechaza. → `API1`, `D2`.
+- `MIGRATION.md`: guía de migración entre versiones (modelo semver, entradas por versión,
+  receta de renombrado `MOVES` → `ACTIONS` con script `sed`/`jq`, checklist). → `H-3.3`.
+- `test/lifecycle.js`: verifica ciclo de vida (MIGRATION.md receta, CONTRIBUTING breaking,
+  SPEC §7.1, manifest `migrations`/`deprecatedRules`). 13 chequeos.
+- `manifest.json`: campo `migrations: {supported, doc}` (versiones soportadas + path a
+  `MIGRATION.md`) y `deprecatedRules` por perfil (ciclo de vida expuesto a agentes).
+
+### Changed
+- `SPEC.md` §7: semver `0.x` (breaking = minor, patch = correcciones; `1.0` congela tokens
+  core); nueva §7.1 Deprecation policy. §4: fila `version-migration` (+ nivel `deprecated`).
+- `CONTRIBUTING.md`: sección "Cambios breaking y política de versionado" — regla de PR
+  (CHANGELOG `[Unreleased]` `### Deprecated`/`### Removed` + bump minor en `0.x` / major en
+  `1.0`) + cita `MIGRATION.md`.
+- `game-lint.js`: `summary` añade `deprecated` (count); `--agent` da hint dedicado para
+  hallazgos `deprecated`.
+- `tools/rule-hints.js`: hint para `version-migration`.
+- `package.json` `test` + CI: `ci.yml`: añaden `test/lifecycle.js`.
+
 ## [Unreleased] — fase CORTO completada
 
 ### Added

@@ -112,7 +112,8 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 | `frontmatter-present` | error | `---` fences present and parseable |
 | `required-fields` | error | `version`, `name`, `profile` exist |
 | `profile-known` | error | `profile` resolves to a loadable profile (emitted by `lintGame` when `opts.profileId` is passed but no profile loaded) |
-| `version-compatible` | error | `version` matches the spec version supported by the tooling (`profile.specVersion`, core default `0.1`) |
+| `version-migration` | warn/error | `version` vs the spec version supported by the tooling (`profile.specVersion`, core default `0.1`): **warn** if the GAME.md is older (file `<` supported → consult `MIGRATION.md`); **error** if the GAME.md is newer than the tooling supports (file `>` supported → upgrade tooling) |
+| `deprecated` | deprecated | A token/rule/profile marked `deprecated: {since, removedIn}` emits a lifecycle finding with `since`/`removedIn` (not an error; the rule still applies until `removedIn`) |
 | `section-order` | error/warn | `##` sections match the order declared by the profile |
 | `broken-ref` | error | Every cross-reference resolves to a declared token |
 | `dims` | error | Matrix/grid tokens match their declared dimensions |
@@ -123,7 +124,7 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 
 > `broken-ref`, `dims`, `range` are **rule families**: the profile supplies *which* tokens they apply to and *what* the bounds/dimensions are. The core supplies the checking machinery.
 
-> `profile-known` and `version-compatible` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access and does not belong in the isomorphic core.
+> `profile-known` and `version-migration` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access and does not belong in the isomorphic core.
 
 ## 5. Cross-validation with the engine (optional)
 
@@ -149,9 +150,41 @@ The core ships with reference profiles under `profiles/`:
 
 ## 7. Versioning & extensibility
 
-- **Spec version** uses semver. Breaking changes to core tokens or pipeline bump the major.
-- **Profiles version independently** of the core; a `GAME.md` declares both (`version` for core, profile carries its own).
+- **Spec version** uses semver. During `0.x` (pre-`1.0`): **breaking changes bump the minor** (`0.1` → `0.2`), **fixes and additive changes are a patch** (`0.1.0` → `0.1.1`). At `1.0` the core tokens are **frozen**: every removal of a core token or rule is a major bump and must go through the deprecation policy (§7.1) first.
+- **Profiles version independently** of the core; a `GAME.md` declares both (`version` for core, profile carries its own `specVersion`).
+- **The linter migrates, not rejects.** The core rule `version-migration` compares `data.version` against `profile.specVersion` (core default `0.1`): a GAME.md written for an older version is a **warning** pointing at `MIGRATION.md`, not an error — old files keep linting clean while the author migrates. A GAME.md using a version newer than the tooling is an **error** (upgrade the tooling).
 - **Extension fields** use an `x-` prefix and are ignored by validation, allowing experiments without forking the spec.
+
+### 7.1 Deprecation policy
+
+The protocol has a lifecycle: tokens, rules, and profiles can be **deprecated** (slated for removal) before they are **removed**. Deprecation is a contract between maintainers and authors — it says "this still works today, but migrate; it disappears in `removedIn`."
+
+- **How to deprecate.** A profile rule is marked by attaching `rule.deprecated = { since, removedIn }` to the rule function. The linter emits a finding at the `deprecated` level:
+
+  ```js
+  function ruleOldX(ctx) { /* still validates... */ }
+  ruleOldX.deprecated = { since: '0.1', removedIn: '1.0' };
+  ```
+
+  ```json
+  { "level": "deprecated", "rule": "ruleOldX",
+    "since": "0.1", "removedIn": "1.0",
+    "msg": "regla deprecada: se remueve en 1.0 (desde 0.1)" }
+  ```
+
+- **The `deprecated` level is not an error.** It does not break the gate: a deprecated file still lints with `errors: 0`. This is the one-major grace period. The rule keeps applying (it still validates data) until `removedIn`; only the finding signals the lifecycle.
+
+- **Semver contract for removal.**
+  - A token/rule/profile deprecated at `since: S` is **supported through every release from `S` up to (but not including) `removedIn`**.
+  - Example: a rule deprecated `since: 0.2`, `removedIn: 1.0` is supported in `0.2`–`0.9.x` and **becomes a hard error / is removed in `1.0`**.
+  - During `0.x`, the actual removal is a **minor bump** (breaking, allowed pre-`1.0`). At `1.0`+, removal is a **major bump** and deprecation is **mandatory** the major before.
+
+- **`manifest.json` exposes the lifecycle.** Each profile lists its `deprecatedRules: [{rule, since, removedIn}]`, and the top-level `migrations: { supported: [...], doc: 'MIGRATION.md' }` field declares which spec versions the current tooling supports and where the migration recipe lives.
+
+- **Changelog: deprecation vs. breaking.**
+  - A deprecation is logged under `### Deprecated` in `CHANGELOG.md` (`[Unreleased]`): "Rule `X` deprecated (`since`, `removedIn`); use `Y` instead."
+  - The actual removal is logged under `### Removed` **and is a breaking entry** — bump minor in `0.x`, major in `1.0`. Never remove without a prior deprecation entry.
+
 
 ## 8. Design philosophy
 

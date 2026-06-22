@@ -100,7 +100,7 @@ La fase CORTO del roadmap está verde cuando **todos** estos puntos pasan simult
 
 - [x] **CI 8/8** — `node test/all-examples.js` pasa los 8 `(md, gen)` pares: lint 0 errores + export sin-drift.
 - [x] **SPEC ↔ código sync** — sin reglas core ficticias; perfiles de SPEC §6 == `manifest.json`.
-- [x] **`lintGame` directo (sin wrapper)** — emite `profile-known`, `version-compatible`, `required-fields` sobre `profile`.
+- [x] **`lintGame` directo (sin wrapper)** — emite `profile-known`, `version-migration`, `required-fields` sobre `profile` (y nivel `deprecated` para reglas con ciclo de vida).
 - [x] **Conformance por regla** — `node test/conformance.js` cubre ≥1 caso inválido por regla por perfil (99 inválidos).
 - [x] **Hints 100%** — toda regla emitida en `--agent` lleva `hint` (o fallback genérico).
 - [x] **Exit codes** — contrato `0/1/2` documentado (SPEC §3.1) y verificado por `test/cli-errors.js`.

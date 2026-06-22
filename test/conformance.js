@@ -33,7 +33,7 @@ for (const e of examples) {
 // tower-defense). No exige que sea la ÚNICA disparada.
 const lintData = (data, pid, opts) => lintGame(data, '', Object.assign({ profile: loadProfile(pid), frontMatterPresent: true }, opts || {}));
 const hasRule = (f, rule) => f.some(x => x.rule === rule);
-// Base front-matter válido (evita required-fields / version-compatible).
+// Base front-matter válido (evita required-fields / version-migration).
 const B = pid => ({ version: '0.1', name: 'x', profile: pid });
 const M8 = () => Array.from({ length: 8 }, () => Array(8).fill(0)); // tileArt 8x8 válido
 const GEN = { seed: 1, roomW: 5, roomH: 5, maxDepth: 1 }; // generator roguelike válido
@@ -110,6 +110,13 @@ const invalid = [
   { p: 'monster-rpg', rule: 'sfx-valid', data: { ...B('monster-rpg'), sfx: { x: { freq: -1, dur: 1 } } } },
   { p: 'monster-rpg', rule: 'economy-bounds', data: { ...B('monster-rpg'), economy: { prices: { P: -5 } } } },
   { p: 'monster-rpg', rule: 'dead-token', data: { ...B('monster-rpg'), balance: { unused: 1 } }, opts: { engineSource: 'const x = 1;' } },
+
+  // ---- core: version-migration (S2.3) — GAME.md 0.1 lintero contra tooling 0.2 → warn ----
+  // El tooling simula specVersion 0.2 (perfil sintético shallow-copy con specVersion subida);
+  // el archivo declara 0.1 → warn version-migration (consulta MIGRATION.md), 0 errores.
+  { p: 'monster-rpg', rule: 'version-migration',
+    data: { ...B('monster-rpg') },
+    opts: { profile: Object.assign({}, loadProfile('monster-rpg'), { specVersion: '0.2' }) } },
 
   // ---- papers-please (10) ----
   { p: 'papers-please', rule: 'day-entrant-ref', data: { ...B('papers-please'), entrants: {}, days: { 1: { entrants: ['NOPE'] } } } },
@@ -196,6 +203,20 @@ for (const c of invalid) {
   byProfile[c.p] = (byProfile[c.p] || 0) + 1;
   ok(hasRule(f, c.rule), 'invalido ' + c.p + ' → dispara ' + c.rule, 'reglas vistas: ' + [...new Set(f.map(x => x.rule))].join(', '));
 }
+
+// ---- Nivel `deprecated` (S2.1): regla marcada deprecated → finding level=deprecated con
+// since/removedIn, 0 errores (no rompe el gate). Regla sintética con .deprecated = {since,removedIn}.
+(function () {
+  const ruleDeprecated = function ruleOldX() {};           // no-op: la regla sigue aplicando, pero aquí sin datos que disparar
+  ruleDeprecated.deprecated = { since: '0.1', removedIn: '1.0' };
+  const prof = { id: 't', specVersion: '0.1', sections: [], required: ['version', 'name', 'profile'], refs: [], rules: [ruleDeprecated] };
+  const f = lintGame({ version: '0.1', name: 'x', profile: 't' }, '', { profile: prof, frontMatterPresent: true });
+  const dep = f.find(x => x.level === 'deprecated' && x.rule === 'ruleOldX');
+  ok(!!dep && dep.since === '0.1' && dep.removedIn === '1.0',
+     'deprecated  regla marcada → finding level=deprecated con since/removedIn', JSON.stringify(f));
+  ok(f.filter(x => x.level === 'error').length === 0,
+     'deprecated  no breaking lint (0 errores)', JSON.stringify(f));
+})();
 
 console.log('\n— Cobertura inválidos por perfil —');
 const order = ['adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];

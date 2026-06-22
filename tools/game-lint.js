@@ -72,22 +72,26 @@ const findings = preFindings.concat(
 
 const errors = findings.filter(f => f.level === 'error').length;
 const warns = findings.filter(f => f.level === 'warn').length;
+const deprecated = findings.filter(f => f.level === 'deprecated').length;
 
 // Modo agente: enriquece cada hallazgo con una pista de arreglo accionable y un siguiente paso.
 // Toda regla lleva hint: si no tiene uno especifico en rule-hints.js, se entrega un fallback
 // generico que orienta al agente hacia el descriptor del perfil (cumple el DoD: ningun
 // hallazgo sin hint, para cualquier regla de cualquier perfil).
 const FALLBACK_HINT = "Sin hint especifico: consulta `references` y `rules` del perfil en manifest.json (node tools/game-manifest.js) para entender el contrato de esta regla.";
+const DEPRECATED_HINT = "Regla deprecada (no es error). Migra el GAME.md a la regla/token de reemplazo antes de `removedIn`; consulta MIGRATION.md y SPEC §7.1 para la política de deprecation.";
 let outFindings = findings;
 if (agentMode) {
   const hints = require('./rule-hints');
-  outFindings = findings.map(f => Object.assign({}, f, { hint: hints[f.rule] || FALLBACK_HINT }));
+  outFindings = findings.map(f => Object.assign({}, f, {
+    hint: f.level === 'deprecated' ? DEPRECATED_HINT : (hints[f.rule] || FALLBACK_HINT)
+  }));
 }
 
 const report = {
   file,
   profile: profileId,
-  summary: { errors, warnings: warns, ok: errors === 0 },
+  summary: { errors, warnings: warns, deprecated, ok: errors === 0 },
   findings: outFindings,
 };
 if (agentMode) {

@@ -43,6 +43,10 @@ function profileEntry(p) {
     rules: (p.rules || []).map(fn => fn.name).filter(Boolean),
     output: (p.derive || []).map(d => ({ key: d.key, source: ('fn' in d) ? 'derived' : ('value' in d) ? 'const' : ('token:' + d.from) })),
     tokens: p.tokens || undefined,
+    // S2.1: reglas marcadas `fn.deprecated = {since, removedIn}` exponen su ciclo de vida.
+    deprecatedRules: (p.rules || []).filter(fn => fn && fn.deprecated).map(fn => ({
+      rule: fn.name || 'unknown', since: fn.deprecated.since, removedIn: fn.deprecated.removedIn,
+    })),
   };
 }
 
@@ -69,6 +73,12 @@ const manifest = {
     conformance: 'node test/conformance.js',
   },
   profileSelection: 'El front-matter declara `profile: <id>`. Sin el, se asume monster-rpg.',
+  // S2.3: ciclo de vida del contrato. `supported` = versiones de spec con las que el
+  // tooling actual es compatible; `doc` apunta al documento de migración entre versiones.
+  migrations: {
+    supported: ['0.1'],
+    doc: 'MIGRATION.md',
+  },
   profiles: profiles,
 };
 

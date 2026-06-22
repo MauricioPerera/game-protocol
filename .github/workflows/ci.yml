@@ -55,6 +55,8 @@ jobs:
         run: node test/render-png.js
       - name: build-standalone (inlining local + CDN intacto)
         run: node test/build-standalone.js
+      - name: Lifecycle (deprecation policy + migración + breaking)
+        run: node test/lifecycle.js
 
   agent-artifacts:
     runs-on: ubuntu-latest

@@ -10,6 +10,7 @@ module.exports = {
   'required-fields': 'Anade el campo que falta al front-matter (p.ej. `version: "0.1"`, `name: ...`, `profile: <id>`).',
   'profile-known': 'Usa un `profile` que exista en profiles/. Consulta manifest.json para la lista.',
   'profile-load-error': 'El archivo del perfil existe pero tiene un error de sintaxis/carga. Revisa profiles/<id>.js.',
+  'version-migration': 'El `version` del GAME.md no coincide con la specVersion soportada por el tooling. Si es anterior, actualiza el archivo segun MIGRATION.md (la version vieja se remueve en la major siguiente). Si es posterior, actualiza el tooling.',
   'section-order': 'Reordena los encabezados `##` segun `sections` del perfil (ver manifest.json) o renombra el no-canonico.',
   'text-valid': 'El valor de cada clave de `text` debe ser una cadena no vacia.',
   // --- familia broken-ref (referencias) ---

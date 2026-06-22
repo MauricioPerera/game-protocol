@@ -18,6 +18,12 @@
     "conformance": "node test/conformance.js"
   },
   "profileSelection": "El front-matter declara `profile: <id>`. Sin el, se asume monster-rpg.",
+  "migrations": {
+    "supported": [
+      "0.1"
+    ],
+    "doc": "MIGRATION.md"
+  },
   "profiles": {
     "adventure": {
       "specVersion": "0.1",
@@ -76,7 +82,8 @@
           "key": "WIN",
           "source": "token:win"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "crafting": {
       "specVersion": "0.1",
@@ -133,7 +140,8 @@
           "key": "TEXT",
           "source": "token:text"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "dungeon": {
       "specVersion": "0.1",
@@ -189,7 +197,8 @@
           "key": "WIN",
           "source": "token:win"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "monster-rpg": {
       "specVersion": "0.1",
@@ -380,7 +389,8 @@
           "key": "SOLID_TILES",
           "source": "derived"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "papers-please": {
       "specVersion": "0.1",
@@ -469,7 +479,8 @@
           "key": "TEXT",
           "source": "token:text"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "platformer": {
       "specVersion": "0.1",
@@ -543,7 +554,8 @@
           "key": "SFX",
           "source": "token:sfx"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "roguelike": {
       "specVersion": "0.1",
@@ -603,7 +615,8 @@
           "key": "WIN",
           "source": "token:win"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "tower-defense": {
       "specVersion": "0.1",
@@ -714,7 +727,8 @@
           "key": "TILES",
           "source": "token:tiles"
         }
-      ]
+      ],
+      "deprecatedRules": []
     },
     "voxel": {
       "specVersion": "0.1",
@@ -774,7 +788,8 @@
           "key": "VOXELS",
           "source": "derived"
         }
-      ]
+      ],
+      "deprecatedRules": []
     }
   }
 }

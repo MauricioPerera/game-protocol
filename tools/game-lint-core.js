@@ -60,11 +60,26 @@
     }
   }
 
+  // Compara dos versiones semver-lite ('0.1' vs '0.2') → -1/0/+1.
+  // Usada por version-migration para decidir si el GAME.md es anterior (warn, migrar)
+  // o posterior (error, tooling viejo) respecto a la specVersion soportada por el tooling.
+  function cmpVersion(a, b) {
+    const pa = String(a).split('.').map(Number);
+    const pb = String(b).split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x < y) return -1; if (x > y) return 1;
+    }
+    return 0;
+  }
+
   function lintGame(data, body, opts) {
     data = data || {}; body = body || ''; opts = opts || {};
     const profile = opts.profile || {};
     const findings = [];
-    const add = (level, rule, msg) => findings.push({ level, rule, msg });
+    // `extra` permite adjuntar campos de ciclo de vida (since/removedIn) al hallazgo,
+    // usado por el nivel `deprecated` (S2.1). El resto de reglas ignoran el extra.
+    const add = (level, rule, msg, extra) => findings.push(Object.assign({ level, rule, msg }, extra || {}));
 
     // ---- Reglas estructurales del CORE (válidas para cualquier género) ----
 
@@ -87,16 +102,28 @@
     const required = profile.required || ['version', 'name', 'profile'];
     for (const f of required) if (!(f in data)) add('error', 'required-fields', 'Falta el campo obligatorio: ' + f);
 
-    // version-compatible (core): data.version debe coincidir con la specVersion
-    // soportada por el tooling. La esperada es profile.specVersion si el perfil la
-    // declara, si no, la versión soportada por defecto del core ('0.1'). Sólo corre
-    // si `version` está presente (si falta, required-fields ya lo reportó).
+    // version-migration (core, S2.3 — reemplaza a version-compatible): data.version se
+    // compara con la specVersion soportada por el tooling (profile.specVersion o el
+    // default del core '0.1'). Sólo corre si `version` está presente (si falta,
+    // required-fields ya lo reportó).
+    //   - data.version < esperada → warn: el GAME.md es de una versión anterior; el
+    //     contrato sigue siendo válido (0 errores) pero debe consultarse MIGRATION.md
+    //     para migrar antes de que la versión vieja se remueva (ciclo de deprecation).
+    //   - data.version > esperada → error: el GAME.md usa una versión que este tooling
+    //     aún no soporta; hay que actualizar el tooling.
+    //   - iguales → sin hallazgo.
     const SUPPORTED_VERSION = '0.1';
     if ('version' in data) {
       const expected = profile.specVersion || SUPPORTED_VERSION;
-      if (data.version !== expected)
-        add('error', 'version-compatible',
-            'version ' + data.version + ' no compatible con core/perfil ' + expected);
+      if (data.version !== expected) {
+        const cmp = cmpVersion(data.version, expected);
+        if (cmp < 0)
+          add('warn', 'version-migration',
+              'version ' + data.version + ' es anterior a la soportada ' + expected + '; consulta MIGRATION.md para migrar (se remueve en la major siguiente)');
+        else
+          add('error', 'version-migration',
+              'version ' + data.version + ' no soportada por este tooling (max ' + expected + '); actualiza el tooling');
+      }
     }
 
     // section-order (el orden canónico lo aporta el perfil; sin perfil no se valida)
@@ -120,8 +147,20 @@
     for (const entry of (profile.refs || [])) processRef(entry, data, add);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
+    // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`
+    // para declarar su ciclo de vida. El core emite un hallazgo level=deprecated (NO es
+    // error: no rompe el gate) con since/removedIn y un msg accionable, y de todos modos
+    // ejecuta la regla — sigue aplicando hasta que se remueva en `removedIn`.
     const ctx = { data, body, opts, add };
-    for (const rule of (profile.rules || [])) rule(ctx);
+    for (const rule of (profile.rules || [])) {
+      if (rule && rule.deprecated) {
+        const name = rule.name || 'unknown';
+        add('deprecated', name,
+            'regla deprecada: se remueve en ' + rule.deprecated.removedIn + ' (desde ' + rule.deprecated.since + ')',
+            { since: rule.deprecated.since, removedIn: rule.deprecated.removedIn });
+      }
+      if (rule) rule(ctx);
+    }
 
     return findings;
   }
