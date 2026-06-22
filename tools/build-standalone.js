@@ -8,9 +8,19 @@ const fs = require('fs');
 const path = require('path');
 
 const inputs = process.argv.slice(2);
-if (!inputs.length) { console.error('uso: node tools/build-standalone.js <archivo.html> [...]'); process.exit(2); }
+function usage() {
+  console.log('Usage: node tools/build-standalone.js <archivo.html> [...]');
+  console.log('Options:');
+  console.log('  --help     Show this help message');
+}
+const KNOWN = new Set(['--help', '-h']);
+if (inputs.includes('--help') || inputs.includes('-h')) { usage(); process.exit(0); }
+const unknown = inputs.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+const htmlInputs = inputs.filter(a => !a.startsWith('-'));
+if (!htmlInputs.length) { console.error('Error: falta <archivo.html>'); usage(); process.exit(2); }
 
-for (const inFile of inputs) {
+for (const inFile of htmlInputs) {
   const dir = path.dirname(inFile);
   let html = fs.readFileSync(inFile, 'utf8');
   let inlined = 0, missing = [];

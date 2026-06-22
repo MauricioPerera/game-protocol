@@ -80,7 +80,7 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 | [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (isomorfo Node/navegador). |
 | [`tools/game-lint-core.js`](./tools/game-lint-core.js) | Reglas de validación puras (`lintGame`), isomorfas. |
 | [`tools/game-lint.js`](./tools/game-lint.js) | CLI del validador (cruces con el motor opcionales vía `GAME_ENGINE`). |
-| [`tools/game-build.js`](./tools/game-build.js) | Transformación `buildGame(data)` → `GAME`, pura e isomorfa. |
+| [`tools/game-build-core.js`](./tools/game-build-core.js) | Compilación genérica dirigida por `profile.derive`; isomorfa. |
 | [`tools/game-export.js`](./tools/game-export.js) | CLI del compilador → `game-data.generated.js`. |
 | [`examples/GAME.md`](./examples/GAME.md) | Documento de ejemplo mínimo y autocontenido. |
 | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | CI: lint + sin-drift del generado. |

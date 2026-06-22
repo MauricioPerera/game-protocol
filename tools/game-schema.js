@@ -50,7 +50,17 @@ function schemaFor(p) {
 }
 
 if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true });
-const arg = process.argv[2];
+const args = process.argv.slice(2);
+function usage() {
+  console.log('Usage: node tools/game-schema.js [profileId]');
+  console.log('Options:');
+  console.log('  --help     Show this help message');
+}
+const KNOWN = new Set(['--help', '-h']);
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+const arg = args.find(a => !a.startsWith('-'));
 const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js'));
 let n = 0;
 for (const f of files) {

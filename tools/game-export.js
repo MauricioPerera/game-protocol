@@ -12,13 +12,27 @@ const { buildGame } = require('./game-build-core');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
+  if (!/^[a-z0-9-]+$/.test(id))
+    throw new Error('Perfil inválido: "' + id + '" (solo minúsculas, números y guión)');
   const p = path.join(PROFILES_DIR, id + '.js');
   if (!fs.existsSync(p)) return null;        // inexistente
   return require(p);                          // si falla (sintaxis), lanza -> el llamador lo reporta
 }
 
-const file = process.argv[2] || path.join(__dirname, '..', 'GAME.md');
-const outFile = process.argv[3] || path.join(__dirname, '..', 'game-data.generated.js');
+const args = process.argv.slice(2);
+function usage() {
+  console.log('Usage: node tools/game-export.js [GAME.md] [salida.js]');
+  console.log('Options:');
+  console.log('  --help     Show this help message');
+}
+const KNOWN = new Set(['--help', '-h']);
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+
+const positional = args.filter(a => !a.startsWith('-'));
+const file = positional[0] || path.join(__dirname, '..', 'GAME.md');
+const outFile = positional[1] || path.join(__dirname, '..', 'game-data.generated.js');
 
 let text = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
 const { fm } = splitFrontMatter(text);

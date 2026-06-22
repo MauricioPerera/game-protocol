@@ -59,12 +59,15 @@ function parseValue(s) {
 }
 function parseFlowMap(s) {
   s = s.trim().slice(1, -1);
-  const obj = {};
+  const obj = Object.create(null);
   for (const part of splitTop(s)) {
     if (!part.trim()) continue;
     const ci = findTop(part, ':');                      // separador `:` fuera de comillas
     if (ci === -1) throw new Error('yaml-min: par sin ":" en flujo: "' + part.trim() + '"');
-    obj[parseScalar(part.slice(0, ci))] = parseValue(part.slice(ci + 1));
+    const key = parseScalar(part.slice(0, ci));
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+      throw new Error('yaml-min: clave prohibida "' + key + '" (prototype pollution)');
+    obj[key] = parseValue(part.slice(ci + 1));
   }
   return obj;
 }
@@ -77,7 +80,7 @@ function parseYamlSubset(src) {
   let i = 0;
   const indentOf = l => (l.match(/^ */) || [''])[0].length;
   function parseBlock(indent) {
-    const obj = {};
+    const obj = Object.create(null);
     while (i < lines.length) {
       const line = lines[i];
       if (line.trim() === '' || /^\s*#/.test(line)) { i++; continue; }
@@ -91,6 +94,8 @@ function parseYamlSubset(src) {
       if (ci === -1)
         throw new Error('yaml-min: linea de front-matter sin ":" (linea ' + (i + 1) + '): "' + content + '"');
       const key = parseScalar(content.slice(0, ci));
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+        throw new Error('yaml-min: clave prohibida "' + key + '" en linea ' + (i + 1) + ' (prototype pollution)');
       const rest = content.slice(ci + 1).trim();
       i++;
       if (rest === '') {

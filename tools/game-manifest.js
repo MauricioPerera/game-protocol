@@ -10,6 +10,17 @@ const path = require('path');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 
+const args = process.argv.slice(2);
+function usage() {
+  console.log('Usage: node tools/game-manifest.js [salida.json]');
+  console.log('Options:');
+  console.log('  --help     Show this help message');
+}
+const KNOWN = new Set(['--help', '-h']);
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+
 function describeSrc(s) {
   if (s.collection && s.field) return s.collection + '.*.' + s.field;
   if (s.collection && s.arrayField) return s.collection + '.*.' + s.arrayField + '[]' + (s.itemField ? ('.' + s.itemField) : '');
@@ -60,6 +71,6 @@ const manifest = {
   profiles: profiles,
 };
 
-const out = process.argv[2] || path.resolve(__dirname, '..', 'manifest.json');
+const out = args.find(a => !a.startsWith('-')) || path.resolve(__dirname, '..', 'manifest.json');
 fs.writeFileSync(out, JSON.stringify(manifest, null, 2) + '\n');
 console.log('Generado ' + path.relative(process.cwd(), out) + '  (perfiles: ' + Object.keys(profiles).join(', ') + ')');

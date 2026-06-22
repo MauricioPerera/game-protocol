@@ -2,14 +2,39 @@
 // Usa el mismo dato (window.GAME) y la misma logica de dibujo que el motor del navegador.
 const fs = require('fs'), zlib = require('zlib'), path = require('path');
 
-const genFile = process.argv[2] || 'examples/adventure.generated.js';
-const outFile = process.argv[3] || 'examples/adventure-render.png';
+function usage() {
+  console.log('Usage: node tools/render-png.js [genFile] [outFile]');
+  console.log('Options:');
+  console.log('  --help     Show this help message');
+}
+const args = process.argv.slice(2);
+const KNOWN = new Set(['--help', '-h']);
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+const unknown = args.filter(a => a.startsWith('-') && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+
+const genFile = args.find(a => !a.startsWith('-')) || 'examples/adventure.generated.js';
+const outFile = (args.filter(a => !a.startsWith('-')))[1] || 'examples/adventure-render.png';
 const SCALE = 10;
 
-// cargar window.GAME
+// Validar que genFile está bajo examples/ (anti path-traversal): nunca cargar código arbitrario.
+const examplesDir = path.resolve(__dirname, '..', 'examples');
+const genAbs = path.resolve(genFile);
+const rel = path.relative(examplesDir, genAbs);
+if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+  console.error('genFile debe estar bajo examples/: ' + genFile);
+  process.exit(2);
+}
+
+// cargar window.GAME vía require (sin new Function / eval). El .generated.js asigna
+// `window.GAME = {...}`; publicamos `window` como global temporal y lo retiramos tras cargar.
 const win = {};
-new Function('window', fs.readFileSync(genFile, 'utf8'))(win);
+global.window = win;
+try { require(genAbs); }
+catch (e) { delete global.window; console.error('No se pudo cargar ' + genFile + ': ' + e.message); process.exit(2); }
+delete global.window;
 const G = win.GAME;
+if (!G) { console.error('genFile no definió window.GAME: ' + genFile); process.exit(2); }
 const tm = G.SCENE.tilemap, at = G.SCENE.attrs, ART = G.TILE_ART, PAL = G.PALETTES, ENT = G.ENTITIES;
 const H = tm.length, W = tm[0].length;
 const PW = W * 8, PH = H * 8;

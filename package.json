@@ -1,0 +1,12 @@
+{
+  "name": "game-protocol",
+  "version": "0.1.0",
+  "description": "GAME Protocol — Gameplay as Data (RFC, borrador v0.1)",
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "scripts": {
+    "lint": "node tools/game-lint.js examples/GAME.md",
+    "export": "node tools/game-export.js examples/GAME.md examples/game-data.generated.js",
+    "test": "node test/parser.js && node test/multi-genre.js && node test/conformance.js"
+  }
+}

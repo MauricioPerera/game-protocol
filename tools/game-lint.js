@@ -12,6 +12,8 @@ const { lintGame } = require('./game-lint-core');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
+  if (!/^[a-z0-9-]+$/.test(id))
+    return { profile: null, error: 'Perfil inválido: "' + id + '" (solo minúsculas, números y guión)' };
   const p = path.join(PROFILES_DIR, id + '.js');
   if (!fs.existsSync(p)) return { profile: null, error: null };       // inexistente
   try { return { profile: require(p), error: null }; }
@@ -19,8 +21,20 @@ function loadProfile(id) {
 }
 
 const args = process.argv.slice(2);
+
+function usage() {
+  console.log('Usage: node tools/game-lint.js [GAME.md] [--agent]');
+  console.log('Options:');
+  console.log('  --agent    Enrich findings with hints and next steps (for LLM agents)');
+  console.log('  --help     Show this help message');
+}
+const KNOWN = new Set(['--agent', '--help', '-h']);
+if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); }
+const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
+if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(1); }
+
 const agentMode = args.includes('--agent');
-const file = args.find(a => !a.startsWith('--')) || 'GAME.md';
+const file = args.find(a => !a.startsWith('-')) || 'GAME.md';
 const root = path.dirname(path.resolve(file));
 
 let text;
