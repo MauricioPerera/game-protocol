@@ -1,7 +1,7 @@
 /**
  * game-build-core.js — Motor de COMPILACIÓN genérico del Protocolo GAME (isomorfo Node + navegador).
  *
- * No conoce ningún token de dominio. Emite la meta universal (generatedFrom/platform/palettesCount)
+ * No conoce ningún token de dominio. Emite la meta universal (generatedFrom/profile/name/description/platform/palettesCount)
  * y luego construye el resto del objeto GAME recorriendo la tabla `derive` del perfil:
  *   - { key, from, default? } : copia directa de data[from] (default {} si no existe)
  *   - { key, value }          : constante
