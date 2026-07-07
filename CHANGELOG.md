@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [1.2.0] — 2026-07-07
+
+Release **aditivo** sobre `1.1.0` (bump minor, [SPEC §7.0](./SPEC.md)): solo spec
+normativo, cero cambios de código — el comportamiento documentado es el actual de
+`tools/`. La versión del protocolo sigue en `0.1`; sin breaking ni deprecations.
+
 ### Added
 - SPEC **§9 Conformance**: condiciones normativas (MUST/SHOULD/MAY) para implementaciones
   alternativas — parser (subset §1.1 + casos de fallo duro), linter (reglas core +
@@ -212,6 +220,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[1.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.2.0
 [1.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.1.0
 [1.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.0.0
 [0.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v0.1.0

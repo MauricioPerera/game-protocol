@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v1.1.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v1.2.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,13 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v1.1.0`** — aditivo sobre `1.0.0` (bump minor, [SPEC §7.0](./SPEC.md); ver
+**Release `v1.2.0`** — aditivo, solo spec (ver [`CHANGELOG.md`](./CHANGELOG.md)):
+nueva [SPEC §9 **Conformance**](./SPEC.md) — el contrato normativo para
+implementaciones alternativas (parser/linter/compilador/exit codes) más la mitad
+permisiva (tolerancia a tokens `x-`/desconocidos y round-trip sin pérdida) — y
+semántica explícita de los campos `x-` en §7. Cero cambios de código.
+
+`v1.1.0` — aditivo sobre `1.0.0` (bump minor, [SPEC §7.0](./SPEC.md); ver
 [`CHANGELOG.md`](./CHANGELOG.md)): ejemplo `monster-rpg` con demo, mutation audit del
 linter (`test/mutation-manual.js`), y el pipeline de **extracción de sprites GBA**
 (`tools/SPRITE_EXTRACTION.md`: generador procedural, extractor específico de Advance
