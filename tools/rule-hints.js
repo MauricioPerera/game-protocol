@@ -68,6 +68,10 @@ module.exports = {
   'prefab-cell': 'Cada celda del prefab tiene coord entera dentro del size.',
   'structure-at': 'El `at` de un placement son 3 enteros.',
   'rule-type-valid': 'El `type` de la regla debe ser uno soportado por el motor.',
+  // --- advance-wars (sprites GBA extraidos) ---
+  'unit-palette-ref': 'El `palette` de la unidad debe ser una clave existente de `palettes`.',
+  'unit-dims': 'La unidad necesita width/height enteros > 0 y `tileData` con exactamente height filas de width celdas.',
+  'unit-tiledata-range': 'Cada celda de tileData es un nibble 4bpp: entero en 0..15 (indexa la paleta de 16 colores).',
   'entrant-decision': 'La decision del solicitante debe ser approve/deny/detain.',
   'recipe-inputs': 'Los inputs de la receta deben referenciar materiales existentes con cantidad > 0.',
   // --- tower-defense ---

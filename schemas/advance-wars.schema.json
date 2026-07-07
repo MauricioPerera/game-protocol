@@ -27,6 +27,9 @@
     "palettesCount": {
       "type": "integer",
       "minimum": 0
+    },
+    "units": {
+      "type": "object"
     }
   },
   "additionalProperties": true,
@@ -37,6 +40,9 @@
     "Do's and Don'ts"
   ],
   "x-references": [],
-  "x-outputKeys": [],
+  "x-outputKeys": [
+    "PALETTES",
+    "UNITS"
+  ],
   "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
 }

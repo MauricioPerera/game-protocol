@@ -21,15 +21,33 @@ sigue en `1.0.0` y la versión del protocolo sigue en `0.1`.
   `examples/extracted.GAME.md` (monster-rpg, sprites 16×16). Documentado en
   `tools/SPRITE_EXTRACTION.md` (alcance honesto: candidatos heurísticos, no verificados
   contra el juego real).
-- `profiles/advance-wars.js`: perfil **experimental (stub)** — solo `id`/`sections`/`required`,
-  sin `refs`, `rules` ni `derive`. Un `GAME.md` con este perfil pasa el lint casi sin
-  validación de dominio y compila solo la meta universal. Pendiente: completarlo o retirarlo.
+- `profiles/advance-wars.js`: perfil añadido inicialmente como **stub** (solo
+  `id`/`sections`/`required`, sin validación de dominio ni derivaciones). Completado
+  después — ver "perfil advance-wars completo" más abajo.
 
 ### Fixed — drift de artefactos (`228212f`)
 - Regenerado lo que los commits anteriores no regeneraron:
   `examples/advance-wars-extracted.generated.js`, `examples/extracted.generated.js`,
   `manifest.json` (10 perfiles) y `schemas/advance-wars.schema.json`.
   `npm test` y los gates sin-drift de CI vuelven a verde.
+
+### Added — perfil advance-wars completo
+- `profiles/advance-wars.js` deja de ser stub: `rules` (`palette-color-range` vía
+  `profile-helpers`, `unit-palette-ref`, `unit-dims`, `unit-tiledata-range`) y `derive`
+  (`PALETTES` con relleno a 16 colores, `UNITS`). `refs` queda vacío con nota: la única
+  referencia (`units.*.palette` → claves numéricas de `palettes`) se valida en `rules`,
+  igual que `armors` en tower-defense.
+- Conformance: 4 casos inválidos (≥1 por regla) + el ejemplo en la lista de válidos;
+  `test/buildGame-content.js` extendido a 10 perfiles; hints en `tools/rule-hints.js`.
+- **Fixed (dato corrupto detectado por las reglas nuevas):**
+  `examples/advance-wars-extracted.GAME.md` tenía comentarios inline tras arrays de
+  flujo (`# BGR555 @...`, `# @0x...`), que `yaml-min` no limpia (limitación documentada
+  en `tools/SPRITE_EXTRACTION.md`): el último color de la paleta y el último nibble de
+  cada unidad absorbían el texto del comentario como string. Con el perfil stub esto
+  pasaba el lint en silencio y llegó al `.generated.js`. Comentarios eliminados
+  (los offsets ya viven en las tablas del cuerpo) y artefacto regenerado limpio.
+- Regenerados `manifest.json` y `schemas/advance-wars.schema.json` (el perfil ahora
+  expone reglas y claves de salida).
 
 ### Docs — sincronización con lo anterior
 - README: el conteo "94 reglas" pasa al verificable **101** (reglas distintas emitibles por

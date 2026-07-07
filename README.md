@@ -99,9 +99,9 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 mutation audit del linter (`test/mutation-manual.js`), y el pipeline de **extracción de
 sprites GBA** (`tools/SPRITE_EXTRACTION.md`: generador procedural, extractor específico
 de Advance Wars y extractor universal Ghidra+heurística). Ese trabajo añade además un
-décimo perfil cargable, `advance-wars`, que es un **stub experimental** (sin
-`refs`/`rules`/`derive`): no valida dominio ni deriva claves; los 9 perfiles de
-referencia siguen siendo los de [SPEC §6](./SPEC.md).
+décimo perfil cargable, `advance-wars` (paletas BGR555 + unidades 4bpp), con sus
+reglas, derivaciones y conformance; los 9 perfiles de referencia siguen siendo los de
+[SPEC §6](./SPEC.md), que también describe este décimo.
 
 `v1.0.0` — cierre de la fase MEDIANO (sobre la base CORTO). El *package*
 alcanza `1.0.0`: a partir de aquí los cambios breaking al core y a los perfiles siguen

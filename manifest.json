@@ -39,8 +39,20 @@
         "profile"
       ],
       "references": [],
-      "rules": [],
-      "output": [],
+      "rules": [
+        "rulePalettes",
+        "ruleUnits"
+      ],
+      "output": [
+        {
+          "key": "PALETTES",
+          "source": "derived"
+        },
+        {
+          "key": "UNITS",
+          "source": "token:units"
+        }
+      ],
       "deprecatedRules": []
     },
     "adventure": {

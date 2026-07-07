@@ -157,7 +157,7 @@ The core ships with **9 reference profiles** under `profiles/` (each a loadable 
 
 `monster-rpg` is the *first* application profile (the protocol grew out of a real mini-Pokémon engine), not the protocol itself. `tower-defense` was the second genre added, deliberately orthogonal to the first, to demonstrate that the core is genre-agnostic; the remaining seven broaden the coverage to platformer, crafting, document-inspection, roguelike and voxel genres.
 
-> **Experimental.** A tenth loadable profile, `profiles/advance-wars.js`, exists as a **stub** for the GBA sprite-extraction pipeline (`tools/SPRITE_EXTRACTION.md`): it declares only `id`/`sections`/`required`, with no `refs`, `rules` or `derive`. It is **not** a reference profile — a `GAME.md` using it gets almost no domain validation and compiles only the universal meta. It will either be completed or removed.
+> **Tenth profile.** `profiles/advance-wars.js` serves the GBA sprite-extraction pipeline (`tools/SPRITE_EXTRACTION.md`): its vocabulary is `palettes` (16 BGR555-quantized colors, `[r,g,b]` in `0..31`) and `units` (4bpp tiles: a `height`×`width` matrix of nibbles `0..15` indexing the palette). Rules: `palette-color-range`, `unit-palette-ref`, `unit-dims`, `unit-tiledata-range`. Derived keys: `PALETTES`, `UNITS`. Its one reference (`units.*.palette` → numeric `palettes` keys) is validated in `rules`, not `refs` — same reason as `armors` in tower-defense (the broken-ref family matches string keys).
 
 > **Design intent.** If you can express a new genre as a profile without touching the core, the core is doing its job. If you cannot, that is a core bug.
 

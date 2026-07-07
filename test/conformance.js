@@ -17,7 +17,7 @@ let pass = 0, fail = 0;
 const ok = (cond, label, extra) => { if (cond) { pass++; console.log('PASS  ' + label); } else { fail++; console.log('FAIL  ' + label); if (extra) console.log('        ' + extra); } };
 
 // ---- VALIDO: ejemplos por perfil → 0 errores ----
-const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md'];
+const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md'];
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
@@ -185,6 +185,12 @@ const invalid = [
   { p: 'tower-defense', rule: 'sprite-dims', data: TD({ sprites: { S: [[0]] } }) },
   { p: 'tower-defense', rule: 'tileart-dims', data: TD({ tileArt: { 20: [[0]] } }) },
 
+  // ---- advance-wars (4) ----
+  { p: 'advance-wars', rule: 'palette-color-range', data: { ...B('advance-wars'), palettes: { 0: [[999, 0, 0]] } } },
+  { p: 'advance-wars', rule: 'unit-palette-ref', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 5, width: 1, height: 1, tileData: [[0]] } } } },
+  { p: 'advance-wars', rule: 'unit-dims', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 8, height: 8, tileData: [[0]] } } } },
+  { p: 'advance-wars', rule: 'unit-tiledata-range', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 1, height: 1, tileData: [[99]] } } } },
+
   // ---- voxel (8) ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
   { p: 'voxel', rule: 'prefab-fill-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], fill: 'NOPE' } } } },
@@ -219,7 +225,7 @@ for (const c of invalid) {
 })();
 
 console.log('\n— Cobertura inválidos por perfil —');
-const order = ['adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];
+const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
 console.log('  TOTAL invalidos: ' + invalid.length + '  (validos: ' + examples.length + ')');
 

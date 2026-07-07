@@ -108,11 +108,12 @@ const ok = (cond, label, extra) => {
      'tower-defense  BALANCE = {sellRatio:0.7, interestRate:0.05}', JSON.stringify(G.BALANCE));
 }
 
-// ---- (D) Broad: 9 ejemplos → buildGame contiene todas las claves de profile.derive ----
+// ---- (D) Broad: 10 ejemplos → buildGame contiene todas las claves de profile.derive ----
 const examples = [
   ['GAME.md', 'monster-rpg'], ['platformer.GAME.md', 'platformer'], ['crafting.GAME.md', 'crafting'],
   ['papers-please.GAME.md', 'papers-please'], ['voxel.GAME.md', 'voxel'], ['adventure.GAME.md', 'adventure'],
   ['dungeon.GAME.md', 'dungeon'], ['roguelike.GAME.md', 'roguelike'], ['tower-defense.GAME.md', 'tower-defense'],
+  ['advance-wars-extracted.GAME.md', 'advance-wars'],
 ];
 const META_KEYS = new Set(['generatedFrom', 'name', 'description', 'platform', 'palettesCount']);
 for (const [mdFile, pid] of examples) {
