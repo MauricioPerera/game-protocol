@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.7.0] — 2026-07-07
+
+Release **aditivo** sobre `2.6.0` (bump minor, [SPEC §7.0](./SPEC.md)): el runtime
+multi-perfil `game3d` — la respuesta práctica a "¿motor universal?": no existe por
+diseño (el protocolo declara datos; la semántica de cada género es del motor, SPEC §8),
+pero un player único con un módulo de runtime por perfil sí. La versión del protocolo
+sigue en `0.1`.
+
 ### Added
 - **`examples/game3d.html` + `game3d.js` — runtime multi-perfil Three.js**: un solo
   player (`?game=<archivo>.generated.js`, con selector integrado) que despacha por la
@@ -504,6 +514,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.7.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.0
 [2.6.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.6.0
 [2.5.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.5.0
 [2.4.2]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.2

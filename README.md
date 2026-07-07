@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.6.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.7.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,16 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.6.0`** — aditivo: **Kaiju Island 3D**
+**Release `v2.7.0`** — aditivo: **game3d**
+([`examples/game3d.html`](./examples/game3d.html)) — runtime **multi-perfil** Three.js:
+un player único (`?game=<archivo>.generated.js`) que despacha por la nueva meta
+`profile` del artefacto a un módulo de runtime por género (adventure, dungeon,
+monster-rpg, voxel). No es un motor universal — imposible por diseño (SPEC §8) — pero
+cualquier juego de esos perfiles corre sin tocar nada, incluidos los que no traen mapas
+(terreno procedural de respaldo). Los 4 perfiles **verificados jugando** por el mismo
+player.
+
+`v2.6.0` — aditivo: **Kaiju Island 3D**
 ([`examples/kaiju-island-3d.html`](./examples/kaiju-island-3d.html)) — motor **Three.js**
 completo para monster-rpg alimentado por el mismo `kaiju-island.generated.js` del visor
 2D: mundo de tiles 3D desde `TILE_ART`/`PALETTES`, combate por turnos completo
