@@ -198,7 +198,7 @@ estos puntos pasan simultáneamente (ver [`PLAN-MEDIANO.md`](./PLAN-MEDIANO.md))
 
 - [x] **Perfil `tower-defense`** — nuevo género (8 claves: TOWERS/DMG_CHART/ENEMIES/ARMORS/WAVES/MAPS/ECONOMY/BALANCE) con reglas, perfil y ejemplo. → `S1`.
 - [x] **Deprecation policy** — nivel `deprecated` en el linter + regla `version-migration` + `MIGRATION.md` + `manifest.json` expone `migrations`/`deprecatedRules`. → `S2`.
-- [x] **Performance + helpers** — helpers compartidos (`tools/shared-helpers.js`), P1/P2/P3 (lint <50ms/10K datos) y edge cases del parser. → `S3`.
+- [x] **Performance + helpers** — helpers compartidos (`tools/profile-helpers.js`), P1/P2/P3 (lint <50ms/10K datos) y edge cases del parser. → `S3`.
 - [x] **Governance** — `CODE_OF_CONDUCT.md`, `CODEOWNERS`, plantillas de issue/PR. → `S4.1`.
 - [x] **buildGame contenido 9/9** — `test/buildGame-content.js` cubre los 9 perfiles (tower-defense + 8). → `S4.2`.
 - [x] **Docs finales** — README/SPEC/CONTRIBUTING alineados a `v1.0.0`. → `S4.3`.
