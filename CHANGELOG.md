@@ -4,6 +4,17 @@
 
 _No hay cambios pendientes._
 
+## [2.4.2] — 2026-07-07
+
+Release **patch** sobre `2.4.1` ([SPEC §7.0](./SPEC.md)): una palabra de docs.
+
+### Fixed
+- README (checklist histórico "Fase MEDIANO completada"): última mención de
+  `tools/shared-helpers.js` — el archivo que nunca existió — corregida a
+  `tools/profile-helpers.js`. La corrección original de esta errata (documentada en
+  `[1.1.0]`/`[1.0.0]`) arregló la lista de features y el CHANGELOG pero se le escapó
+  esta segunda aparición, tres líneas más abajo en el mismo README.
+
 ## [2.4.1] — 2026-07-07
 
 Release **patch** sobre `2.4.0` ([SPEC §7.0](./SPEC.md)): solo docs.
@@ -433,6 +444,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.4.2]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.2
 [2.4.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.1
 [2.4.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.0
 [2.3.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.1
