@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Fixed — errata
+- El ahorro de la forma hex del arte se publicó como "~4×"; el valor medido es
+  **~1,8×** en las líneas de arte (`kaiju-island`: 13.560 → 12.477 bytes). Corregido en
+  la entrada `[2.2.0]`, README y el comentario de `profile-helpers.js`; notas del
+  release editadas.
+- `test/conformance.js`: retirados los conteos de las cabeceras de sección (estaban
+  desfasados, p.ej. "monster-rpg (24)" con 41 casos); el conteo real lo imprime el
+  runner por perfil.
 
 ## [2.2.0] — 2026-07-07
 
@@ -14,7 +21,8 @@ compilan al mismo artefacto.
 ### Added — fricciones de autoría del stress-test (perfil monster-rpg)
 - **Forma compacta hex para el arte 4bpp** (`tileArt` y `sprites`): además de la matriz
   de números, se acepta un array de strings hex — 1 carácter = 1 celda `0..15`
-  (`tileArt`: 8 strings de 8; `sprites`: 16 de 16). ~4× menos texto. La forma compacta
+  (`tileArt`: 8 strings de 8; `sprites`: 16 de 16). Las líneas de arte encogen ~1,8×
+  (medido en `kaiju-island`: 13.560 → 12.477 bytes). La forma compacta
   se **decodifica al compilar**: mismo `window.GAME` byte a byte que la forma matriz
   (verificado con `kaiju-island`, convertido a hex con generado idéntico). Helper
   isomorfo `decodeArtRows` en `tools/profile-helpers.js` (opt-in vía

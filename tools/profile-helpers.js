@@ -29,8 +29,8 @@
   // Ej. tileArt 8x8: ["11211031", ...x8]; sprite 16x16: 16 strings de 16 chars.
   // Devuelve: null si NO es la forma compacta (array de arrays u otra cosa — el llamador
   // valida como matriz); { error } si es compacta pero tiene un caracter no-hex;
-  // { grid } con la matriz de numeros decodificada. Ahorra ~4x de texto en el GAME.md
-  // y compila EXACTAMENTE al mismo artefacto que la forma matriz (determinismo).
+  // { grid } con la matriz de numeros decodificada. Encoge las lineas de arte ~1.8x
+  // (medido) y compila EXACTAMENTE al mismo artefacto que la forma matriz (determinismo).
   function decodeArtRows(mat) {
     if (!Array.isArray(mat) || !mat.length || !mat.every(r => typeof r === 'string')) return null;
     const out = [];

@@ -96,7 +96,7 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 **Release `v2.2.0`** — aditivo: las tres **fricciones de autoría** del stress-test,
 resueltas — forma compacta hex para el arte 4bpp (`tileArt`/`sprites` como strings hex,
-~4× menos texto, mismo artefacto byte a byte), secciones canónicas ampliadas
+~1,8× menos texto de arte, mismo artefacto byte a byte), secciones canónicas ampliadas
 (Sprites/Moves/Trainers/Encounters/Sfx como `##` de primera clase) y eliminado el warn
 falso-positivo por comas en diálogos.
 

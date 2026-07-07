@@ -46,7 +46,7 @@ const TD = (o) => Object.assign({ version: '0.1', name: 'x', profile: 'tower-def
   armors: ['LIGHT'], dmgTypes: { PHYSICAL: { LIGHT: 1.0 } } }, o);
 
 const invalid = [
-  // ---- adventure (15) ----
+  // ---- adventure ----
   { p: 'adventure', rule: 'palette-color-range', data: { ...B('adventure'), palettes: { 0: [[999, 0, 0]] } } },
   { p: 'adventure', rule: 'tileart-ref', data: { ...B('adventure'), tileArt: { 5: M8() } } },          // id 5 < 16 → error
   { p: 'adventure', rule: 'tileart-dims', data: { ...B('adventure'), tileArt: { 20: [[0]] } } },
@@ -63,13 +63,13 @@ const invalid = [
   { p: 'adventure', rule: 'text-valid', data: { ...B('adventure'), text: { x: '  ' } } },
   { p: 'adventure', rule: 'win-text', data: B('adventure') },
 
-  // ---- crafting (4) ----
+  // ---- crafting ----
   { p: 'crafting', rule: 'recipe-output', data: { ...B('crafting'), items: {}, recipes: { R: { output: 'NOPE', inputs: {} } } } },
   { p: 'crafting', rule: 'recipe-station', data: { ...B('crafting'), items: { x: {} }, stations: {}, recipes: { R: { output: 'x', station: 'NOPE', inputs: {} } } } },
   { p: 'crafting', rule: 'recipe-inputs', data: { ...B('crafting'), items: { x: {} }, materials: {}, recipes: { R: { output: 'x', inputs: { NOPE: 1 } } } } },
   { p: 'crafting', rule: 'material-bounds', data: { ...B('crafting'), materials: { M: { stack: -1 } } } },
 
-  // ---- dungeon (17) ----
+  // ---- dungeon ----
   { p: 'dungeon', rule: 'palette-color-range', data: { ...B('dungeon'), palettes: { 0: [[999, 0, 0]] } } },
   { p: 'dungeon', rule: 'tileart-ref', data: { ...B('dungeon'), tileArt: { 99: [[0]] } } },
   { p: 'dungeon', rule: 'tileart-dims', data: { ...B('dungeon'), tileArt: { 99: [[0]] } } },
@@ -88,7 +88,7 @@ const invalid = [
   { p: 'dungeon', rule: 'text-valid', data: { ...B('dungeon'), text: { x: '  ' } } },
   { p: 'dungeon', rule: 'win-text', data: B('dungeon') },
 
-  // ---- monster-rpg (24) ----
+  // ---- monster-rpg ----
   { p: 'monster-rpg', rule: 'move-type-valid', data: { ...B('monster-rpg'), types: {}, moves: { M: { type: 'NOPE' } } } },
   { p: 'monster-rpg', rule: 'species-type-valid', data: { ...B('monster-rpg'), types: {}, species: { S: { type: 'NOPE' } } } },
   { p: 'monster-rpg', rule: 'moves-exist', data: { ...B('monster-rpg'), moves: {}, species: { S: { moves: ['NOPE'] } } } },
@@ -138,7 +138,7 @@ const invalid = [
     data: { ...B('monster-rpg') },
     opts: { profile: Object.assign({}, loadProfile('monster-rpg'), { specVersion: '0.2' }) } },
 
-  // ---- papers-please (10) ----
+  // ---- papers-please ----
   { p: 'papers-please', rule: 'day-entrant-ref', data: { ...B('papers-please'), entrants: {}, days: { 1: { entrants: ['NOPE'] } } } },
   { p: 'papers-please', rule: 'day-rule-ref', data: { ...B('papers-please'), rules: {}, days: { 1: { rules: ['NOPE'] } } } },
   { p: 'papers-please', rule: 'rule-doc-ref', data: { ...B('papers-please'), documents: {}, rules: { R: { type: 'require-document', document: 'NOPE' } } } },
@@ -150,7 +150,7 @@ const invalid = [
   { p: 'papers-please', rule: 'entrant-doc-field', data: { ...B('papers-please'), documents: { PASS: { fields: ['name'] } }, entrants: { E: { docs: { PASS: { name: 'x', extra: 'y' } } } } } },
   { p: 'papers-please', rule: 'economy-bounds', data: { ...B('papers-please'), economy: { salary: -5 } } },
 
-  // ---- platformer (6) ----
+  // ---- platformer ----
   { p: 'platformer', rule: 'enemy-ref', data: { ...B('platformer'), enemies: {}, levels: { 1: { enemies: ['NOPE'] } } } },
   { p: 'platformer', rule: 'tileset-ref', data: { ...B('platformer'), tilesets: {}, levels: { 1: { tileset: 'NOPE' } } } },
   { p: 'platformer', rule: 'spawn-ref', data: { ...B('platformer'), levels: {}, player: { spawnLevel: 'NOPE' } } },
@@ -158,7 +158,7 @@ const invalid = [
   { p: 'platformer', rule: 'physics-bounds', data: { ...B('platformer'), physics: { gravity: -1 } } },
   { p: 'platformer', rule: 'level-goal', data: { ...B('platformer'), levels: { 1: { goal: { x: 'a' } } } } },
 
-  // ---- roguelike (15) ----
+  // ---- roguelike ----
   { p: 'roguelike', rule: 'palette-color-range', data: { ...B('roguelike'), palettes: { 0: [[999, 0, 0]] } } },
   { p: 'roguelike', rule: 'tileart-ref', data: { ...B('roguelike'), tileArt: { 99: [[0]] } } },
   { p: 'roguelike', rule: 'tileart-dims', data: { ...B('roguelike'), tileArt: { 99: [[0]] } } },
@@ -175,7 +175,7 @@ const invalid = [
   { p: 'roguelike', rule: 'player-hp', data: { ...B('roguelike'), generator: { ...GEN }, player: { hp: -1 } } },
   { p: 'roguelike', rule: 'text-valid', data: { ...B('roguelike'), text: { x: '  ' } } },
 
-  // ---- tower-defense (18) ----
+  // ---- tower-defense ----
   // broken-ref family
   { p: 'tower-defense', rule: 'tower-dmgtype-valid', data: TD({ towers: { T: { cost: 10, range: 1, damage: 1, rate: 1, dmgType: 'NOPE' } } }) },
   { p: 'tower-defense', rule: 'wave-enemy-valid', data: TD({ waves: { 1: { spawns: [{ enemy: 'NOPE', count: 1, gap: 0 }] } } }) },
@@ -205,13 +205,13 @@ const invalid = [
   { p: 'tower-defense', rule: 'sprite-dims', data: TD({ sprites: { S: [[0]] } }) },
   { p: 'tower-defense', rule: 'tileart-dims', data: TD({ tileArt: { 20: [[0]] } }) },
 
-  // ---- advance-wars (4) ----
+  // ---- advance-wars ----
   { p: 'advance-wars', rule: 'palette-color-range', data: { ...B('advance-wars'), palettes: { 0: [[999, 0, 0]] } } },
   { p: 'advance-wars', rule: 'unit-palette-ref', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 5, width: 1, height: 1, tileData: [[0]] } } } },
   { p: 'advance-wars', rule: 'unit-dims', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 8, height: 8, tileData: [[0]] } } } },
   { p: 'advance-wars', rule: 'unit-tiledata-range', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 1, height: 1, tileData: [[99]] } } } },
 
-  // ---- voxel (8) ----
+  // ---- voxel ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
   { p: 'voxel', rule: 'prefab-fill-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], fill: 'NOPE' } } } },
   { p: 'voxel', rule: 'prefab-cell-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], cells: [{ x: 0, y: 0, z: 0, m: 'NOPE' }] } } } },
