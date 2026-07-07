@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.4.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.4.1`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,11 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.4.0`** — aditivo: **reglas puras-de-datos** ([SPEC §11](./SPEC.md),
+**Release `v2.4.1`** — patch de docs: `llms.txt` enseña las dos vías para crear un
+perfil (puro-datos `.json` como preferida para agentes, `.js` con código como
+dependencia a revisar), con el contrato completo de §6.1.
+
+`v2.4.0` — aditivo: **reglas puras-de-datos** ([SPEC §11](./SPEC.md),
 primera etapa). Los CLIs cargan perfiles `profiles/<id>.json` con `JSON.parse` — sin
 ejecutar código, la vía segura para perfiles de terceros ([§10](./SPEC.md)); nueva
 familia declarativa `enums`; `refs[].msg` opcional (mensaje por defecto del core); y

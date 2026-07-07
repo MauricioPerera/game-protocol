@@ -4,6 +4,20 @@
 
 _No hay cambios pendientes._
 
+## [2.4.1] — 2026-07-07
+
+Release **patch** sobre `2.4.0` ([SPEC §7.0](./SPEC.md)): solo docs.
+
+### Fixed
+- `llms.txt` ("Crear un género nuevo"): describía solo la vía `.js` con el juego de
+  campos previo a `2.3.0`. Ahora enseña el contrato completo de SPEC §6.1
+  (`bounds`/`dims`/`enums` incluidos) y las dos vías — **puro-datos `.json`** como la
+  preferida para agentes (JSON.parse, nunca se ejecuta código; referencia
+  `profiles/quiz.json`) y `.js` con código (revisar como dependencia). La superficie
+  para agentes no reflejaba la feature más relevante para agentes de `2.4.0`.
+- `tools/game-manifest.js`: comentario de cabecera actualizado a `profiles/*.js` y
+  `*.json`.
+
 ## [2.4.0] — 2026-07-07
 
 Release **aditivo** sobre `2.3.1` (bump minor, [SPEC §7.0](./SPEC.md)): primera etapa de
@@ -419,6 +433,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.4.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.1
 [2.4.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.0
 [2.3.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.1
 [2.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.0
