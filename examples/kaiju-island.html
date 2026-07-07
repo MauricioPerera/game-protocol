@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>GAME Protocol · kaiju-island (visor estático desde la spec)</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px}
+  h1{margin:0;font-size:18px}h1 b{color:#8fd6ff}
+  p.sub{margin:0;color:#7b8696;font-size:12px;max-width:680px;text-align:center}
+  .panel{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:960px;align-items:flex-start}
+  .card{background:#141a22;border:1px solid #2a3340;border-radius:8px;padding:12px 14px;min-width:200px}
+  .card h2{margin:0 0 8px;font-size:13px;color:#8fd6ff;text-transform:uppercase;letter-spacing:.05em}
+  canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#070a0f;border-radius:6px;display:block}
+  table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:2px 6px;font-size:12px;color:#aeb6c2}
+  th{color:#6b7685;font-weight:600}
+  .tag{display:inline-block;padding:1px 6px;border-radius:10px;background:#1c2530;font-size:11px;color:#8fd6ff;margin:1px}
+  .grass{color:#9fffa6}.fire{color:#ff9a6b}.water{color:#8fd6ff}.normal{color:#aeb6c2}.muted{color:#5a6472}
+  .gold{color:#ffd479}
+  #warn{color:#5a6472;font-size:12px;min-height:1em}
+  .chart td{text-align:center;min-width:34px}
+  .chart .mul2{color:#9fffa6;font-weight:600}.mul05{color:#ff9a6b}.mul1{color:#5a6472}
+</style>
+<h1><b>GAME Protocol</b> · Kaiju Island</h1>
+<p class="sub">Visor mínimo (no jugable): render estático 100% desde <code>kaiju-island.generated.js</code> (window.GAME) — mapa del campo, criaturas, tabla de tipos, ataques con efectos y economía. Sin simulación (combate/captura son lógica del motor, fuera del scope del spec).</p>
+<div class="panel">
+  <canvas id="map" width="320" height="256"></canvas>
+  <div class="card"><h2>Species</h2><table id="species"><tr><th>name</th><th>type</th><th>hp</th><th>moves</th><th>evo</th></tr></table></div>
+  <div class="card"><h2>Moves</h2><table id="moves"><tr><th>name</th><th>type</th><th>pwr</th><th>effect</th></tr></table></div>
+  <div class="card"><h2>Type chart</h2><table class="chart" id="chart"></table></div>
+  <div class="card"><h2>Encounters · Economy</h2><div id="misc"></div></div>
+</div>
+<div id="warn"></div>
+
+<!-- window.GAME = artefacto generado por game-export.js desde kaiju-island.GAME.md -->
+<script src="kaiju-island.generated.js"></script>
+<script src="engine-core.js"></script>
+<script>
+const G = window.GAME || {};
+const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+const TYPE_TAG = t => '<span class="tag ' + (t||'').toLowerCase() + '">' + esc(t || '—') + '</span>';
+const SPECIES = G.SPECIES || {}, MOVES = G.MOVES || {}, CHART = G.TYPE_CHART || {};
+const MAPS = G.MAPS || {}, ECON = G.ECONOMY || {}, BAL = G.BALANCE || {};
+const ENC = G.ENCOUNTERS || {}, TRAINERS = G.TRAINERS || {}, WILD = G.WILD_LIST || [];
+const ART = G.TILE_ART || {}, PAL = G.PALETTES || {};
+
+// --- Field map (canvas, estático desde MAPS.field.tilemap + attrs) ---
+const cv = document.getElementById('map'), ctx = cv.getContext('2d');
+const field = MAPS.field;
+if (field && field.tilemap) {
+  const SCALE = 4, _R = EngineCore.makeRenderer(ctx, { ART, PAL, SCALE });
+  const drawTile = (id, p, c, r) => _R.drawTile(id, p, c, r, false);
+  const tm = field.tilemap, at = field.attrs;
+  for (let r = 0; r < tm.length; r++) for (let c = 0; c < tm[0].length; c++) drawTile(tm[r][c], at[r][c], c, r);
+  // marca la entrada
+  if (field.entry) { ctx.strokeStyle = '#ffd479'; ctx.lineWidth = 2; ctx.strokeRect(field.entry.col*8*SCALE+1, field.entry.row*8*SCALE+1, 8*SCALE-2, 8*SCALE-2); }
+} else {
+  document.getElementById('warn').textContent = 'Sin MAPS.field en GAME.md.';
+}
+
+// --- Species table ---
+const st = document.getElementById('species');
+for (const [n, s] of Object.entries(SPECIES)) {
+  const evo = s.evolvesInto ? '→ ' + esc(s.evolvesInto) + (s.atLevel ? ' @' + s.atLevel : '') : '<span class="muted">—</span>';
+  const tr = document.createElement('tr'); tr.innerHTML =
+    `<td>${esc(n)}${s.wild ? ' <span class="muted">★wild</span>' : ''}</td><td>${TYPE_TAG(s.type)}</td><td>${s.maxhp ?? '—'}</td><td>${(s.moves||[]).map(m => '<span class="tag">'+esc(m)+'</span>').join(' ')}</td><td>${evo}</td>`;
+  st.appendChild(tr);
+}
+
+// --- Moves table ---
+const mt = document.getElementById('moves');
+for (const [n, m] of Object.entries(MOVES)) {
+  const tr = document.createElement('tr'); tr.innerHTML =
+    `<td>${esc(n)}</td><td>${TYPE_TAG(m.type)}</td><td>${m.power ?? '—'}</td><td>${m.effect ? '<span class="tag">'+esc(m.effect)+'</span>' : '<span class="muted">—</span>'}</td>`;
+  mt.appendChild(tr);
+}
+
+// --- Type chart matrix ---
+const ct = document.getElementById('chart');
+const types = Object.keys(CHART);
+if (types.length) {
+  let head = '<tr><th>atk\\def</th>'; for (const d of types) head += '<th>' + esc(d) + '</th>'; head += '</tr>';
+  ct.innerHTML = head;
+  for (const a of types) {
+    const tr = document.createElement('tr'); let row = '<td><b>' + esc(a) + '</b></td>';
+    for (const d of types) {
+      const v = CHART[a][d]; const cls = v == null ? 'mul1' : (v === 2 ? 'mul2' : (v === 0.5 ? 'mul05' : 'mul1'));
+      row += '<td class="' + cls + '">' + (v == null ? '·' : v) + '</td>';
+    }
+    tr.innerHTML = row; ct.appendChild(tr);
+  }
+}
+
+// --- Encounters · Economy · Balance ---
+const misc = document.getElementById('misc');
+const lines = [];
+if (Object.keys(ENC).length) {
+  const zone = Object.keys(ENC)[0];
+  lines.push('Zona <b>' + esc(zone) + '</b>: ' + (ENC[zone] || []).map(c => '<span class="tag">'+esc(c.name)+'</span>').join(' '));
+}
+if (WILD.length) lines.push('Wild pool: ' + WILD.map(c => '<span class="tag">'+esc(c.name)+'</span>').join(''));
+if (Object.keys(TRAINERS).length) {
+  for (const [t, def] of Object.entries(TRAINERS)) lines.push('Entrenador <b>' + esc(t) + '</b> lv' + (def.level||'?') + ': ' + (def.team||[]).map(s => '<span class="tag">'+esc(s)+'</span>').join(' '));
+}
+if (Object.keys(ECON).length) lines.push('Dinero inicial: <span class="gold">' + (ECON.startMoney ?? '—') + '</span>');
+if (Object.keys(BAL).length) lines.push('Balance: catchBase=' + BAL.catchBase + ', catchScale=' + BAL.catchScale + ', encounterRate=' + BAL.encounterRate);
+misc.innerHTML = (lines.length ? lines.join('<br>') : '<span class="muted">—</span>');
+</script>

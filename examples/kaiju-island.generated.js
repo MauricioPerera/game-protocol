@@ -1,0 +1,4334 @@
+// AUTO-GENERADO por tools/game-export.js desde GAME.md — NO EDITAR A MANO.
+// Regenerar con:  node tools/game-export.js
+// profile: monster-rpg
+window.GAME = {
+  "generatedFrom": "GAME.md",
+  "name": "Kaiju Island",
+  "description": "Stress-test del protocolo: ejercita todos los tokens del perfil monster-rpg.",
+  "platform": {
+    "mode": "topdown",
+    "cols": 12,
+    "rows": 10,
+    "screenW": 192,
+    "screenH": 160
+  },
+  "palettesCount": 8,
+  "TYPE_CHART": {
+    "FLAME": {
+      "FLORA": 2,
+      "TIDE": 0.5,
+      "FLAME": 0.5
+    },
+    "TIDE": {
+      "FLAME": 2,
+      "FLORA": 0.5,
+      "VOLT": 0.5,
+      "SPECTER": 0.5,
+      "TIDE": 0.5
+    },
+    "FLORA": {
+      "TIDE": 2,
+      "STONE": 2,
+      "FLAME": 0.5,
+      "FLORA": 0.5
+    },
+    "VOLT": {
+      "TIDE": 2,
+      "STONE": 0.5,
+      "VOLT": 0.5
+    },
+    "STONE": {
+      "VOLT": 2,
+      "SPECTER": 2,
+      "FLORA": 0.5,
+      "STONE": 0.5
+    },
+    "SPECTER": {
+      "TIDE": 2,
+      "STONE": 0.5,
+      "SPECTER": 0.5
+    },
+    "NORMAL": {}
+  },
+  "MOVES": {
+    "TACKLE": {
+      "type": "NORMAL",
+      "power": 5
+    },
+    "HOWL": {
+      "type": "NORMAL",
+      "power": 3,
+      "effect": "flinch",
+      "chance": 0.2
+    },
+    "EMBERSTORM": {
+      "type": "FLAME",
+      "power": 7,
+      "effect": "burn",
+      "chance": 0.25
+    },
+    "INFERNO": {
+      "type": "FLAME",
+      "power": 12,
+      "effect": "burn",
+      "chance": 0.4
+    },
+    "TIDALSLAM": {
+      "type": "TIDE",
+      "power": 7,
+      "effect": "slow",
+      "chance": 0.3
+    },
+    "MAELSTROM": {
+      "type": "TIDE",
+      "power": 12
+    },
+    "VINE_WHIP": {
+      "type": "FLORA",
+      "power": 6,
+      "effect": "leech",
+      "chance": 0.5
+    },
+    "BLOOM_BURST": {
+      "type": "FLORA",
+      "power": 11,
+      "effect": "leech",
+      "chance": 0.35
+    },
+    "SPARKBOLT": {
+      "type": "VOLT",
+      "power": 7,
+      "effect": "paralyze",
+      "chance": 0.25
+    },
+    "THUNDERCRASH": {
+      "type": "VOLT",
+      "power": 12,
+      "effect": "paralyze",
+      "chance": 0.3
+    },
+    "ROCKFALL": {
+      "type": "STONE",
+      "power": 8
+    },
+    "LANDSLIDE": {
+      "type": "STONE",
+      "power": 13
+    },
+    "SOUL_DRAIN": {
+      "type": "SPECTER",
+      "power": 9,
+      "effect": "leech",
+      "chance": 0.6
+    }
+  },
+  "SPECIES": {
+    "SPROUTLE": {
+      "type": "FLORA",
+      "maxhp": 22,
+      "pal": "green",
+      "sprite": "kaiju",
+      "moves": [
+        "TACKLE",
+        "VINE_WHIP"
+      ],
+      "evolvesInto": "THORNBACK",
+      "atLevel": 9
+    },
+    "THORNBACK": {
+      "type": "FLORA",
+      "maxhp": 34,
+      "pal": "green",
+      "sprite": "kaiju",
+      "moves": [
+        "TACKLE",
+        "VINE_WHIP",
+        "BLOOM_BURST"
+      ],
+      "evolvesInto": "VERDRAKON",
+      "atLevel": 18
+    },
+    "VERDRAKON": {
+      "type": "FLORA",
+      "maxhp": 52,
+      "pal": "green",
+      "sprite": "kaiju",
+      "moves": [
+        "VINE_WHIP",
+        "BLOOM_BURST",
+        "LANDSLIDE"
+      ]
+    },
+    "CINDERPUP": {
+      "type": "FLAME",
+      "maxhp": 20,
+      "pal": "red",
+      "sprite": "kaiju",
+      "moves": [
+        "TACKLE",
+        "EMBERSTORM"
+      ],
+      "evolvesInto": "PYROHOUND",
+      "atLevel": 10
+    },
+    "PYROHOUND": {
+      "type": "FLAME",
+      "maxhp": 32,
+      "pal": "red",
+      "sprite": "kaiju",
+      "moves": [
+        "HOWL",
+        "EMBERSTORM",
+        "INFERNO"
+      ],
+      "evolvesInto": "INFERNOX",
+      "atLevel": 20
+    },
+    "INFERNOX": {
+      "type": "FLAME",
+      "maxhp": 50,
+      "pal": "red",
+      "sprite": "kaiju",
+      "moves": [
+        "EMBERSTORM",
+        "INFERNO",
+        "HOWL"
+      ]
+    },
+    "DRIPLET": {
+      "type": "TIDE",
+      "maxhp": 21,
+      "pal": "blue",
+      "sprite": "kaiju",
+      "moves": [
+        "TACKLE",
+        "TIDALSLAM"
+      ],
+      "evolvesInto": "TORRENTEEL",
+      "atLevel": 10,
+      "wild": true
+    },
+    "TORRENTEEL": {
+      "type": "TIDE",
+      "maxhp": 33,
+      "pal": "blue",
+      "sprite": "kaiju",
+      "moves": [
+        "TACKLE",
+        "TIDALSLAM",
+        "MAELSTROM"
+      ],
+      "evolvesInto": "ABYSSKRAKEN",
+      "atLevel": 21
+    },
+    "ABYSSKRAKEN": {
+      "type": "TIDE",
+      "maxhp": 55,
+      "pal": "blue",
+      "sprite": "kaiju",
+      "moves": [
+        "TIDALSLAM",
+        "MAELSTROM",
+        "SOUL_DRAIN"
+      ]
+    },
+    "VOLTMOUSE": {
+      "type": "VOLT",
+      "maxhp": 18,
+      "pal": "yellow",
+      "moves": [
+        "TACKLE",
+        "SPARKBOLT"
+      ],
+      "wild": true
+    },
+    "PEBBLIT": {
+      "type": "STONE",
+      "maxhp": 26,
+      "pal": "brown",
+      "moves": [
+        "TACKLE",
+        "ROCKFALL"
+      ],
+      "wild": true
+    },
+    "GHOSTWISP": {
+      "type": "SPECTER",
+      "maxhp": 17,
+      "pal": "violet",
+      "sprite": "wisp",
+      "moves": [
+        "SOUL_DRAIN",
+        "HOWL"
+      ],
+      "wild": true
+    },
+    "DUSTRAT": {
+      "type": "NORMAL",
+      "maxhp": 15,
+      "pal": "gray",
+      "moves": [
+        "TACKLE",
+        "HOWL"
+      ],
+      "wild": true
+    }
+  },
+  "WILD_LIST": [
+    {
+      "name": "DRIPLET",
+      "maxhp": 21,
+      "pal": "blue",
+      "sprite": "kaiju",
+      "type": "TIDE",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "TIDALSLAM",
+          "type": "TIDE",
+          "power": 7,
+          "effect": "slow",
+          "chance": 0.3
+        }
+      ]
+    },
+    {
+      "name": "VOLTMOUSE",
+      "maxhp": 18,
+      "pal": "yellow",
+      "sprite": "generic",
+      "type": "VOLT",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "SPARKBOLT",
+          "type": "VOLT",
+          "power": 7,
+          "effect": "paralyze",
+          "chance": 0.25
+        }
+      ]
+    },
+    {
+      "name": "PEBBLIT",
+      "maxhp": 26,
+      "pal": "brown",
+      "sprite": "generic",
+      "type": "STONE",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "ROCKFALL",
+          "type": "STONE",
+          "power": 8
+        }
+      ]
+    },
+    {
+      "name": "GHOSTWISP",
+      "maxhp": 17,
+      "pal": "violet",
+      "sprite": "wisp",
+      "type": "SPECTER",
+      "moves": [
+        {
+          "name": "SOUL_DRAIN",
+          "type": "SPECTER",
+          "power": 9,
+          "effect": "leech",
+          "chance": 0.6
+        },
+        {
+          "name": "HOWL",
+          "type": "NORMAL",
+          "power": 3,
+          "effect": "flinch",
+          "chance": 0.2
+        }
+      ]
+    },
+    {
+      "name": "DUSTRAT",
+      "maxhp": 15,
+      "pal": "gray",
+      "sprite": "generic",
+      "type": "NORMAL",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "HOWL",
+          "type": "NORMAL",
+          "power": 3,
+          "effect": "flinch",
+          "chance": 0.2
+        }
+      ]
+    }
+  ],
+  "EVOLUTIONS": {
+    "SPROUTLE": {
+      "into": "THORNBACK",
+      "level": 9,
+      "maxhp": 34,
+      "type": "FLORA",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "VINE_WHIP",
+          "type": "FLORA",
+          "power": 6,
+          "effect": "leech",
+          "chance": 0.5
+        },
+        {
+          "name": "BLOOM_BURST",
+          "type": "FLORA",
+          "power": 11,
+          "effect": "leech",
+          "chance": 0.35
+        }
+      ]
+    },
+    "THORNBACK": {
+      "into": "VERDRAKON",
+      "level": 18,
+      "maxhp": 52,
+      "type": "FLORA",
+      "moves": [
+        {
+          "name": "VINE_WHIP",
+          "type": "FLORA",
+          "power": 6,
+          "effect": "leech",
+          "chance": 0.5
+        },
+        {
+          "name": "BLOOM_BURST",
+          "type": "FLORA",
+          "power": 11,
+          "effect": "leech",
+          "chance": 0.35
+        },
+        {
+          "name": "LANDSLIDE",
+          "type": "STONE",
+          "power": 13
+        }
+      ]
+    },
+    "CINDERPUP": {
+      "into": "PYROHOUND",
+      "level": 10,
+      "maxhp": 32,
+      "type": "FLAME",
+      "moves": [
+        {
+          "name": "HOWL",
+          "type": "NORMAL",
+          "power": 3,
+          "effect": "flinch",
+          "chance": 0.2
+        },
+        {
+          "name": "EMBERSTORM",
+          "type": "FLAME",
+          "power": 7,
+          "effect": "burn",
+          "chance": 0.25
+        },
+        {
+          "name": "INFERNO",
+          "type": "FLAME",
+          "power": 12,
+          "effect": "burn",
+          "chance": 0.4
+        }
+      ]
+    },
+    "PYROHOUND": {
+      "into": "INFERNOX",
+      "level": 20,
+      "maxhp": 50,
+      "type": "FLAME",
+      "moves": [
+        {
+          "name": "EMBERSTORM",
+          "type": "FLAME",
+          "power": 7,
+          "effect": "burn",
+          "chance": 0.25
+        },
+        {
+          "name": "INFERNO",
+          "type": "FLAME",
+          "power": 12,
+          "effect": "burn",
+          "chance": 0.4
+        },
+        {
+          "name": "HOWL",
+          "type": "NORMAL",
+          "power": 3,
+          "effect": "flinch",
+          "chance": 0.2
+        }
+      ]
+    },
+    "DRIPLET": {
+      "into": "TORRENTEEL",
+      "level": 10,
+      "maxhp": 33,
+      "type": "TIDE",
+      "moves": [
+        {
+          "name": "TACKLE",
+          "type": "NORMAL",
+          "power": 5
+        },
+        {
+          "name": "TIDALSLAM",
+          "type": "TIDE",
+          "power": 7,
+          "effect": "slow",
+          "chance": 0.3
+        },
+        {
+          "name": "MAELSTROM",
+          "type": "TIDE",
+          "power": 12
+        }
+      ]
+    },
+    "TORRENTEEL": {
+      "into": "ABYSSKRAKEN",
+      "level": 21,
+      "maxhp": 55,
+      "type": "TIDE",
+      "moves": [
+        {
+          "name": "TIDALSLAM",
+          "type": "TIDE",
+          "power": 7,
+          "effect": "slow",
+          "chance": 0.3
+        },
+        {
+          "name": "MAELSTROM",
+          "type": "TIDE",
+          "power": 12
+        },
+        {
+          "name": "SOUL_DRAIN",
+          "type": "SPECTER",
+          "power": 9,
+          "effect": "leech",
+          "chance": 0.6
+        }
+      ]
+    }
+  },
+  "TRAINERS": {
+    "RANGER LILA": {
+      "prize": 300,
+      "dialogue": "El bosque me dio mi equipo!",
+      "pal": 2,
+      "level": 7,
+      "team": [
+        {
+          "name": "SPROUTLE",
+          "maxhp": 22,
+          "type": "FLORA",
+          "pal": "green",
+          "sprite": "kaiju",
+          "level": 7,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "VINE_WHIP",
+              "type": "FLORA",
+              "power": 6,
+              "effect": "leech",
+              "chance": 0.5
+            }
+          ]
+        },
+        {
+          "name": "VOLTMOUSE",
+          "maxhp": 18,
+          "type": "VOLT",
+          "pal": "yellow",
+          "sprite": "generic",
+          "level": 7,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "SPARKBOLT",
+              "type": "VOLT",
+              "power": 7,
+              "effect": "paralyze",
+              "chance": 0.25
+            }
+          ]
+        }
+      ]
+    },
+    "SCOUT BRUNO": {
+      "prize": 550,
+      "dialogue": "Las rocas nunca fallan.",
+      "pal": 4,
+      "level": 11,
+      "team": [
+        {
+          "name": "PEBBLIT",
+          "maxhp": 26,
+          "type": "STONE",
+          "pal": "brown",
+          "sprite": "generic",
+          "level": 11,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "ROCKFALL",
+              "type": "STONE",
+              "power": 8
+            }
+          ]
+        },
+        {
+          "name": "PEBBLIT",
+          "maxhp": 26,
+          "type": "STONE",
+          "pal": "brown",
+          "sprite": "generic",
+          "level": 11,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "ROCKFALL",
+              "type": "STONE",
+              "power": 8
+            }
+          ]
+        },
+        {
+          "name": "CINDERPUP",
+          "maxhp": 20,
+          "type": "FLAME",
+          "pal": "red",
+          "sprite": "kaiju",
+          "level": 11,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "EMBERSTORM",
+              "type": "FLAME",
+              "power": 7,
+              "effect": "burn",
+              "chance": 0.25
+            }
+          ]
+        }
+      ]
+    },
+    "CHAMPION ODA": {
+      "prize": 1500,
+      "dialogue": "Soy la ultima prueba de la isla!",
+      "pal": 5,
+      "level": 18,
+      "team": [
+        {
+          "name": "PYROHOUND",
+          "maxhp": 32,
+          "type": "FLAME",
+          "pal": "red",
+          "sprite": "kaiju",
+          "level": 18,
+          "moves": [
+            {
+              "name": "HOWL",
+              "type": "NORMAL",
+              "power": 3,
+              "effect": "flinch",
+              "chance": 0.2
+            },
+            {
+              "name": "EMBERSTORM",
+              "type": "FLAME",
+              "power": 7,
+              "effect": "burn",
+              "chance": 0.25
+            },
+            {
+              "name": "INFERNO",
+              "type": "FLAME",
+              "power": 12,
+              "effect": "burn",
+              "chance": 0.4
+            }
+          ]
+        },
+        {
+          "name": "TORRENTEEL",
+          "maxhp": 33,
+          "type": "TIDE",
+          "pal": "blue",
+          "sprite": "kaiju",
+          "level": 18,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "TIDALSLAM",
+              "type": "TIDE",
+              "power": 7,
+              "effect": "slow",
+              "chance": 0.3
+            },
+            {
+              "name": "MAELSTROM",
+              "type": "TIDE",
+              "power": 12
+            }
+          ]
+        },
+        {
+          "name": "THORNBACK",
+          "maxhp": 34,
+          "type": "FLORA",
+          "pal": "green",
+          "sprite": "kaiju",
+          "level": 18,
+          "moves": [
+            {
+              "name": "TACKLE",
+              "type": "NORMAL",
+              "power": 5
+            },
+            {
+              "name": "VINE_WHIP",
+              "type": "FLORA",
+              "power": 6,
+              "effect": "leech",
+              "chance": 0.5
+            },
+            {
+              "name": "BLOOM_BURST",
+              "type": "FLORA",
+              "power": 11,
+              "effect": "leech",
+              "chance": 0.35
+            }
+          ]
+        },
+        {
+          "name": "GHOSTWISP",
+          "maxhp": 17,
+          "type": "SPECTER",
+          "pal": "violet",
+          "sprite": "wisp",
+          "level": 18,
+          "moves": [
+            {
+              "name": "SOUL_DRAIN",
+              "type": "SPECTER",
+              "power": 9,
+              "effect": "leech",
+              "chance": 0.6
+            },
+            {
+              "name": "HOWL",
+              "type": "NORMAL",
+              "power": 3,
+              "effect": "flinch",
+              "chance": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "PALETTES": [
+    [
+      [
+        6,
+        15,
+        6
+      ],
+      [
+        10,
+        20,
+        9
+      ],
+      [
+        14,
+        25,
+        12
+      ],
+      [
+        18,
+        29,
+        15
+      ],
+      [
+        22,
+        31,
+        18
+      ],
+      [
+        3,
+        9,
+        4
+      ],
+      [
+        26,
+        31,
+        22
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ],
+      [
+        31,
+        31,
+        26
+      ]
+    ],
+    [
+      [
+        10,
+        8,
+        6
+      ],
+      [
+        15,
+        12,
+        9
+      ],
+      [
+        20,
+        16,
+        12
+      ],
+      [
+        25,
+        21,
+        16
+      ],
+      [
+        29,
+        26,
+        21
+      ],
+      [
+        6,
+        5,
+        4
+      ],
+      [
+        31,
+        29,
+        24
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ],
+      [
+        12,
+        10,
+        8
+      ]
+    ],
+    [
+      [
+        4,
+        8,
+        16
+      ],
+      [
+        7,
+        13,
+        22
+      ],
+      [
+        10,
+        18,
+        27
+      ],
+      [
+        14,
+        23,
+        31
+      ],
+      [
+        19,
+        27,
+        31
+      ],
+      [
+        2,
+        5,
+        11
+      ],
+      [
+        24,
+        29,
+        31
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ],
+      [
+        8,
+        12,
+        20
+      ]
+    ],
+    [
+      [
+        8,
+        7,
+        9
+      ],
+      [
+        12,
+        11,
+        13
+      ],
+      [
+        17,
+        15,
+        18
+      ],
+      [
+        22,
+        20,
+        23
+      ],
+      [
+        27,
+        25,
+        28
+      ],
+      [
+        4,
+        4,
+        5
+      ],
+      [
+        30,
+        29,
+        31
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ],
+      [
+        14,
+        13,
+        15
+      ]
+    ],
+    [
+      [
+        16,
+        12,
+        4
+      ],
+      [
+        21,
+        16,
+        7
+      ],
+      [
+        26,
+        21,
+        10
+      ],
+      [
+        30,
+        26,
+        14
+      ],
+      [
+        31,
+        29,
+        19
+      ],
+      [
+        10,
+        7,
+        2
+      ],
+      [
+        31,
+        31,
+        24
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ],
+      [
+        19,
+        15,
+        6
+      ]
+    ],
+    [
+      [
+        14,
+        4,
+        3
+      ],
+      [
+        20,
+        7,
+        4
+      ],
+      [
+        26,
+        11,
+        5
+      ],
+      [
+        31,
+        16,
+        7
+      ],
+      [
+        31,
+        22,
+        12
+      ],
+      [
+        8,
+        2,
+        2
+      ],
+      [
+        31,
+        27,
+        18
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ],
+      [
+        24,
+        9,
+        5
+      ]
+    ],
+    [
+      [
+        4,
+        12,
+        12
+      ],
+      [
+        6,
+        17,
+        17
+      ],
+      [
+        9,
+        22,
+        22
+      ],
+      [
+        13,
+        27,
+        26
+      ],
+      [
+        18,
+        31,
+        29
+      ],
+      [
+        2,
+        7,
+        7
+      ],
+      [
+        24,
+        31,
+        31
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ],
+      [
+        7,
+        15,
+        15
+      ]
+    ],
+    [
+      [
+        12,
+        12,
+        14
+      ],
+      [
+        16,
+        16,
+        19
+      ],
+      [
+        21,
+        21,
+        24
+      ],
+      [
+        26,
+        26,
+        29
+      ],
+      [
+        30,
+        30,
+        31
+      ],
+      [
+        7,
+        7,
+        8
+      ],
+      [
+        31,
+        31,
+        31
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ],
+      [
+        18,
+        18,
+        21
+      ]
+    ]
+  ],
+  "SPRITE_PALETTES": [
+    [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        4,
+        10,
+        4
+      ],
+      [
+        8,
+        18,
+        7
+      ],
+      [
+        13,
+        25,
+        10
+      ],
+      [
+        19,
+        30,
+        14
+      ],
+      [
+        26,
+        31,
+        20
+      ],
+      [
+        31,
+        31,
+        28
+      ],
+      [
+        10,
+        6,
+        3
+      ],
+      [
+        16,
+        11,
+        5
+      ],
+      [
+        23,
+        17,
+        9
+      ],
+      [
+        29,
+        23,
+        14
+      ],
+      [
+        31,
+        29,
+        21
+      ],
+      [
+        5,
+        5,
+        6
+      ],
+      [
+        14,
+        14,
+        16
+      ],
+      [
+        23,
+        23,
+        26
+      ],
+      [
+        31,
+        31,
+        31
+      ]
+    ],
+    [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        4,
+        6,
+        14
+      ],
+      [
+        7,
+        11,
+        20
+      ],
+      [
+        11,
+        17,
+        26
+      ],
+      [
+        16,
+        23,
+        31
+      ],
+      [
+        22,
+        28,
+        31
+      ],
+      [
+        28,
+        31,
+        31
+      ],
+      [
+        10,
+        4,
+        12
+      ],
+      [
+        16,
+        8,
+        19
+      ],
+      [
+        22,
+        13,
+        26
+      ],
+      [
+        28,
+        19,
+        31
+      ],
+      [
+        31,
+        25,
+        31
+      ],
+      [
+        5,
+        4,
+        6
+      ],
+      [
+        14,
+        12,
+        16
+      ],
+      [
+        23,
+        21,
+        26
+      ],
+      [
+        31,
+        31,
+        31
+      ]
+    ]
+  ],
+  "SPRITES": {
+    "kaiju": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        3,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        5,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        4,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        5,
+        6,
+        15,
+        12,
+        6,
+        15,
+        12,
+        6,
+        5,
+        4,
+        3,
+        0,
+        0
+      ],
+      [
+        3,
+        4,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      [
+        3,
+        4,
+        5,
+        6,
+        6,
+        2,
+        2,
+        2,
+        2,
+        2,
+        6,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      [
+        3,
+        4,
+        5,
+        6,
+        2,
+        2,
+        1,
+        1,
+        1,
+        2,
+        2,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      [
+        3,
+        4,
+        5,
+        6,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      [
+        3,
+        4,
+        5,
+        6,
+        2,
+        2,
+        1,
+        1,
+        1,
+        2,
+        2,
+        6,
+        5,
+        4,
+        3,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        5,
+        6,
+        2,
+        2,
+        2,
+        2,
+        2,
+        6,
+        5,
+        4,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        5,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        5,
+        4,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        4,
+        4,
+        3,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        4,
+        3,
+        3,
+        4,
+        4,
+        4,
+        3,
+        3,
+        4,
+        3,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        4,
+        3,
+        0,
+        3,
+        3,
+        3,
+        0,
+        3,
+        4,
+        4,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        0,
+        0
+      ]
+    ],
+    "wisp": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        14,
+        14,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        14,
+        14,
+        15,
+        15,
+        15,
+        14,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        14,
+        15,
+        15,
+        11,
+        15,
+        15,
+        15,
+        11,
+        15,
+        15,
+        14,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        14,
+        15,
+        11,
+        11,
+        15,
+        15,
+        15,
+        11,
+        11,
+        15,
+        14,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        15,
+        15,
+        12,
+        12,
+        15,
+        15,
+        15,
+        12,
+        12,
+        15,
+        15,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        15,
+        15,
+        12,
+        13,
+        15,
+        15,
+        15,
+        13,
+        12,
+        15,
+        15,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        14,
+        15,
+        15,
+        15,
+        14,
+        14,
+        14,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        14,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        14,
+        14,
+        15,
+        15,
+        15,
+        14,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        14,
+        0,
+        0,
+        14,
+        15,
+        14,
+        0,
+        0,
+        14,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        0,
+        0,
+        0,
+        0,
+        14,
+        0,
+        0,
+        0,
+        0,
+        14,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "ITEMS": {
+    "TONIC": {
+      "price": 200,
+      "effect": "heal",
+      "amount": 20
+    },
+    "MEGA_TONIC": {
+      "price": 700,
+      "effect": "heal",
+      "amount": 60
+    },
+    "ANTIDOTE": {
+      "price": 120,
+      "effect": "cure",
+      "cures": "poison"
+    },
+    "NET_BALL": {
+      "price": 150,
+      "effect": "catch"
+    },
+    "STORM_BALL": {
+      "price": 400,
+      "effect": "catch"
+    }
+  },
+  "ENCOUNTERS": {
+    "field": [
+      {
+        "name": "VOLTMOUSE",
+        "maxhp": 18,
+        "pal": "yellow",
+        "sprite": "generic",
+        "type": "VOLT",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "SPARKBOLT",
+            "type": "VOLT",
+            "power": 7,
+            "effect": "paralyze",
+            "chance": 0.25
+          }
+        ]
+      },
+      {
+        "name": "DUSTRAT",
+        "maxhp": 15,
+        "pal": "gray",
+        "sprite": "generic",
+        "type": "NORMAL",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "HOWL",
+            "type": "NORMAL",
+            "power": 3,
+            "effect": "flinch",
+            "chance": 0.2
+          }
+        ]
+      },
+      {
+        "name": "DRIPLET",
+        "maxhp": 21,
+        "pal": "blue",
+        "sprite": "kaiju",
+        "type": "TIDE",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "TIDALSLAM",
+            "type": "TIDE",
+            "power": 7,
+            "effect": "slow",
+            "chance": 0.3
+          }
+        ]
+      }
+    ],
+    "cave": [
+      {
+        "name": "PEBBLIT",
+        "maxhp": 26,
+        "pal": "brown",
+        "sprite": "generic",
+        "type": "STONE",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "ROCKFALL",
+            "type": "STONE",
+            "power": 8
+          }
+        ]
+      },
+      {
+        "name": "GHOSTWISP",
+        "maxhp": 17,
+        "pal": "violet",
+        "sprite": "wisp",
+        "type": "SPECTER",
+        "moves": [
+          {
+            "name": "SOUL_DRAIN",
+            "type": "SPECTER",
+            "power": 9,
+            "effect": "leech",
+            "chance": 0.6
+          },
+          {
+            "name": "HOWL",
+            "type": "NORMAL",
+            "power": 3,
+            "effect": "flinch",
+            "chance": 0.2
+          }
+        ]
+      },
+      {
+        "name": "DUSTRAT",
+        "maxhp": 15,
+        "pal": "gray",
+        "sprite": "generic",
+        "type": "NORMAL",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "HOWL",
+            "type": "NORMAL",
+            "power": 3,
+            "effect": "flinch",
+            "chance": 0.2
+          }
+        ]
+      }
+    ],
+    "shore": [
+      {
+        "name": "DRIPLET",
+        "maxhp": 21,
+        "pal": "blue",
+        "sprite": "kaiju",
+        "type": "TIDE",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "TIDALSLAM",
+            "type": "TIDE",
+            "power": 7,
+            "effect": "slow",
+            "chance": 0.3
+          }
+        ]
+      },
+      {
+        "name": "VOLTMOUSE",
+        "maxhp": 18,
+        "pal": "yellow",
+        "sprite": "generic",
+        "type": "VOLT",
+        "moves": [
+          {
+            "name": "TACKLE",
+            "type": "NORMAL",
+            "power": 5
+          },
+          {
+            "name": "SPARKBOLT",
+            "type": "VOLT",
+            "power": 7,
+            "effect": "paralyze",
+            "chance": 0.25
+          }
+        ]
+      },
+      {
+        "name": "GHOSTWISP",
+        "maxhp": 17,
+        "pal": "violet",
+        "sprite": "wisp",
+        "type": "SPECTER",
+        "moves": [
+          {
+            "name": "SOUL_DRAIN",
+            "type": "SPECTER",
+            "power": 9,
+            "effect": "leech",
+            "chance": 0.6
+          },
+          {
+            "name": "HOWL",
+            "type": "NORMAL",
+            "power": 3,
+            "effect": "flinch",
+            "chance": 0.2
+          }
+        ]
+      }
+    ]
+  },
+  "MAPS": {
+    "field": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          16,
+          16,
+          18,
+          18,
+          16,
+          16,
+          16,
+          16,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          18,
+          18,
+          18,
+          18,
+          16,
+          16,
+          20,
+          16,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          16,
+          16,
+          19,
+          16,
+          16,
+          16,
+          20,
+          20,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          20,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          16,
+          21,
+          21,
+          16,
+          16,
+          16,
+          16,
+          16,
+          17
+        ],
+        [
+          17,
+          16,
+          18,
+          18,
+          16,
+          16,
+          16,
+          18,
+          18,
+          16,
+          16,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          16,
+          16,
+          19,
+          16,
+          16,
+          16,
+          16,
+          16,
+          17
+        ],
+        [
+          17,
+          16,
+          16,
+          18,
+          16,
+          16,
+          16,
+          16,
+          18,
+          16,
+          16,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          2,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          4,
+          4,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "entry": {
+        "col": 2,
+        "row": 8
+      }
+    },
+    "house": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          48,
+          48,
+          48,
+          48,
+          48,
+          46,
+          48,
+          48,
+          48,
+          48,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "entry": {
+        "col": 6,
+        "row": 8
+      },
+      "exit": {
+        "col": 6,
+        "row": 8
+      },
+      "return": {
+        "col": 5,
+        "row": 4
+      }
+    },
+    "cave": {
+      "tilemap": [
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          50,
+          51,
+          51,
+          51,
+          51,
+          50,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          50,
+          50,
+          51,
+          51,
+          18,
+          18,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          18,
+          18,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          50,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          50,
+          50,
+          51,
+          51,
+          51,
+          50,
+          51,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          50,
+          50,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          18,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          51,
+          51,
+          51,
+          51,
+          51,
+          46,
+          51,
+          50,
+          51,
+          51,
+          17
+        ],
+        [
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17,
+          17
+        ]
+      ],
+      "attrs": [
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          6,
+          6,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          6,
+          6,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          6,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ],
+        [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3
+        ]
+      ],
+      "entry": {
+        "col": 6,
+        "row": 8
+      },
+      "exit": {
+        "col": 6,
+        "row": 8
+      },
+      "return": {
+        "col": 5,
+        "row": 7
+      }
+    }
+  },
+  "OVERWORLD": {
+    "field": {
+      "npcs": [
+        {
+          "col": 3,
+          "row": 4,
+          "pal": 1,
+          "range": 2,
+          "timer": 40,
+          "dialogue": "Bienvenido a Kaiju Island! La hierba alta esconde criaturas."
+        }
+      ],
+      "trainers": [
+        {
+          "col": 8,
+          "row": 5,
+          "name": "RANGER LILA",
+          "dir": "down",
+          "sight": 3
+        }
+      ],
+      "warps": [
+        {
+          "col": 5,
+          "row": 3,
+          "target": "house",
+          "entry": {
+            "col": 6,
+            "row": 8
+          }
+        },
+        {
+          "col": 5,
+          "row": 7,
+          "target": "cave",
+          "entry": {
+            "col": 6,
+            "row": 8
+          }
+        },
+        {
+          "col": 10,
+          "row": 4,
+          "target": "shore"
+        }
+      ]
+    },
+    "shore": {
+      "npcs": [
+        {
+          "col": 4,
+          "row": 3,
+          "pal": 6,
+          "range": 1,
+          "timer": 60,
+          "dialogue": "El campeon espera al final de la playa."
+        }
+      ],
+      "trainers": [
+        {
+          "col": 6,
+          "row": 4,
+          "name": "SCOUT BRUNO",
+          "dir": "left",
+          "sight": 4
+        },
+        {
+          "col": 9,
+          "row": 6,
+          "name": "CHAMPION ODA",
+          "dir": "up",
+          "sight": 5
+        }
+      ],
+      "warps": [
+        {
+          "col": 1,
+          "row": 4,
+          "target": "field"
+        }
+      ]
+    }
+  },
+  "PLAYER": {
+    "starter": "SPROUTLE",
+    "level": 5,
+    "start": {
+      "x": 16,
+      "y": 64
+    },
+    "inventory": {
+      "TONIC": 2,
+      "NET_BALL": 5,
+      "ANTIDOTE": 1
+    }
+  },
+  "TILE_ART": {
+    "16": [
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        0,
+        3,
+        1
+      ],
+      [
+        1,
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        2,
+        1,
+        1,
+        3,
+        1,
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        3,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        0,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      [
+        3,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1
+      ]
+    ],
+    "17": [
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        5,
+        3,
+        3,
+        5,
+        2,
+        2,
+        2,
+        5
+      ],
+      [
+        5,
+        3,
+        3,
+        5,
+        2,
+        2,
+        2,
+        5
+      ],
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        5,
+        2,
+        2,
+        2,
+        5,
+        3,
+        3,
+        5
+      ],
+      [
+        5,
+        2,
+        2,
+        2,
+        5,
+        3,
+        3,
+        5
+      ],
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "18": [
+      [
+        1,
+        4,
+        1,
+        2,
+        1,
+        4,
+        1,
+        2
+      ],
+      [
+        4,
+        2,
+        4,
+        1,
+        4,
+        2,
+        4,
+        1
+      ],
+      [
+        1,
+        4,
+        3,
+        4,
+        1,
+        4,
+        3,
+        4
+      ],
+      [
+        2,
+        1,
+        4,
+        2,
+        4,
+        1,
+        4,
+        2
+      ],
+      [
+        1,
+        4,
+        1,
+        4,
+        3,
+        4,
+        1,
+        4
+      ],
+      [
+        4,
+        2,
+        4,
+        1,
+        4,
+        2,
+        4,
+        1
+      ],
+      [
+        1,
+        4,
+        3,
+        4,
+        1,
+        4,
+        3,
+        4
+      ],
+      [
+        2,
+        1,
+        4,
+        2,
+        4,
+        1,
+        4,
+        2
+      ]
+    ],
+    "19": [
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      [
+        5,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5
+      ],
+      [
+        5,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        5
+      ],
+      [
+        5,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        5
+      ],
+      [
+        5,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        5
+      ],
+      [
+        5,
+        3,
+        2,
+        2,
+        6,
+        2,
+        3,
+        5
+      ],
+      [
+        5,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        5
+      ],
+      [
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    ],
+    "20": [
+      [
+        2,
+        2,
+        3,
+        2,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+        2
+      ],
+      [
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+        2,
+        3
+      ],
+      [
+        2,
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        2,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+        2,
+        3
+      ],
+      [
+        2,
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        2,
+        3,
+        2,
+        2,
+        2
+      ]
+    ],
+    "21": [
+      [
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      [
+        3,
+        2,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3
+      ],
+      [
+        2,
+        3,
+        3,
+        4,
+        3,
+        3,
+        3,
+        2
+      ],
+      [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        3
+      ],
+      [
+        3,
+        4,
+        3,
+        2,
+        3,
+        3,
+        3,
+        3
+      ],
+      [
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4
+      ],
+      [
+        3,
+        3,
+        3,
+        2,
+        3,
+        2,
+        3,
+        3
+      ],
+      [
+        4,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    ],
+    "46": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        3,
+        3,
+        3,
+        3,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        3,
+        6,
+        6,
+        3,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        3,
+        6,
+        6,
+        3,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        3,
+        3,
+        3,
+        3,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "48": [
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      [
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        3,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        3,
+        3,
+        2,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        2,
+        2,
+        2,
+        2,
+        3,
+        2
+      ],
+      [
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2
+      ],
+      [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    ],
+    "50": [
+      [
+        0,
+        0,
+        3,
+        3,
+        3,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        3,
+        4,
+        4,
+        4,
+        4,
+        3,
+        0
+      ],
+      [
+        3,
+        4,
+        4,
+        5,
+        4,
+        4,
+        4,
+        3
+      ],
+      [
+        3,
+        4,
+        5,
+        5,
+        5,
+        4,
+        4,
+        3
+      ],
+      [
+        3,
+        4,
+        4,
+        5,
+        4,
+        4,
+        4,
+        3
+      ],
+      [
+        3,
+        4,
+        4,
+        4,
+        4,
+        5,
+        4,
+        3
+      ],
+      [
+        0,
+        3,
+        4,
+        4,
+        4,
+        4,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        3,
+        3,
+        3,
+        3,
+        0,
+        0
+      ]
+    ],
+    "51": [
+      [
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        1,
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        2,
+        1,
+        1,
+        2,
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    ]
+  },
+  "TEXT": {
+    "intro": "Kaiju Island te espera. Elige bien a tu companero.",
+    "sign": "Norte: casa del sanador. Sur: la cueva. Este: la costa.",
+    "healer": "Tus kaiju estan como nuevos!",
+    "elder": "Dicen que un GHOSTWISP ronda la cueva de noche.",
+    "victory": "Has vencido! La isla reconoce tu vinculo.",
+    "defeat": "Tus kaiju necesitan descansar..."
+  },
+  "SFX": {
+    "encounter": {
+      "freq": 440,
+      "dur": 0.08
+    },
+    "hit": {
+      "freq": 660,
+      "dur": 0.07
+    },
+    "crit": {
+      "freq": 880,
+      "dur": 0.09
+    },
+    "faint": {
+      "freq": 196,
+      "dur": 0.3
+    },
+    "catch": {
+      "freq": 523,
+      "dur": 0.15
+    },
+    "levelup": {
+      "freq": 784,
+      "dur": 0.2
+    },
+    "win": {
+      "freq": 1046,
+      "dur": 0.25
+    }
+  },
+  "ECONOMY": {
+    "startMoney": 2500,
+    "prices": {
+      "TONIC": 200,
+      "MEGA_TONIC": 700,
+      "ANTIDOTE": 120,
+      "NET_BALL": 150,
+      "STORM_BALL": 400
+    }
+  },
+  "BALANCE": {
+    "catchBase": 0.35,
+    "catchScale": 0.5,
+    "xpCurveMul": 1.4,
+    "encounterRate": 0.18,
+    "runChance": 0.6
+  },
+  "TILES": {
+    "16": {
+      "name": "grass",
+      "solid": false
+    },
+    "17": {
+      "name": "wall",
+      "solid": true
+    },
+    "18": {
+      "name": "tall_grass",
+      "solid": false,
+      "encounter": true
+    },
+    "19": {
+      "name": "door",
+      "solid": true,
+      "warp": true
+    },
+    "20": {
+      "name": "water",
+      "solid": true
+    },
+    "21": {
+      "name": "sand",
+      "solid": false
+    },
+    "46": {
+      "name": "mat",
+      "solid": false
+    },
+    "48": {
+      "name": "floor",
+      "solid": false
+    },
+    "50": {
+      "name": "rock",
+      "solid": true
+    },
+    "51": {
+      "name": "cave_floor",
+      "solid": false
+    }
+  },
+  "SOLID_TILES": [
+    17,
+    19,
+    20,
+    50
+  ]
+};

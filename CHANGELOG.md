@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added
+- `examples/kaiju-island.GAME.md` (+ `.generated.js`, `.html`, `-standalone.html`):
+  **stress-test del perfil monster-rpg** — ejercita todos los tokens a la vez (13
+  especies con 3 líneas evolutivas de 3 etapas, 13 moves con efectos, chart simétrico de
+  6 tipos + NORMAL, 3 entrenadores, 5 items con los 3 efectos, 3 zonas de encuentro, 3
+  mapas 12×10, overworld de 2 áreas con NPCs/warps, 8 paletas, 10 tiles con tileArt, 2
+  sprites 16×16, 7 sfx, 6 textos). Lint 0/0; cruce `GAME_ENGINE` verificado en ambos
+  sentidos; cubierto automáticamente por `all-examples` (13 archivos).
 
 ## [2.0.1] — 2026-07-07
 
