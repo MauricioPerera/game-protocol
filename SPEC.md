@@ -166,7 +166,7 @@ The core ships with **9 reference profiles** under `profiles/` (each a loadable 
 - **Spec version** uses semver. During `0.x` (pre-`1.0`): **breaking changes bump the minor** (`0.1` → `0.2`), **fixes and additive changes are a patch** (`0.1.0` → `0.1.1`). At `1.0` the core tokens are **frozen**: every removal of a core token or rule is a major bump and must go through the deprecation policy (§7.1) first.
 - **Profiles version independently** of the core; a `GAME.md` declares both (`version` for core, profile carries its own `specVersion`).
 - **The linter migrates, not rejects.** The core rule `version-migration` compares `data.version` against `profile.specVersion` (core default `0.1`): a GAME.md written for an older version is a **warning** pointing at `MIGRATION.md`, not an error — old files keep linting clean while the author migrates. A GAME.md using a version newer than the tooling is an **error** (upgrade the tooling).
-- **Extension fields** use an `x-` prefix and are ignored by validation, allowing experiments without forking the spec.
+- **Extension fields** use an `x-` prefix and are ignored by validation, allowing experiments without forking the spec. They are **not** copied into the compiled artifact — compilation emits only the universal meta plus the profile's `derive` keys — but a profile MAY expose one explicitly (a `derive` entry can read any token, `x-` included). Tools that rewrite a `GAME.md` (migrators, formatters, agent editors) MUST preserve `x-` and other unknown tokens (see §9, round-trip).
 
 ### 7.0 Semver by example
 
@@ -226,3 +226,16 @@ The protocol has a lifecycle: tokens, rules, and profiles can be **deprecated** 
 5. **Graceful fallback** — the game never breaks if generated data is missing.
 6. **Determinism** — output is a pure function of source; CI rejects drift.
 7. **Zero dependencies** — custom parser, pure Node CLI.
+
+## 9. Conformance
+
+GAME Protocol distinguishes the **reference implementation** (`tools/`) from the protocol itself. An alternative implementation is **conformant** if it satisfies all of the following:
+
+1. **Parser.** It parses the YAML subset of §1.1 identically to the reference parser, including the hard-failure cases: block sequences (`- item`), front-matter lines without `:`, duplicate keys, unclosed strings, tab indentation, over-indentation, nesting deeper than 64 levels, and the forbidden keys `__proto__`/`constructor`/`prototype`. `test/parser.js` is the executable definition of these cases. Implementations MAY substitute a full YAML parser as long as the documented subset parses identically.
+2. **Linter.** It emits the core rules of §4 at the documented levels, executes the active profile's reference graph (`refs`, broken-ref family) and rule functions, and reports findings as `{level, rule, msg}` (plus `since`/`removedIn` at the `deprecated` level). A document is valid iff it produces zero `error`-level findings. `test/conformance.js` is the executable reference: every valid example MUST lint clean and every invalid case MUST trigger its rule.
+3. **Compiler.** Its output is a pure function of the source (§3). For the reference artifact format (`window.GAME` as JSON), output MUST be byte-identical to `tools/game-export.js`: universal meta first (`generatedFrom`, `name`, `description`, `platform`, `palettesCount`), then the profile's `derive` keys in declaration order, serialized as JSON with 2-space indent and LF line endings.
+4. **Exit codes.** CLI surfaces follow the §3.1 contract (`0` OK / `1` validation, lint only / `2` input, profile or syntax). `test/cli-errors.js` is the executable reference.
+5. **Tolerance.** A conformant consumer MUST NOT reject a document because of: `x-` extension tokens or other unknown top-level tokens; findings at the `warn` or `deprecated` level (including an older `version`, §7); or Markdown body content beyond what `section-order` checks.
+6. **Round-trip.** A tool that rewrites a `GAME.md` (migrator, formatter, agent editor) MUST preserve tokens it does not understand — `x-` extensions and unknown keys included. Lossy rewriting breaks the experimentation contract of §7.
+
+Points 1–4 are the strict half of the contract (the gate); points 5–6 are the permissive half (what must *not* be enforced). Both halves are normative.

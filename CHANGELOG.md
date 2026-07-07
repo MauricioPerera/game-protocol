@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added
+- SPEC **§9 Conformance**: condiciones normativas (MUST/SHOULD/MAY) para implementaciones
+  alternativas — parser (subset §1.1 + casos de fallo duro), linter (reglas core +
+  perfil, `errors=0` como gate), compilador (byte-identidad: meta universal + orden de
+  `derive`, JSON 2 espacios, LF), exit codes §3.1, tolerancia (qué NO puede rechazar un
+  consumidor) y round-trip (las herramientas que reescriben un `GAME.md` preservan
+  tokens desconocidos). Las suites `test/parser.js`, `test/conformance.js` y
+  `test/cli-errors.js` quedan como referencia ejecutable.
+- SPEC §7: semántica explícita de los campos `x-` — ignorados por validación, **no**
+  pasan al artefacto compilado (salvo que un perfil los derive explícitamente), y deben
+  preservarse en round-trip. Antes el spec no decía qué pasaba con ellos al compilar.
+- Modelo de la mitad permisiva (tolerancia/round-trip) inspirado en el Open Knowledge
+  Format (OKF) de GoogleCloudPlatform/knowledge-catalog; la mitad estricta (gate
+  determinista) sigue siendo la propuesta de valor propia del protocolo.
 
 ## [1.1.0] — 2026-07-07
 
