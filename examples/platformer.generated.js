@@ -3,6 +3,7 @@
 // profile: platformer
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "platformer",
   "name": "Jumpy",
   "description": null,
   "platform": {},

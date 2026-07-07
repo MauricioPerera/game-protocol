@@ -31,9 +31,12 @@
   function buildGame(data, profile) {
     data = data || {}; profile = profile || {};
     // Meta universal: presente en cualquier GAME.md (ver SPEC §2). Va primero para conservar
-    // el orden de claves del artefacto generado.
+    // el orden de claves del artefacto generado. `profile` permite a un consumidor
+    // MULTI-PERFIL (p.ej. un runtime que despacha por genero) saber que es este artefacto
+    // sin heuristicas sobre las claves derivadas.
     const out = {
       generatedFrom: 'GAME.md',
+      profile: data.profile || null,
       name: data.name || null,
       description: data.description || null,
       platform: data.platform || {},

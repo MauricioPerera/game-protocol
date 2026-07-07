@@ -3,6 +3,7 @@
 // profile: quiz
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "quiz",
   "name": "Quiz Island",
   "description": "Demo del perfil puro-de-datos: profiles/quiz.json, cargado sin ejecutar codigo.",
   "platform": {},

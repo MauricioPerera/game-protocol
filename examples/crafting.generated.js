@@ -3,6 +3,7 @@
 // profile: crafting
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "crafting",
   "name": "Forge",
   "description": null,
   "platform": {},

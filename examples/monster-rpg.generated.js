@@ -3,6 +3,7 @@
 // profile: monster-rpg
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "monster-rpg",
   "name": "Monster RPG Demo",
   "description": null,
   "platform": {

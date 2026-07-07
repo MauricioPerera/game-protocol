@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added
+- **`examples/game3d.html` + `game3d.js` — runtime multi-perfil Three.js**: un solo
+  player (`?game=<archivo>.generated.js`, con selector integrado) que despacha por la
+  meta `profile` del artefacto a un módulo de runtime por género. Runtimes iniciales:
+  **adventure**, **dungeon** (mecánica completa del motor 2D en 3D: warps con llave,
+  enemigos, pickups, goal, hp), **monster-rpg** (el motor de Kaiju Island generalizado a
+  cualquier GAME.md del perfil, con terreno procedural de respaldo para juegos sin mapas
+  — `game-data.generated.js` corre sin tocarlo) y **voxel** (el adaptador oficial como
+  runtime). Un perfil sin runtime degrada con mensaje explicativo: *no existe el motor
+  universal por diseño* — el protocolo declara datos, la semántica de cada género es del
+  motor (SPEC §8); perfil nuevo ⇒ módulo de runtime nuevo.
+- **Meta `profile` en el artefacto compilado** (core, aditivo): `buildGame` incluye
+  `profile` en la meta universal — un consumidor multi-perfil despacha sin heurísticas
+  de claves (hueco descubierto al construir game3d). SPEC §9.3 actualizado; los 16
+  artefactos regenerados (los motores con fallback no se ven afectados).
+- **Verificado jugando los 4 perfiles por el mismo player**: adventure ganado de punta a
+  punta (diálogo → llave → goal bloqueado → victoria), dungeon (puerta con llave + warps
+  ida/vuelta con `at` exactos), monster-rpg (encuentro y victoria en Kaiju Island **y**
+  en el demo sin mapa field sobre terreno procedural), voxel (hut, 12 voxels), y el
+  mensaje de perfil-sin-runtime con `quiz`.
 
 ## [2.6.0] — 2026-07-07
 

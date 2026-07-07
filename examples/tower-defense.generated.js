@@ -3,6 +3,7 @@
 // profile: tower-defense
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "tower-defense",
   "name": "Tower Defense Demo",
   "description": null,
   "platform": {},

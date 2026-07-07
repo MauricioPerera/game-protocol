@@ -3,6 +3,7 @@
 // profile: papers-please
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "papers-please",
   "name": "Border Checkpoint",
   "description": null,
   "platform": {},

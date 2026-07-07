@@ -3,6 +3,7 @@
 // profile: dungeon
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "dungeon",
   "name": "El Faro Hundido",
   "description": "Juego completo jugable sobre el motor dungeon de referencia: 7 salas, 2 llaves encadenadas, 5 enemigos, agua animada.",
   "platform": {},

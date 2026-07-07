@@ -3,6 +3,7 @@
 // profile: advance-wars
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "advance-wars",
   "name": "Advance Wars (Extracted)",
   "description": null,
   "platform": {

@@ -3,6 +3,7 @@
 // profile: voxel
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "voxel",
   "name": "Voxel Hut",
   "description": null,
   "platform": {},

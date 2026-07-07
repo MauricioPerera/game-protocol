@@ -3,6 +3,7 @@
 // profile: monster-rpg
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "monster-rpg",
   "name": "Demo Protocol Game",
   "description": "Ejemplo minimo y autocontenido del Protocolo GAME (gameplay-as-data).",
   "platform": {

@@ -3,6 +3,7 @@
 // profile: monster-rpg
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "monster-rpg",
   "name": "Extracted Sprites (universal extractor)",
   "description": "Sprites extraidos de ROM GBA via pipeline Ghidra+heuristica. Candidatos NO verificados.",
   "platform": {},

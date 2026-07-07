@@ -3,6 +3,7 @@
 // profile: adventure
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "adventure",
   "name": "Escape Room Demo",
   "description": null,
   "platform": {},

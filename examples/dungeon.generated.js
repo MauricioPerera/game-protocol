@@ -3,6 +3,7 @@
 // profile: dungeon
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "dungeon",
   "name": "Mazmorra del Protocolo",
   "description": null,
   "platform": {},

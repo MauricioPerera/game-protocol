@@ -3,6 +3,7 @@
 // profile: monster-rpg
 window.GAME = {
   "generatedFrom": "GAME.md",
+  "profile": "monster-rpg",
   "name": "Kaiju Island",
   "description": "Stress-test del protocolo: ejercita todos los tokens del perfil monster-rpg.",
   "platform": {
