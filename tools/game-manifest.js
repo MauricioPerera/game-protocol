@@ -33,6 +33,15 @@ function profileEntry(p) {
       to: r.target.collection, allow: r.target.allow || undefined, optional: !!r.optional,
     })),
     rules: (p.rules || []).map(fn => fn.name).filter(Boolean),
+    // Familias declarativas del core (bounds/dims): expuestas para que un agente sepa
+    // que rangos y formas se validan sin leer el codigo del perfil.
+    bounds: (p.bounds || []).map(b => ({
+      rule: b.rule, level: b.level || 'error',
+      target: (b.collection ? b.collection + '.*.' : b.singleton + '.') + b.field,
+      gt: b.gt, min: b.min, max: b.max,
+      integer: b.integer || undefined, required: b.required || undefined,
+    })),
+    dims: (p.dims || []).map(d => ({ rule: d.rule, level: d.level || 'error', collection: d.collection, shape: d.shape })),
     output: (p.derive || []).map(d => ({ key: d.key, source: ('fn' in d) ? 'derived' : ('value' in d) ? 'const' : ('token:' + d.from) })),
     tokens: p.tokens || undefined,
     // S2.1: reglas marcadas `fn.deprecated = {since, removedIn}` exponen su ciclo de vida.

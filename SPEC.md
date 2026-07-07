@@ -51,7 +51,39 @@ The reference parser (`yaml-min.js`) supports, by design:
 
 Not supported: block sequences (`- item`), anchors/aliases, multiline strings. In flow context, commas inside text must be quoted.
 
-> **Known limitation.** This is a strict subset, not standard YAML. Implementations MAY swap in a full YAML parser; conformance only requires that the documented subset parses identically.
+> **Known limitation.** This is a strict subset, not standard YAML. Implementations MAY swap in a full YAML parser; conformance only requires that the documented subset parses identically (see the grammar in §1.2).
+
+### 1.2 Formal grammar (normative)
+
+The subset, as an EBNF-style grammar. This — not the reference parser's source — is the normative definition; `test/parser.js` is its executable companion.
+
+```ebnf
+document   = { line } ;
+line       = blank | comment | pair-line ;
+blank      = { sp } eol ;
+comment    = { sp } "#" { any } eol ;
+pair-line  = indent key ":" ( sp value | "" ) eol [ children ] ;
+children   = { pair-line }        (* every child strictly more indented than its parent;
+                                     siblings share the first child's indent; depth <= 64 *)
+key        = scalar ;             (* no top-level ":"; unique within its block;
+                                     never __proto__ / constructor / prototype *)
+value      = flow-map | flow-list | scalar ;
+flow-map   = "{" [ pair { "," pair } ] "}" ;
+pair       = key ":" value ;      (* the ":" is the first top-level one outside quotes *)
+flow-list  = "[" [ value { "," value } ] "]" ;
+scalar     = quoted | number | boolean | plain ;
+quoted     = '"' { char } '"' | "'" { char } "'" ;   (* commas and ":" allowed inside *)
+number     = valid JS decimal ;   (* leading-zero integers ("007") stay strings *)
+boolean    = "true" | "false" ;
+plain      = unquoted text ;      (* in flow context: no top-level "," or ":" *)
+```
+
+Semantics and hard failures (MUST raise a clear parse error, never degrade silently):
+
+- Indentation is spaces only; a **TAB in indentation** is an error. A line indented deeper than its block without an opening parent (**over-indentation**) is an error.
+- **Block sequences** (`- item`) are not part of the subset — lists are flow-only (`[a, b]`).
+- A front-matter line without a top-level `:`, a **duplicate key** within a block, an **unclosed quoted string**, a flow pair without `:`, nesting **deeper than 64 levels**, and the three forbidden keys are all errors.
+- `\r\n` / `\r` line endings are normalized to `\n` before parsing. Line comments are stripped only on their own line — a `#` after a flow value is **not** a comment (it becomes part of the last scalar; see `tools/SPRITE_EXTRACTION.md`).
 
 ## 2. Core tokens (genre-agnostic)
 
@@ -124,7 +156,7 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 | `text-valid` | error | Declared text entries are non-empty strings |
 | `no-drift` | error (CI) | Generated artifact matches current `GAME.md` |
 
-> `broken-ref`, `dims`, `range` are **rule families**: the profile supplies *which* tokens they apply to and *what* the bounds/dimensions are. The core supplies the checking machinery.
+> `broken-ref`, `dims`, `range` are **rule families**: the profile supplies *which* tokens they apply to and *what* the bounds/dimensions are. The core supplies the checking machinery. All three are **declarative tables** in the profile descriptor (§6.1): `refs` (broken-ref), `bounds` (range: `gt`/`min`/`max`/`integer`/`required` over collection or singleton fields) and `dims` (fixed-shape matrices). Non-uniform logic stays in `rules` functions.
 
 > `profile-known` and `version-migration` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access and does not belong in the isomorphic core.
 
@@ -162,6 +194,26 @@ The core ships with **9 reference profiles** under `profiles/` (each a loadable 
 > **Tenth profile.** `profiles/advance-wars.js` serves the GBA sprite-extraction pipeline (`tools/SPRITE_EXTRACTION.md`): its vocabulary is `palettes` (16 BGR555-quantized colors, `[r,g,b]` in `0..31`) and `units` (4bpp tiles: a `height`×`width` matrix of nibbles `0..15` indexing the palette). Rules: `palette-color-range`, `unit-palette-ref`, `unit-dims`, `unit-tiledata-range`. Derived keys: `PALETTES`, `UNITS`. Its one reference (`units.*.palette` → numeric `palettes` keys) is validated in `rules`, not `refs` — same reason as `armors` in tower-defense (the broken-ref family matches string keys).
 
 > **Design intent.** If you can express a new genre as a profile without touching the core, the core is doing its job. If you cannot, that is a core bug.
+
+### 6.1 Profile descriptor contract (normative)
+
+A profile module exports one object. Its shape is validated on load (`validateProfile` in `tools/profile-helpers.js`); a malformed descriptor is reported as `profile-load-error` with the offending entry, never as a runtime `TypeError` mid-lint.
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `id` | string | yes | kebab-case (`/^[a-z0-9-]+$/`); must match the filename |
+| `specVersion` | string | no | spec version the profile targets (feeds `version-migration`) |
+| `sections` | string[] | no | canonical `##` order for the body |
+| `required` | string[] | no | front-matter tokens `required-fields` demands |
+| `refs` | entry[] | no | each: `{ rule, level, src, target: { collection, allow? }, msg(), optional? }` — broken-ref family |
+| `bounds` | entry[] | no | each: `{ rule, level?, collection\|singleton, field, gt?, min?, max?, integer?, required?, msg?() }` — range family |
+| `dims` | entry[] | no | each: `{ rule, level?, collection, shape: [h, w] }` — dims family |
+| `rules` | function[] | no | non-uniform logic; each `fn(ctx)`, may carry `fn.deprecated = { since, removedIn }` (§7.1) |
+| `derive` | entry[] | no | each: `{ key, from \| value \| fn(data, helpers) }` — compilation table, in output order |
+
+**Trust note:** `refs`/`bounds`/`dims`/`derive` are data, but `rules` and `derive.fn` are **executable code** — see §10.
+
+`test/profile-descriptor.js` is the executable reference: every shipped profile MUST validate, and each malformed shape MUST produce an actionable message.
 
 ## 7. Versioning & extensibility
 
@@ -241,3 +293,19 @@ GAME Protocol distinguishes the **reference implementation** (`tools/`) from the
 6. **Round-trip.** A tool that rewrites a `GAME.md` (migrator, formatter, agent editor) MUST preserve tokens it does not understand — `x-` extensions and unknown keys included. Lossy rewriting breaks the experimentation contract of §7.
 
 Points 1–4 are the strict half of the contract (the gate); points 5–6 are the permissive half (what must *not* be enforced). Both halves are normative.
+
+## 10. Security & trust model
+
+Two trust levels exist in the pipeline, and they must not be confused:
+
+1. **`GAME.md` documents are untrusted input.** The tooling MUST be safe to run on a document from anywhere. The reference parser enforces this: forbidden keys (`__proto__`/`constructor`/`prototype`) block prototype pollution; the 64-level depth guard blocks stack-exhaustion input; every malformed construct fails fast with a parse error instead of degrading (§1.2). Neither lint nor export ever evaluates document content as code.
+2. **Profiles are executable code and therefore trusted like a dependency.** `rules` functions and `derive.fn` run with full process privileges. The profile id regex (`/^[a-z0-9-]+$/`) prevents path traversal into arbitrary modules, and §6.1 validates the descriptor's *shape* — but neither can vet what a rule function *does*. **Review a third-party profile before installing it, exactly as you would review a dependency.** A community-profile ecosystem needs sandboxing or a pure-data rule format first; until then, shipping profiles in-repo under CODEOWNERS review is the supported model.
+
+Additional hardening in the reference tools: `render-png.js` loads generated artifacts via `require()` confined to `examples/` (no `eval`/`new Function`, path-checked against traversal); `GAME_ENGINE` cross-checks read engine source as **text** (tokenized, never executed); generated artifacts are written only after a successful compile, never partially.
+
+## 11. Future directions (non-normative)
+
+Documented so the trade-offs are explicit; none of this is part of `0.1`:
+
+- **Multi-file bundles.** The single-file design (§0) is deliberate — one artifact, no drift between data and doc — but it has known costs at scale: inline art dominates large documents (mitigated, not solved, by the compact hex form) and single-file merges conflict. The designated evolution path is an OKF-style bundle (directory tree, concept-id = path, bundle-relative links), keeping the strict gate over the whole tree. This becomes worth its complexity only when real documents outgrow one file.
+- **Pure-data rules.** Growing `bounds`/`dims`/`refs` until common profiles need no `rules` functions at all would make third-party profiles data-only — and safely loadable (§10).

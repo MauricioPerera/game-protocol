@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { splitFrontMatter, parseYamlSubset } = require('./yaml-min');
 const { buildGame } = require('./game-build-core');
+const { validateProfile } = require('./profile-helpers');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
@@ -16,7 +17,10 @@ function loadProfile(id) {
     throw new Error('Perfil inválido: "' + id + '" (solo minúsculas, números y guión)');
   const p = path.join(PROFILES_DIR, id + '.js');
   if (!fs.existsSync(p)) return null;        // inexistente
-  return require(p);                          // si falla (sintaxis), lanza -> el llamador lo reporta
+  const prof = require(p);                    // si falla (sintaxis), lanza -> el llamador lo reporta
+  const shapeErr = validateProfile(prof);     // contrato del descriptor (SPEC §6.1)
+  if (shapeErr) throw new Error(shapeErr);
+  return prof;
 }
 
 const args = process.argv.slice(2);

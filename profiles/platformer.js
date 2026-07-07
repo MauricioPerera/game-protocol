@@ -20,17 +20,19 @@
       msg: (v) => 'player.spawnLevel referencia un nivel inexistente: ' + v },
   ];
 
-  function ruleEnemyStats({ data, add }) {
-    for (const [n, e] of Object.entries(data.enemies || {})) {
-      if (!(e.hp > 0)) add('error', 'enemy-bounds', 'enemigo ' + n + ' tiene hp invalido: ' + e.hp);
-      if (e.damage != null && e.damage < 0) add('error', 'enemy-bounds', 'enemigo ' + n + ' tiene damage negativo: ' + e.damage);
-    }
-  }
-  function rulePhysics({ data, add }) {
-    const p = data.physics || {};
-    for (const k of ['gravity', 'jump', 'runSpeed'])
-      if (p[k] != null && !(p[k] > 0)) add('error', 'physics-bounds', 'physics.' + k + ' debe ser > 0: ' + p[k]);
-  }
+  // FAMILIA range/bounds DECLARATIVA del core: sustituye a las antiguas funciones
+  // ruleEnemyStats / rulePhysics con una tabla de datos (mismos rule ids y niveles).
+  // Este perfil es la prueba de que la familia funciona sin logica propia.
+  const bounds = [
+    { rule: 'enemy-bounds', collection: 'enemies', field: 'hp', gt: 0, required: true,
+      msg: (v, k) => 'enemigo ' + k.split('.').pop() + ' tiene hp invalido: ' + v },
+    { rule: 'enemy-bounds', collection: 'enemies', field: 'damage', min: 0,
+      msg: (v, k) => 'enemigo ' + k.split('.').pop() + ' tiene damage negativo: ' + v },
+    { rule: 'physics-bounds', singleton: 'physics', field: 'gravity', gt: 0 },
+    { rule: 'physics-bounds', singleton: 'physics', field: 'jump', gt: 0 },
+    { rule: 'physics-bounds', singleton: 'physics', field: 'runSpeed', gt: 0 },
+  ];
+
   function ruleLevelGoal({ data, add }) {
     for (const [n, l] of Object.entries(data.levels || {})) {
       if (l.goal && (typeof l.goal.x !== 'number' || typeof l.goal.y !== 'number'))
@@ -54,7 +56,8 @@
     sections: ['Overview', 'Tilesets', 'Enemies', 'Levels', 'Player', 'Physics', "Do's and Don'ts"],
     required: ['version', 'name'],
     refs: refs,
-    rules: [ruleEnemyStats, rulePhysics, ruleLevelGoal],
+    bounds: bounds,
+    rules: [ruleLevelGoal],
     derive: derive,
   };
 });

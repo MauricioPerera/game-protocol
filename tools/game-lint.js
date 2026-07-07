@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const { splitFrontMatter, parseYamlSubset } = require('./yaml-min');
 const { lintGame } = require('./game-lint-core');
+const { validateProfile } = require('./profile-helpers');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
@@ -16,7 +17,14 @@ function loadProfile(id) {
     return { profile: null, error: 'Perfil inválido: "' + id + '" (solo minúsculas, números y guión)' };
   const p = path.join(PROFILES_DIR, id + '.js');
   if (!fs.existsSync(p)) return { profile: null, error: null };       // inexistente
-  try { return { profile: require(p), error: null }; }
+  try {
+    const prof = require(p);
+    // Contrato del descriptor (SPEC §6.1): un perfil con forma invalida se reporta como
+    // profile-load-error con mensaje accionable, no como TypeError a mitad de lint.
+    const shapeErr = validateProfile(prof);
+    if (shapeErr) return { profile: null, error: shapeErr };
+    return { profile: prof, error: null };
+  }
   catch (e) { return { profile: null, error: e.message }; }            // existe pero falla (sintaxis)
 }
 

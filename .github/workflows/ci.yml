@@ -41,6 +41,8 @@ jobs:
           node-version: '20'
       - name: Parser (casos límite — falla fuerte, no en silencio)
         run: node test/parser.js
+      - name: Descriptor de perfil (contrato SPEC §6.1)
+        run: node test/profile-descriptor.js
       - name: Un mismo core valida y compila varios géneros
         run: node test/multi-genre.js
       - name: Conformidad (ejemplos válidos + casos inválidos)

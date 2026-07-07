@@ -67,6 +67,43 @@
     }
   }
 
+  // ---- FAMILIA range/bounds DECLARATIVA: el perfil declara una tabla `bounds` y el core
+  // la ejecuta (antes esta familia existia solo como funciones-regla en cada perfil).
+  // Entrada: { rule, level?, collection|singleton, field, gt?, min?, max?, integer?,
+  //            required?, msg? }. gt = minimo exclusivo (el caso "> 0" tipico).
+  function processBound(e, data, add) {
+    const level = e.level || 'error';
+    const check = (owner, v) => {
+      if (v == null) {
+        if (e.required) add(level, e.rule, owner + '.' + e.field + ' requerido');
+        return;
+      }
+      const bad = typeof v !== 'number'
+        || (e.integer && !Number.isInteger(v))
+        || (e.gt != null && !(v > e.gt))
+        || (e.min != null && v < e.min)
+        || (e.max != null && v > e.max);
+      if (bad) add(level, e.rule, e.msg ? e.msg(v, owner) : owner + '.' + e.field + ' fuera de rango: ' + v);
+    };
+    if (e.collection) {
+      for (const [k, obj] of Object.entries(data[e.collection] || {}))
+        check(e.collection + '.' + k, obj && obj[e.field]);
+    } else if (e.singleton) {
+      const o = data[e.singleton] || {};
+      if (e.field in o || e.required) check(e.singleton, o[e.field]);
+    }
+  }
+
+  // ---- FAMILIA dims DECLARATIVA: matrices de forma fija por coleccion.
+  // Entrada: { rule, level?, collection, shape: [alto, ancho] }.
+  function processDims(e, data, add) {
+    const level = e.level || 'error';
+    const h = e.shape[0], w = e.shape[1];
+    for (const [k, mat] of Object.entries(data[e.collection] || {}))
+      if (!Array.isArray(mat) || mat.length !== h || mat.some(r => !Array.isArray(r) || r.length !== w))
+        add(level, e.rule, e.collection + '.' + k + ' no es ' + h + 'x' + w);
+  }
+
   // P1: pre-tokeniza el motor una sola vez por llamada a lintGame. Extrae los tokens que el
   // motor "usa": literales string (cubre gBal('k') y ['k']) y accesos miembro `.k` (cubre
   // `.k\b`). ruleDeadToken consulta este Set en O(1) por clave de balance, en vez de lanzar
@@ -171,6 +208,10 @@
     // refs apuntan a ella. Se crea por llamada a lintGame (no se comparte entre llamadas).
     const setCache = new Map();
     for (const entry of (profile.refs || [])) processRef(entry, data, add, setCache);
+
+    // ---- FAMILIAS range/dims dirigidas por el descriptor del perfil (tablas declarativas) ----
+    for (const entry of (profile.bounds || [])) processBound(entry, data, add);
+    for (const entry of (profile.dims || [])) processDims(entry, data, add);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
     // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`

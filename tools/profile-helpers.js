@@ -99,5 +99,48 @@
     }
   }
 
-  return { describeSrc: describeSrc, rulePalettes: rulePalettes, ruleTileArt: ruleTileArt, decodeArtRows: decodeArtRows };
+  // Valida la FORMA del descriptor de perfil (SPEC §6.1). Devuelve null si es valido o
+  // un mensaje accionable si no. Los CLIs lo corren tras cargar el modulo: un descriptor
+  // malformado se reporta como `profile-load-error` en vez de fallar en runtime a mitad
+  // de lint/export. Las reglas siguen siendo funciones (codigo): esto valida el contrato
+  // estructural, no su logica.
+  function validateProfile(p) {
+    const fail = m => 'descriptor invalido: ' + m;
+    if (!p || typeof p !== 'object') return fail('el modulo no exporta un objeto');
+    if (typeof p.id !== 'string' || !/^[a-z0-9-]+$/.test(p.id)) return fail('`id` kebab-case requerido');
+    if (p.specVersion != null && typeof p.specVersion !== 'string') return fail('`specVersion` debe ser string');
+    if (p.sections != null && (!Array.isArray(p.sections) || p.sections.some(s => typeof s !== 'string'))) return fail('`sections` debe ser array de strings');
+    if (p.required != null && (!Array.isArray(p.required) || p.required.some(s => typeof s !== 'string'))) return fail('`required` debe ser array de strings');
+    if (p.rules != null && (!Array.isArray(p.rules) || p.rules.some(f => typeof f !== 'function'))) return fail('`rules` debe ser array de funciones');
+    const refs = p.refs || [];
+    for (let i = 0; i < refs.length; i++) {
+      const r = refs[i];
+      if (!r || typeof r.rule !== 'string' || !r.src || typeof r.src !== 'object' ||
+          !r.target || typeof r.target.collection !== 'string' || typeof r.msg !== 'function')
+        return fail('refs[' + i + '] necesita { rule, src, target.collection, msg() }');
+    }
+    const bounds = p.bounds || [];
+    for (let i = 0; i < bounds.length; i++) {
+      const b = bounds[i];
+      if (!b || typeof b.rule !== 'string' || typeof b.field !== 'string' || !(b.collection || b.singleton))
+        return fail('bounds[' + i + '] necesita { rule, field, collection|singleton }');
+    }
+    const dims = p.dims || [];
+    for (let i = 0; i < dims.length; i++) {
+      const d = dims[i];
+      if (!d || typeof d.rule !== 'string' || typeof d.collection !== 'string' ||
+          !Array.isArray(d.shape) || d.shape.length !== 2 || d.shape.some(n => !Number.isInteger(n) || n <= 0))
+        return fail('dims[' + i + '] necesita { rule, collection, shape: [alto, ancho] }');
+    }
+    const derive = p.derive || [];
+    for (let i = 0; i < derive.length; i++) {
+      const e = derive[i];
+      if (!e || typeof e.key !== 'string' || !('from' in e || 'value' in e || 'fn' in e))
+        return fail('derive[' + i + '] necesita { key, from|value|fn }');
+      if ('fn' in e && typeof e.fn !== 'function') return fail('derive[' + i + '].fn debe ser funcion');
+    }
+    return null;
+  }
+
+  return { describeSrc: describeSrc, rulePalettes: rulePalettes, ruleTileArt: ruleTileArt, decodeArtRows: decodeArtRows, validateProfile: validateProfile };
 });

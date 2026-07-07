@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — pendientes de diseño del análisis del protocolo
+- **SPEC §1.2 — gramática formal (normativa)** del subconjunto YAML: EBNF + semántica +
+  lista de fallos duros. La definición del lenguaje deja de ser "lo que haga el parser
+  de referencia"; `test/parser.js` pasa a ser su acompañante ejecutable.
+- **SPEC §6.1 — contrato del descriptor de perfil (normativo)** + validador
+  `validateProfile` (isomorfo, en `profile-helpers.js`), cableado en `game-lint.js` y
+  `game-export.js`: un descriptor malformado se reporta como `profile-load-error` con la
+  entrada exacta (p.ej. `refs[0]`), nunca como `TypeError` en runtime. Nueva suite
+  `test/profile-descriptor.js` (los 10 perfiles reales validan + 11 formas malformadas
+  con mensaje accionable), añadida a `npm test` y a CI.
+- **Familias `bounds`/`dims` declarativas en el core**: el descriptor puede declarar
+  tablas de rangos (`gt`/`min`/`max`/`integer`/`required` sobre colecciones o
+  singletons) y de formas fijas (`shape: [h, w]`) que `lintGame` ejecuta — las familias
+  range/dims de SPEC §4 dejan de existir solo como funciones. **platformer migrado como
+  prueba**: `ruleEnemyStats`/`rulePhysics` sustituidas por 5 entradas `bounds` (mismos
+  rule ids y comportamiento). `manifest.json` expone `bounds`/`dims` por perfil.
+- **SPEC §10 — Security & trust model**: dos niveles de confianza (GAME.md = input no
+  confiable, con las defensas del parser; perfiles = código ejecutable, revisar como
+  dependencia), más el hardening de los tools de referencia.
+- **SPEC §11 — Future directions (no normativa)**: el modelo bundle multi-archivo
+  (estilo OKF) como camino de evolución designado, y las reglas puras-de-datos como
+  prerequisito para perfiles de terceros seguros.
 
 ## [2.2.1] — 2026-07-07
 

@@ -244,6 +244,23 @@ for (const c of invalid) {
      'deprecated  no breaking lint (0 errores)', JSON.stringify(f));
 })();
 
+// ---- FAMILIAS declarativas bounds/dims del core: tabla en el descriptor, sin funciones ----
+(function () {
+  const prof = { id: 't2', specVersion: '0.1', sections: [], required: ['version', 'name', 'profile'], refs: [],
+    bounds: [{ rule: 'hp-range', collection: 'units', field: 'hp', gt: 0, required: true },
+             { rule: 'speed-range', singleton: 'physics', field: 'speed', min: 1, max: 9, integer: true }],
+    dims: [{ rule: 'grid-dims', collection: 'grids', shape: [2, 2] }],
+    rules: [], derive: [] };
+  const L = d => lintGame(Object.assign({ version: '0.1', name: 'x', profile: 't2' }, d), '', { profile: prof, frontMatterPresent: true });
+  ok(hasRule(L({ units: { A: { hp: -1 } } }), 'hp-range'), 'familia bounds  hp -1 → hp-range');
+  ok(hasRule(L({ units: { A: {} } }), 'hp-range'), 'familia bounds  hp requerido ausente → hp-range');
+  ok(hasRule(L({ physics: { speed: 2.5 } }), 'speed-range'), 'familia bounds  integer violado → speed-range');
+  ok(hasRule(L({ physics: { speed: 99 } }), 'speed-range'), 'familia bounds  max violado → speed-range');
+  ok(hasRule(L({ grids: { g: [[1]] } }), 'grid-dims'), 'familia dims  1x1 vs shape 2x2 → grid-dims');
+  ok(L({ units: { A: { hp: 5 } }, physics: { speed: 3 }, grids: { g: [[1, 2], [3, 4]] } })
+       .filter(x => x.level === 'error').length === 0, 'familias  datos validos → 0 errores');
+})();
+
 console.log('\n— Cobertura inválidos por perfil —');
 const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');

@@ -43,6 +43,8 @@
         "rulePalettes",
         "ruleUnits"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "PALETTES",
@@ -79,6 +81,8 @@
         "rulePlayer",
         "ruleText"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "PALETTES",
@@ -149,6 +153,8 @@
         "ruleRecipeInputs",
         "ruleMaterials"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "MATERIALS",
@@ -194,6 +200,8 @@
         "ruleScenes",
         "ruleText"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "PALETTES",
@@ -344,6 +352,8 @@
         "ruleEconomy",
         "ruleDeadToken"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "TYPE_CHART",
@@ -490,6 +500,8 @@
         "ruleEntrants",
         "ruleEconomy"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "COUNTRIES",
@@ -561,10 +573,42 @@
         }
       ],
       "rules": [
-        "ruleEnemyStats",
-        "rulePhysics",
         "ruleLevelGoal"
       ],
+      "bounds": [
+        {
+          "rule": "enemy-bounds",
+          "level": "error",
+          "target": "enemies.*.hp",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "enemy-bounds",
+          "level": "error",
+          "target": "enemies.*.damage",
+          "min": 0
+        },
+        {
+          "rule": "physics-bounds",
+          "level": "error",
+          "target": "physics.gravity",
+          "gt": 0
+        },
+        {
+          "rule": "physics-bounds",
+          "level": "error",
+          "target": "physics.jump",
+          "gt": 0
+        },
+        {
+          "rule": "physics-bounds",
+          "level": "error",
+          "target": "physics.runSpeed",
+          "gt": 0
+        }
+      ],
+      "dims": [],
       "output": [
         {
           "key": "TILESETS",
@@ -618,6 +662,8 @@
         "ruleGenerator",
         "ruleText"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "PALETTES",
@@ -714,6 +760,8 @@
         "ruleSpriteDims",
         "ruleTileArt"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "TOWERS",
@@ -811,6 +859,8 @@
         "rulePrefabs",
         "ruleStructures"
       ],
+      "bounds": [],
+      "dims": [],
       "output": [
         {
           "key": "MATERIALS",
