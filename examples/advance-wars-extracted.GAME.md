@@ -32,6 +32,8 @@ asset gráfico fiel.
 
 `tileData` = 8 filas × 8 nibbles; cada nibble (0..15) indexa `palettes.0`.
 
+Paleta 0: bloque BGR555 en ROM `0x081846` (16 colores, elegida por puntaje heurístico).
+
 ## Rendering
 Render en canvas (motor) — por cada unidad:
 1. Leer `palettes.0` → 16 colores RGB 0..31. Escalar a 0..255

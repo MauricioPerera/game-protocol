@@ -204,11 +204,15 @@ def fmt_tile(rows):
 
 
 def emit_gamemd(rom_path, palette, pal_off, tiles, out_path):
+    # OJO: nada de comentarios inline tras un array/map de flujo en el front-matter.
+    # yaml-min NO los limpia (limitación documentada en tools/SPRITE_EXTRACTION.md):
+    # el "# ..." se pega al último valor y corrompe el dato (lo atrapan las reglas
+    # palette-color-range / unit-tiledata-range del perfil). Los offsets van al cuerpo.
     units_block = []
     for name, (off, rows) in zip(UNIT_NAMES, tiles):
         units_block.append(
-            "  %s: { palette: 0, width: 8, height: 8, tileData: %s }  # @0x%06X"
-            % (name, fmt_tile(rows), off)
+            "  %s: { palette: 0, width: 8, height: 8, tileData: %s }"
+            % (name, fmt_tile(rows))
         )
 
     fm = []
@@ -218,7 +222,7 @@ def emit_gamemd(rom_path, palette, pal_off, tiles, out_path):
     fm.append('platform: { mode: grid, cols: 12, rows: 10 }')
     fm.append('palettesCount: 1')
     fm.append('palettes:')
-    fm.append('  0: %s  # BGR555 @0x%06X (16 colores, heuristic)' % (fmt_palette(palette), pal_off))
+    fm.append('  0: %s' % fmt_palette(palette))
     fm.append('units:')
     fm.extend(units_block)
 
@@ -239,6 +243,8 @@ def emit_gamemd(rom_path, palette, pal_off, tiles, out_path):
         body.append("| %s | 0x%06X | 0 | 8x8 |" % (name, off))
     body.append("")
     body.append("`tileData` = 8 filas × 8 nibbles; cada nibble (0..15) indexa `palettes.0`.")
+    body.append("")
+    body.append("Paleta 0: bloque BGR555 en ROM `0x%06X` (16 colores, elegida por puntaje heurístico)." % pal_off)
     body.append("")
     body.append("## Rendering")
     body.append("Render en canvas (motor) — por cada unidad:")
