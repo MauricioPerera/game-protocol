@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.0.1`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.1.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,13 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.0.1`** — patch: conteo de reglas verificado (104) y tests sin el
+**Release `v2.1.0`** — aditivo: el stress-test **Kaiju Island**
+([`examples/kaiju-island.GAME.md`](./examples/kaiju-island.GAME.md) + visor) que
+ejercita todos los tokens del perfil monster-rpg a la vez, y el cierre de los **10
+huecos de validación** que descubrió (6 reglas nuevas + 4 extensiones; conformance 147
+casos, mutation audit 20/20). Los `GAME.md` válidos existentes siguen en 0 errores.
+
+`v2.0.1` — patch: conteo de reglas verificado (104) y tests sin el
 fallback interno `|| 'monster-rpg'` (alineados con el contrato 2.0.0).
 
 `v2.0.0` — **breaking** (bump major): ejecuta la remoción anunciada en

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.1.0] — 2026-07-07
+
+Release **aditivo** sobre `2.0.1` (bump minor, [SPEC §7.0](./SPEC.md): reglas y ejemplo
+nuevos): el stress-test **Kaiju Island** y el cierre de los 10 huecos de validación que
+descubrió. La versión del protocolo sigue en `0.1`; sin breaking ni deprecations — los
+`GAME.md` válidos existentes siguen en 0 errores.
+
 ### Added
 - `examples/kaiju-island.GAME.md` (+ `.generated.js`, `.html`, `-standalone.html`):
   **stress-test del perfil monster-rpg** — ejercita todos los tokens a la vez (13
@@ -301,6 +310,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.1.0
 [2.0.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.1
 [2.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.0
 [1.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.3.0
