@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.0.1] — 2026-07-07
+
+Release **patch** sobre `2.0.0` ([SPEC §7.0](./SPEC.md): correcciones sin cambio de
+forma): docs y tests alineados con el contrato; sin cambios de comportamiento en los CLI.
+
 ### Fixed
 - README: el conteo de reglas pasa de 101 a **104** — el perfil `advance-wars` añadió
   3 reglas (`unit-palette-ref`, `unit-dims`, `unit-tiledata-range`) después de fijar el
@@ -273,6 +280,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.0.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.1
 [2.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.0
 [1.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.3.0
 [1.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.2.0

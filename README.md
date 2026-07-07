@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.0.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.0.1`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,10 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.0.0`** — **breaking** (bump major): ejecuta la remoción anunciada en
+**Release `v2.0.1`** — patch: conteo de reglas verificado (104) y tests sin el
+fallback interno `|| 'monster-rpg'` (alineados con el contrato 2.0.0).
+
+`v2.0.0` — **breaking** (bump major): ejecuta la remoción anunciada en
 `v1.3.0`. **`profile` es obligatorio**: sin él, `game-lint.js` reporta error
 `required-fields` (exit 1) y `game-export.js` sale con exit 2 sin escribir artefacto.
 Migración: un comando ([`MIGRATION.md`](./MIGRATION.md), De 1.x → 2.0.0, vigente).
