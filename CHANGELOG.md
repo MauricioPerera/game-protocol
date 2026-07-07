@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.6.0] — 2026-07-07
+
+Release **aditivo** sobre `2.5.0` (bump minor, [SPEC §7.0](./SPEC.md)): segundo backend
+para el perfil monster-rpg — **el mismo `GAME.md` alimenta motores distintos sin tocar
+una línea de datos**. La versión del protocolo sigue en `0.1`.
+
 ### Added
 - `examples/kaiju-island-3d.html` (+ `-standalone.html`): **motor Three.js completo para
   el perfil monster-rpg**, alimentado por `kaiju-island.generated.js` — mundo de tiles
@@ -477,6 +485,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.6.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.6.0
 [2.5.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.5.0
 [2.4.2]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.2
 [2.4.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.1

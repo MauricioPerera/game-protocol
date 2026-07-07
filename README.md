@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.5.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.6.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.5.0`** — aditivo: **El Faro Hundido**
+**Release `v2.6.0`** — aditivo: **Kaiju Island 3D**
+([`examples/kaiju-island-3d.html`](./examples/kaiju-island-3d.html)) — motor **Three.js**
+completo para monster-rpg alimentado por el mismo `kaiju-island.generated.js` del visor
+2D: mundo de tiles 3D desde `TILE_ART`/`PALETTES`, combate por turnos completo
+(`TYPE_CHART`, efectos, captura/huida/XP/evoluciones por `BALANCE`), duelos con línea de
+visión y áreas procedurales. Mecánicas **verificadas jugando** (playthrough scriptado:
+captura, victorias, duelo ganado). El mismo GAME.md, dos motores.
+
+`v2.5.0` — aditivo: **El Faro Hundido**
 ([`examples/el-faro-hundido.GAME.md`](./examples/el-faro-hundido.GAME.md) + HTML
 jugable), un juego **completo** sobre el motor dungeon de referencia — 7 salas, 2
 llaves encadenadas, 5 enemigos, 3 NPCs, agua animada y victoria — donde el motor es el
