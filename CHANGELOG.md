@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.2.1] — 2026-07-07
+
+Release **patch** sobre `2.2.0` ([SPEC §7.0](./SPEC.md): correcciones sin cambio de
+forma): errata de docs y limpieza de comentarios de test. Sin cambios de comportamiento.
+
 ### Fixed — errata
 - El ahorro de la forma hex del arte se publicó como "~4×"; el valor medido es
   **~1,8×** en las líneas de arte (`kaiju-island`: 13.560 → 12.477 bytes). Corregido en
@@ -345,6 +352,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.2.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.1
 [2.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.0
 [2.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.1.0
 [2.0.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.1
