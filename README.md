@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.1.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.2.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,13 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.1.0`** — aditivo: el stress-test **Kaiju Island**
+**Release `v2.2.0`** — aditivo: las tres **fricciones de autoría** del stress-test,
+resueltas — forma compacta hex para el arte 4bpp (`tileArt`/`sprites` como strings hex,
+~4× menos texto, mismo artefacto byte a byte), secciones canónicas ampliadas
+(Sprites/Moves/Trainers/Encounters/Sfx como `##` de primera clase) y eliminado el warn
+falso-positivo por comas en diálogos.
+
+`v2.1.0` — aditivo: el stress-test **Kaiju Island**
 ([`examples/kaiju-island.GAME.md`](./examples/kaiju-island.GAME.md) + visor) que
 ejercita todos los tokens del perfil monster-rpg a la vez, y el cierre de los **10
 huecos de validación** que descubrió (6 reglas nuevas + 4 extensiones; conformance 147

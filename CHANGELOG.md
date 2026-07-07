@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.2.0] — 2026-07-07
+
+Release **aditivo** sobre `2.1.0` (bump minor, [SPEC §7.0](./SPEC.md)): aborda las tres
+fricciones de autoría detectadas por el stress-test Kaiju Island. La versión del
+protocolo sigue en `0.1`; sin breaking — los `GAME.md` existentes siguen en 0 errores y
+compilan al mismo artefacto.
+
 ### Added — fricciones de autoría del stress-test (perfil monster-rpg)
 - **Forma compacta hex para el arte 4bpp** (`tileArt` y `sprites`): además de la matriz
   de números, se acepta un array de strings hex — 1 carácter = 1 celda `0..15`
@@ -328,6 +337,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.0
 [2.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.1.0
 [2.0.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.1
 [2.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.0
