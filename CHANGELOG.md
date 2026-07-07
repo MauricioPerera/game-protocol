@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added
+- `examples/kaiju-island-3d.html` (+ `-standalone.html`): **motor Three.js completo para
+  el perfil monster-rpg**, alimentado por `kaiju-island.generated.js` — mundo de tiles
+  3D con texturas generadas desde `TILE_ART`/`PALETTES` (CanvasTexture, muros/agua/rocas
+  con altura), billboards desde `SPRITES`/`SPRITE_PALETTES`, colisión por `SOLID_TILES`,
+  NPCs y entrenadores sólidos, interiores con `entry`/`exit`/`return`, terreno
+  procedural para áreas sin mapa (shore — la frontera dato/código del README), cámara de
+  seguimiento, sfx WebAudio desde `SFX`, y **combate por turnos completo**: `TYPE_CHART`
+  con eficacias, efectos de moves (burn/leech/paralyze/slow/flinch), captura con la
+  fórmula `catchBase + catchScale·(1−hp/maxhp)` de `BALANCE`, huida por `runChance`,
+  XP/niveles con `xpCurveMul`, evoluciones vía `EVOLUTIONS`, duelos de entrenador con
+  línea de visión, equipos expandidos, premio y campeón. Mismo patrón CDN que
+  `voxel-three.html` (three@0.160.0, importmap).
+- **Verificado jugando en navegador** (playthrough scriptado con BFS sobre los datos):
+  diálogo de NPC, NPC bloquea el paso, casa con return exacto, captura de VOLTMOUSE (2
+  NET_BALLs), victoria salvaje con XP, derrota interceptado por la línea de visión de
+  RANGER LILA (blackout correcto) y luego duelo ganado (+300₲, marcada derrotada), y
+  shore procedural. Estado expuesto en `window.KAIJU` para harnesses.
 
 ## [2.5.0] — 2026-07-07
 
