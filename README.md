@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.3.1`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.4.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,14 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.3.1`** — patch de docs: la lista de suites de `CONTRIBUTING.md`
+**Release `v2.4.0`** — aditivo: **reglas puras-de-datos** ([SPEC §11](./SPEC.md),
+primera etapa). Los CLIs cargan perfiles `profiles/<id>.json` con `JSON.parse` — sin
+ejecutar código, la vía segura para perfiles de terceros ([§10](./SPEC.md)); nueva
+familia declarativa `enums`; `refs[].msg` opcional (mensaje por defecto del core); y
+`profiles/quiz.json`, el perfil de referencia puro-datos (undécimo, `dataOnly: true` en
+el manifest) con su ejemplo jugable. 116 reglas; 165 casos de conformance.
+
+`v2.3.1` — patch de docs: la lista de suites de `CONTRIBUTING.md`
 sincronizada con las 12 reales de `npm test`.
 
 `v2.3.0` — aditivo: los cinco **pendientes de diseño** del análisis del

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.4.0] — 2026-07-07
+
+Release **aditivo** sobre `2.3.1` (bump minor, [SPEC §7.0](./SPEC.md)): primera etapa de
+las **reglas puras-de-datos** de SPEC §11 — un perfil puede ser 100% datos y cargarse
+sin ejecutar código. Sin breaking: los `GAME.md` y perfiles `.js` existentes siguen
+intactos. La versión del protocolo sigue en `0.1`.
+
 ### Added — reglas puras-de-datos (SPEC §11, primera etapa)
 - **Perfiles JSON (puro-datos)**: los CLIs cargan `profiles/<id>.json` con `JSON.parse` —
   **nunca se ejecuta código** — además de los `.js` (resolución: `.js` primero). Es la
@@ -410,6 +419,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.4.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.0
 [2.3.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.1
 [2.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.0
 [2.2.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.1
