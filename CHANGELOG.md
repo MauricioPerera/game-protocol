@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.7.1] — 2026-07-07
+
+Release **patch** sobre `2.7.0` ([SPEC §7.0](./SPEC.md)): refactor sin cambio de
+contrato — una sola implementación del motor monster-rpg 3D.
+
 ### Changed
 - **Runtime monster-rpg unificado**: `examples/kaiju-island-3d.html` ya no lleva su
   copia inline del motor — redirige al player multi-perfil
@@ -525,6 +532,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.7.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.1
 [2.7.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.0
 [2.6.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.6.0
 [2.5.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.5.0

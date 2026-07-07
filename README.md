@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.7.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.7.1`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,10 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.7.0`** — aditivo: **game3d**
+**Release `v2.7.1`** — patch: runtime monster-rpg 3D **unificado** en `game3d.js`
+(`kaiju-island-3d.html` delega por redirect; retirada la copia duplicada).
+
+`v2.7.0` — aditivo: **game3d**
 ([`examples/game3d.html`](./examples/game3d.html)) — runtime **multi-perfil** Three.js:
 un player único (`?game=<archivo>.generated.js`) que despacha por la nueva meta
 `profile` del artefacto a un módulo de runtime por género (adventure, dungeon,
