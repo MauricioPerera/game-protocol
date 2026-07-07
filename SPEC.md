@@ -62,10 +62,12 @@ Only these tokens are defined by the core. Everything else is profile-defined.
 | `version` | string (semver) | yes | Spec version this file targets |
 | `name` | string | yes | Game title |
 | `description` | string | no | Free-text summary |
-| `profile` | string | recommended (CLI default: `monster-rpg`) | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
+| `profile` | string | **required from `2.0.0`** — today optional with a **deprecated** CLI fallback (`monster-rpg`) | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
 | `platform` | object | no | Presentation target (mode, dimensions, etc.) — shape defined by profile |
 
-**`profile` in practice.** When the core is consumed directly (`lintGame`) and no profile descriptor is resolved, the file is validated only against the core structural rules (§4) and `required-fields` demands `profile`. The reference CLI, however, falls back to the default profile `monster-rpg` when the token is missing (`manifest.json` → `profileSelection`), and a *loaded* profile supplies its own `required` list — the reference profiles use `['version', 'name']` (`advance-wars` also requires `profile`). Net effect: a file without `profile` lints clean under the CLI as monster-rpg. Declare `profile` explicitly anyway; the fallback exists for backward compatibility with the original monster-rpg engine.
+**`profile` in practice.** When the core is consumed directly (`lintGame`) and no profile descriptor is resolved, the file is validated only against the core structural rules (§4) and `required-fields` demands `profile`. The reference CLI, however, falls back to the default profile `monster-rpg` when the token is missing (`manifest.json` → `profileSelection`), and a *loaded* profile supplies its own `required` list — the reference profiles use `['version', 'name']` (`advance-wars` also requires `profile`).
+
+**The fallback is deprecated** (`profile-fallback`, `since: 1.3.0`, `removedIn: 2.0.0`, per the §7.1 lifecycle): a file without `profile` still resolves to `monster-rpg`, but `game-lint.js` emits a `deprecated`-level finding and `game-export.js` warns on stderr. In `2.0.0` the fallback is removed and `profile` becomes mandatory — its absence will be a hard error. Migration recipe: `MIGRATION.md` (De 1.x → 2.0.0). The fallback existed for backward compatibility with the original monster-rpg engine.
 
 ## 3. Compilation contract
 

@@ -1,6 +1,7 @@
 ---
 version: "0.1"
 name: Demo Protocol Game
+profile: monster-rpg
 description: Ejemplo minimo y autocontenido del Protocolo GAME (gameplay-as-data).
 platform: { mode: demo, cols: 10, rows: 8, screenW: 160, screenH: 128 }
 palettesCount: 8

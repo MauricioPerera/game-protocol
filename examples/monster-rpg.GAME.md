@@ -1,6 +1,7 @@
 ---
 version: "0.1"
 name: Monster RPG Demo
+profile: monster-rpg
 platform: { mode: topdown, cols: 10, rows: 8 }
 palettesCount: 4
 palettes:

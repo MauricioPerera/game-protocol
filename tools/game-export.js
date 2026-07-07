@@ -46,6 +46,9 @@ let data;
 try { data = parseYamlSubset(fm); }
 catch (e) { console.error('Error de parseo: ' + e.message); process.exit(2); }
 const profileId = data.profile || 'monster-rpg';
+// Fallback DEPRECADO (since 1.3.0, removedIn 2.0.0): aviso por stderr, exit sin cambio.
+if (!('profile' in data))
+  console.error('AVISO: GAME.md sin `profile`; usando el fallback monster-rpg (deprecado desde 1.3.0, se remueve en 2.0.0 — declara `profile: <id>`, ver MIGRATION.md)');
 let profile;
 try { profile = loadProfile(profileId); }
 catch (e) { console.error('El perfil ' + profileId + ' tiene un error: ' + e.message); process.exit(2); }

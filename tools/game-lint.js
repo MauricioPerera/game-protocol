@@ -54,6 +54,16 @@ const profileId = data.profile || 'monster-rpg';
 const { profile, error: profileError } = loadProfile(profileId);
 const preFindings = [];
 if (parseError) preFindings.push({ level: 'error', rule: 'parse-error', msg: parseError });
+// Fallback de `profile` DEPRECADO (since 1.3.0, removedIn 2.0.0): un GAME.md sin
+// `profile` se sigue resolviendo como monster-rpg, pero emite un hallazgo nivel
+// `deprecated` (no rompe el gate). En 2.0.0 el token pasa a ser obligatorio y su
+// ausencia sera error. Receta: MIGRATION.md (De 1.x -> 2.0.0). Solo aplica si el
+// front-matter existe y parseo bien (si no, frontmatter-present/parse-error ya cubren).
+if (fm && !parseError && !('profile' in data)) preFindings.push({
+  level: 'deprecated', rule: 'profile-fallback',
+  since: '1.3.0', removedIn: '2.0.0',
+  msg: 'GAME.md sin `profile`: usando el fallback monster-rpg (deprecado; en 2.0.0 `profile` sera obligatorio — declara `profile: <id>`, ver MIGRATION.md)',
+});
 if (profileError) preFindings.push({ level: 'error', rule: 'profile-load-error', msg: 'el perfil ' + profileId + ' tiene un error: ' + profileError });
 // `profile-known` ahora lo emite el core (lintGame) vía opts.profileId cuando el
 // perfil no resuelve. Sólo pasamos profileId al core cuando NO hubo error de carga

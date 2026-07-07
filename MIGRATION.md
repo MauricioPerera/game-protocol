@@ -64,6 +64,28 @@ Cada entrada sigue esta forma:
 
 ## 3. Entradas por versión
 
+### De 1.x → 2.0.0  (estado: pendiente — deprecation activa desde 1.3.0)
+
+> Versiona el **tooling/paquete**, no el spec del protocolo (que sigue en `0.1`).
+
+**Cambios breaking (previstos para `2.0.0`):**
+- Se elimina el **fallback de `profile`** de los CLI (`game-lint.js` / `game-export.js`
+  asumían `monster-rpg` si el token faltaba). `profile` pasa a ser **obligatorio**: su
+  ausencia será **error** (hoy es hallazgo `deprecated`, regla `profile-fallback`).
+
+**Reglas deprecadas:**
+- `profile-fallback` — deprecated since `1.3.0`, removedIn `2.0.0`. Reemplazo: declarar
+  `profile: <id>` explícito en el front-matter.
+
+**Receta:**
+
+```sh
+# Añade el token si falta (ajusta monster-rpg al perfil real del documento)
+grep -q '^profile:' GAME.md || sed -i '/^name:/a profile: monster-rpg' GAME.md
+# Re-lint: el hallazgo profile-fallback debe desaparecer
+node tools/game-lint.js GAME.md --agent
+```
+
 ### De 0.1 → 0.2  (estado: pendiente — se completa cuando 0.2 sale)
 
 > Placeholder. `0.1` es la versión actual; no hay cambios pendientes todavía. Esta entrada

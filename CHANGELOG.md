@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Deprecated
+- **Fallback de `profile`** — regla `profile-fallback`, `since: 1.3.0`,
+  `removedIn: 2.0.0`. Un `GAME.md` sin `profile` sigue resolviéndose como
+  `monster-rpg`, pero `game-lint.js` emite un hallazgo nivel `deprecated` (no rompe el
+  gate) y `game-export.js` avisa por stderr. **En `2.0.0` el fallback se elimina y
+  `profile` será obligatorio (error).** Reemplazo: declarar `profile: <id>` explícito.
+  Receta en `MIGRATION.md` (De 1.x → 2.0.0); SPEC §2 actualizado;
+  `manifest.json` → `profileSelection` expone el ciclo de vida.
+
+### Changed
+- `examples/GAME.md` y `examples/monster-rpg.GAME.md` declaran `profile: monster-rpg`
+  explícito (eran los únicos ejemplos que dependían del fallback). Los artefactos
+  generados no cambian (`profile` no se copia a la salida).
+- `test/cli-errors.js`: cubre el hallazgo `profile-fallback` (lint exit 0 + finding
+  `deprecated`; export exit 0 + aviso stderr).
 
 ## [1.2.0] — 2026-07-07
 

@@ -17,7 +17,7 @@
     "manifest": "node tools/game-manifest.js",
     "conformance": "node test/conformance.js"
   },
-  "profileSelection": "El front-matter declara `profile: <id>`. Sin el, se asume monster-rpg.",
+  "profileSelection": "El front-matter declara `profile: <id>`. Sin el, el CLI asume monster-rpg — fallback DEPRECADO (since 1.3.0, removedIn 2.0.0): emite el hallazgo `profile-fallback`; en 2.0.0 `profile` sera obligatorio.",
   "migrations": {
     "supported": [
       "0.1"
