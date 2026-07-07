@@ -60,8 +60,9 @@ migrar. Depreca primero, rompe después.
 Todo cambio va acompañado de pruebas y todas deben pasar en CI:
 
 ```bash
-npm test        # parser, multi-genre, conformance, all-examples, cli-errors,
-                # buildGame-content, render-png, build-standalone, lifecycle, perf-smoke
+npm test        # parser, profile-descriptor, multi-genre, conformance, all-examples,
+                # cli-errors, buildGame-content, render-png, build-standalone,
+                # lifecycle, perf-smoke, mutation-manual
 ```
 
 - **`test/conformance.js`** cubre ≥1 caso inválido por regla por perfil — si añades o cambias una regla, añade su caso inválido.
