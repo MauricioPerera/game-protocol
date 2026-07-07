@@ -2,8 +2,16 @@
 
 ## [Unreleased]
 
-Trabajo posterior al release `1.0.0`, todavía sin release propio: `package.json`
-sigue en `1.0.0` y la versión del protocolo sigue en `0.1`.
+_No hay cambios pendientes._
+
+## [1.1.0] — 2026-07-07
+
+Release **aditivo** sobre `1.0.0` (bump minor según [SPEC §7.0](./SPEC.md)): décimo
+perfil `advance-wars` completo, pipeline de extracción de sprites GBA, ejemplo
+`monster-rpg`, mutation audit del linter y correcciones menores. La *versión del
+protocolo* (`SPEC.md` header, `version` de los `GAME.md`) sigue en `0.1`
+(`manifest.json` → `migrations.supported: ["0.1"]`); no hay cambios breaking ni
+deprecations.
 
 ### Added — ejemplo monster-rpg + mutation audit (`cd645d5`)
 - `examples/monster-rpg.GAME.md` + `monster-rpg.generated.js` + `monster-rpg.html`:
@@ -191,5 +199,6 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[1.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.1.0
 [1.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.0.0
 [0.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v0.1.0

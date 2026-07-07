@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v1.0.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v1.1.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,14 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v1.0.0`** + trabajo post-release sin release propio (ver
-[`CHANGELOG.md`](./CHANGELOG.md) `[Unreleased]`): ejemplo `monster-rpg` con demo,
-mutation audit del linter (`test/mutation-manual.js`), y el pipeline de **extracción de
-sprites GBA** (`tools/SPRITE_EXTRACTION.md`: generador procedural, extractor específico
-de Advance Wars y extractor universal Ghidra+heurística). Ese trabajo añade además un
-décimo perfil cargable, `advance-wars` (paletas BGR555 + unidades 4bpp), con sus
-reglas, derivaciones y conformance; los 9 perfiles de referencia siguen siendo los de
-[SPEC §6](./SPEC.md), que también describe este décimo.
+**Release `v1.1.0`** — aditivo sobre `1.0.0` (bump minor, [SPEC §7.0](./SPEC.md); ver
+[`CHANGELOG.md`](./CHANGELOG.md)): ejemplo `monster-rpg` con demo, mutation audit del
+linter (`test/mutation-manual.js`), y el pipeline de **extracción de sprites GBA**
+(`tools/SPRITE_EXTRACTION.md`: generador procedural, extractor específico de Advance
+Wars y extractor universal Ghidra+heurística). Añade además un décimo perfil cargable,
+`advance-wars` (paletas BGR555 + unidades 4bpp), con sus reglas, derivaciones y
+conformance; los 9 perfiles de referencia siguen siendo los de [SPEC §6](./SPEC.md),
+que también describe este décimo. Sin breaking ni deprecations; la versión del
+protocolo sigue en `0.1`.
 
 `v1.0.0` — cierre de la fase MEDIANO (sobre la base CORTO). El *package*
 alcanza `1.0.0`: a partir de aquí los cambios breaking al core y a los perfiles siguen
