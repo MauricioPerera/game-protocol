@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.5.0] — 2026-07-07
+
+Release **aditivo** sobre `2.4.2` (bump minor, [SPEC §7.0](./SPEC.md)): un juego
+completo y jugable como demostración de la tesis del protocolo — el motor se escribe
+una vez por perfil; un juego nuevo es 100% datos. La versión del protocolo sigue en `0.1`.
+
 ### Added
 - `examples/el-faro-hundido.GAME.md` (+ `.generated.js`, `.html`, `-standalone.html`):
   **juego completo y jugable** sobre el motor dungeon de referencia — 7 salas con
@@ -452,6 +460,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.5.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.5.0
 [2.4.2]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.2
 [2.4.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.1
 [2.4.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.4.0
