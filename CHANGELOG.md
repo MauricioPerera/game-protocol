@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.3.0] — 2026-07-07
+
+Release **aditivo** sobre `2.2.1` (bump minor, [SPEC §7.0](./SPEC.md)): cierra los cinco
+pendientes de diseño del análisis del protocolo — la SPEC gana gramática formal,
+contrato del descriptor, threat model y direcciones futuras; el core gana las familias
+declarativas `bounds`/`dims`. Sin breaking: los `GAME.md` y perfiles existentes siguen
+intactos (110 reglas, mismos artefactos). La versión del protocolo sigue en `0.1`.
+
 ### Added — pendientes de diseño del análisis del protocolo
 - **SPEC §1.2 — gramática formal (normativa)** del subconjunto YAML: EBNF + semántica +
   lista de fallos duros. La definición del lenguaje deja de ser "lo que haga el parser
@@ -373,6 +383,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.0
 [2.2.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.1
 [2.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.0
 [2.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.1.0
