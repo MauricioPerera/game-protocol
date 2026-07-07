@@ -321,8 +321,13 @@
       "rules": [
         "rulePaletteRange",
         "rulePaletteColorRange",
+        "rulePaletteSize",
         "ruleSolidSync",
         "ruleTypeSymmetry",
+        "ruleMoveBounds",
+        "ruleSpeciesBounds",
+        "ruleEncounterZones",
+        "ruleTileIdRange",
         "ruleTrainerBounds",
         "ruleSpriteDims",
         "ruleItemEffect",

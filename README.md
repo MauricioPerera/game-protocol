@@ -28,7 +28,7 @@ Separar **datos** de **lógica** con un contrato explícito:
 GAME.md            →   game-export.js   →   game-data.generated.js   →   motor
 (tokens + doc)         (compila)            (window.GAME)                (consume con fallback)
    ↑
-game-lint.js (valida 104 reglas + cruces opcionales con el motor)
+game-lint.js (valida 110 reglas + cruces opcionales con el motor)
 ```
 
 - **`GAME.md`** es la *fuente única de verdad*: front-matter YAML (tokens) + cuerpo Markdown (doc).
@@ -76,7 +76,7 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 | Ruta | Rol |
 |---|---|
-| [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 104 reglas — core §4 + perfiles §6; hints de arreglo en [`tools/rule-hints.js`](./tools/rule-hints.js) —, frontera datos/código). |
+| [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 110 reglas — core §4 + perfiles §6; hints de arreglo en [`tools/rule-hints.js`](./tools/rule-hints.js) —, frontera datos/código). |
 | [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (isomorfo Node/navegador). |
 | [`tools/game-lint-core.js`](./tools/game-lint-core.js) | Reglas de validación puras (`lintGame`), isomorfas. |
 | [`tools/game-lint.js`](./tools/game-lint.js) | CLI del validador (cruces con el motor opcionales vía `GAME_ENGINE`). |

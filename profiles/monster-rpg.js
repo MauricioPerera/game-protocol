@@ -82,6 +82,59 @@
     }
   }
 
+  // Bounds de moves (huecos del stress-test kaiju-island): power > 0 si esta declarado;
+  // chance en [0,1]. Antes `power: -50` linteaba limpio.
+  function ruleMoveBounds({ data, add }) {
+    for (const [n, m] of Object.entries(data.moves || {})) {
+      if (!m || typeof m !== 'object') continue;
+      if (m.power != null && !(m.power > 0))
+        add('error', 'move-bounds', 'el ataque ' + n + ' tiene power invalido (debe ser > 0): ' + m.power);
+      if (m.chance != null && !(typeof m.chance === 'number' && m.chance >= 0 && m.chance <= 1))
+        add('error', 'move-bounds', 'el ataque ' + n + ' tiene chance fuera de [0,1]: ' + m.chance);
+    }
+  }
+
+  // Bounds de especies: maxhp > 0; evolvesInto exige atLevel (si falta, EVOLUTIONS.X.level
+  // queda undefined y JSON lo DESCARTA del artefacto — perdida silenciosa); atLevel > 0.
+  function ruleSpeciesBounds({ data, add }) {
+    for (const [n, s] of Object.entries(data.species || {})) {
+      if (!s || typeof s !== 'object') continue;
+      if (s.maxhp != null && !(s.maxhp > 0))
+        add('error', 'species-bounds', n + ' tiene maxhp invalido (debe ser > 0): ' + s.maxhp);
+      if (s.evolvesInto && s.atLevel == null)
+        add('error', 'species-bounds', n + ' declara evolvesInto sin atLevel (la evolucion se exporta sin `level`)');
+      if (s.atLevel != null && !(s.atLevel > 0))
+        add('error', 'species-bounds', n + ' tiene atLevel invalido (debe ser > 0): ' + s.atLevel);
+    }
+  }
+
+  // Zonas de encuentro huerfanas: cada area de `encounters` deberia existir como area de
+  // overworld o como mapa. Warn (la semantica final del nombre de zona es del motor).
+  function ruleEncounterZones({ data, add }) {
+    const zones = new Set([...Object.keys(data.overworld || {}), ...Object.keys(data.maps || {})]);
+    for (const area of Object.keys(data.encounters || {}))
+      if (!zones.has(area))
+        add('warn', 'encounter-zone', 'encounters.' + area + ' no corresponde a ningun area de overworld ni mapa declarado');
+  }
+
+  // Rango de ids del registro `tiles` (16..63, mismo bound de plataforma que tileart-ref;
+  // antes solo se validaba via tileArt y un tile sin arte se colaba fuera de rango).
+  function ruleTileIdRange({ data, add }) {
+    for (const id of Object.keys(data.tiles || {})) {
+      const n = Number(id);
+      if (!Number.isInteger(n) || n < 16 || n > 63)
+        add('error', 'tile-id-range', 'tile id ' + id + ' fuera del rango 16..63 del registro `tiles`');
+    }
+  }
+
+  // Paletas de mas de 16 colores: el export (pad16) TRUNCA a 16 sin aviso — se avisa aqui.
+  function rulePaletteSize({ data, add }) {
+    for (const section of ['palettes', 'spritePalettes'])
+      for (const [pi, pal] of Object.entries(data[section] || {}))
+        if (Array.isArray(pal) && pal.length > 16)
+          add('warn', 'palette-size', section + ' ' + pi + ' tiene ' + pal.length + ' colores; el export trunca a 16 (se pierden ' + (pal.length - 16) + ')');
+  }
+
   function ruleTypeSymmetry({ data, add }) {
     const types = data.types || {};
     for (const a of Object.keys(types)) {
@@ -95,14 +148,22 @@
   }
 
   function ruleTrainerBounds({ data, add }) {
-    for (const [tn, t] of Object.entries(data.trainers || {}))
+    for (const [tn, t] of Object.entries(data.trainers || {})) {
       if (t.prize != null && !(t.prize > 0)) add('error', 'trainer-bounds', tn + ' tiene premio invalido: ' + t.prize);
+      // team vacio = combate imposible (hueco del stress-test)
+      if (!Array.isArray(t.team) || t.team.length === 0)
+        add('error', 'trainer-bounds', tn + ' no tiene team (lista no vacia de especies)');
+    }
   }
 
   function ruleSpriteDims({ data, add }) {
-    for (const [sn, mat] of Object.entries(data.sprites || {}))
+    for (const [sn, mat] of Object.entries(data.sprites || {})) {
       if (!Array.isArray(mat) || mat.length !== 16 || mat.some(r => !Array.isArray(r) || r.length !== 16))
         add('error', 'sprite-dims', 'sprite ' + sn + ' no es 16x16');
+      // celdas 4bpp: indices 0..15 (antes solo se validaba la forma, no el rango)
+      else if (mat.some(r => r.some(v => !Number.isInteger(v) || v < 0 || v > 15)))
+        add('error', 'sprite-4bpp', 'sprite ' + sn + ' tiene un indice fuera de 0..15 (4bpp)');
+    }
   }
 
   function ruleItemEffect({ data, add }) {
@@ -153,11 +214,15 @@
     const trainers = data.trainers || {};
     const warpTargets = new Set([...Object.keys(data.overworld || {}), ...Object.keys(data.maps || {})]);
     for (const [area, def] of Object.entries(data.overworld || {})) {
+      // Bounds de fila (hueco del stress-test: `row: 999` linteaba limpio — solo se validaba col)
+      const rowOk = r => !platform.rows || (r >= 0 && r < platform.rows);
       for (const n of (def.npcs || [])) {
         if (typeof n.col !== 'number' || typeof n.row !== 'number')
           add('error', 'overworld-ref', area + ': NPC sin col/row numericos');
         if (platform.cols && (n.col < 0 || n.col >= platform.cols))
           add('error', 'overworld-ref', area + ': NPC col ' + n.col + ' fuera de 0..' + (platform.cols - 1));
+        if (typeof n.row === 'number' && !rowOk(n.row))
+          add('error', 'overworld-ref', area + ': NPC row ' + n.row + ' fuera de 0..' + (platform.rows - 1));
         if (!n.dialogue) add('warn', 'overworld-ref', area + ': NPC en (' + n.col + ',' + n.row + ') sin dialogue');
         if (typeof n.dialogue === 'string' && n.dialogue.includes(','))
           add('warn', 'overworld-ref', area + ': el dialogue de un NPC contiene "," (el parser YAML de flujo lo cortaria)');
@@ -166,12 +231,16 @@
         if (!(t.name in trainers)) add('error', 'overworld-ref', area + ': entrenador inexistente en `trainers`: ' + t.name);
         if (platform.cols && (t.col < 0 || t.col >= platform.cols))
           add('error', 'overworld-ref', area + ': entrenador ' + t.name + ' col ' + t.col + ' fuera de 0..' + (platform.cols - 1));
+        if (typeof t.row === 'number' && !rowOk(t.row))
+          add('error', 'overworld-ref', area + ': entrenador ' + t.name + ' row ' + t.row + ' fuera de 0..' + (platform.rows - 1));
       }
       for (const w of (def.warps || [])) {
         if (!w.target) add('error', 'overworld-ref', area + ': warp sin target');
         else if (!warpTargets.has(w.target)) add('error', 'overworld-ref', area + ': warp a destino desconocido: ' + w.target);
         if (platform.cols && (w.col < 0 || w.col >= platform.cols))
           add('error', 'overworld-ref', area + ': warp col ' + w.col + ' fuera de 0..' + (platform.cols - 1));
+        if (typeof w.row === 'number' && !rowOk(w.row))
+          add('error', 'overworld-ref', area + ': warp row ' + w.row + ' fuera de 0..' + (platform.rows - 1));
       }
     }
   }
@@ -191,6 +260,10 @@
       add('error', 'player-ref', 'player.level invalido: ' + player.level);
     if (player.start && (typeof player.start.x !== 'number' || typeof player.start.y !== 'number'))
       add('error', 'player-ref', 'player.start debe tener x/y numericos');
+    // cantidades del inventario: enteros > 0 (hueco del stress-test: -3 linteaba limpio)
+    for (const [it, qty] of Object.entries(player.inventory || {}))
+      if (!Number.isInteger(qty) || qty <= 0)
+        add('error', 'player-ref', 'player.inventory.' + it + ' tiene cantidad invalida (entero > 0): ' + qty);
   }
 
   function ruleEconomy({ data, add }) {
@@ -316,7 +389,8 @@
     required: ['version', 'name'],
     refs: refs,
     rules: [
-      rulePaletteRange, rulePaletteColorRange, ruleSolidSync, ruleTypeSymmetry,
+      rulePaletteRange, rulePaletteColorRange, rulePaletteSize, ruleSolidSync, ruleTypeSymmetry,
+      ruleMoveBounds, ruleSpeciesBounds, ruleEncounterZones, ruleTileIdRange,
       ruleTrainerBounds, ruleSpriteDims, ruleItemEffect, ruleMaps, ruleOverworld,
       ruleTileArt, ruleSfx, rulePlayer, ruleEconomy, ruleDeadToken,
     ],

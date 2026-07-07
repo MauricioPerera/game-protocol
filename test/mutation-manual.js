@@ -60,6 +60,12 @@ const mutants = [
   { name: 'item.price = -5',            rule: 'economy-bounds',     mutate: d => { d.items.POTION.price = -5; } },
   { name: 'item.effect = nope',         rule: 'item-effect-valid',  mutate: d => { d.items.POTION.effect = 'nope'; } },
   { name: 'type chart asimétrico',      rule: 'type-symmetry',      mutate: d => { d.types.GRASS.WATER = 0.5; } }, // warn-level
+  // Mutantes de los huecos cerrados tras el stress-test kaiju-island:
+  { name: 'move.power = -50',           rule: 'move-bounds',        mutate: d => { d.moves.TACKLE.power = -50; } },
+  { name: 'species.maxhp = 0',          rule: 'species-bounds',     mutate: d => { d.species.EMBY.maxhp = 0; } },
+  { name: 'evolvesInto sin atLevel',    rule: 'species-bounds',     mutate: d => { delete d.species.LEAFY.atLevel; } },
+  { name: 'trainer.team = []',          rule: 'trainer-bounds',     mutate: d => { d.trainers.ROOKIE.team = []; } },
+  { name: 'inventory POTION = -3',      rule: 'player-ref',         mutate: d => { d.player.inventory.POTION = -3; } },
 ];
 
 console.log('\n— Mutantes —');

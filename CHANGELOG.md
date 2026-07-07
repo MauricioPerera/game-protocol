@@ -10,6 +10,20 @@
   mapas 12×10, overworld de 2 áreas con NPCs/warps, 8 paletas, 10 tiles con tileArt, 2
   sprites 16×16, 7 sfx, 6 textos). Lint 0/0; cruce `GAME_ENGINE` verificado en ambos
   sentidos; cubierto automáticamente por `all-examples` (13 archivos).
+- **Perfil monster-rpg: 10 huecos de validación cerrados** (descubiertos por el
+  stress-test con sondas de datos rotos — las 10 se escapaban con 0 hallazgos):
+  - 6 reglas nuevas: `move-bounds` (power > 0, chance en [0,1]), `species-bounds`
+    (maxhp > 0; `evolvesInto` exige `atLevel` > 0 — antes la evolución se exportaba
+    **sin `level`, pérdida silenciosa**), `encounter-zone` (warn: zona de encuentro sin
+    área/mapa que la dispare), `tile-id-range` (ids del registro `tiles` en 16..63),
+    `sprite-4bpp` (celdas de sprite en 0..15), `palette-size` (warn: >16 colores — el
+    export **truncaba en silencio**).
+  - 4 extensiones: `trainer-bounds` exige `team` no vacío; `player-ref` valida
+    cantidades de inventario (entero > 0); `overworld-ref` valida `row` contra
+    `platform.rows` en npcs/trainers/warps (antes solo `col`).
+  - Conformance: +12 casos inválidos; mutation audit: +5 mutantes (20/20 atrapados).
+    Los 4 ejemplos monster-rpg siguen en 0/0 (sin falsos positivos). README: el conteo
+    de reglas pasa de 104 a **110**.
 
 ## [2.0.1] — 2026-07-07
 

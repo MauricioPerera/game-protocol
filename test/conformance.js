@@ -32,7 +32,8 @@ for (const e of examples) {
 // hasRule cuenta presencia de la regla a cualquier nivel (algunas reglas son warn-only:
 // type-symmetry, dead-token, entity-text, goal-missing, win-text, entrant-doc-field,
 // prefab-empty, tileart-ref en dungeon/roguelike, dmgtype-symmetry, wave-monotonic en
-// tower-defense). No exige que sea la ÚNICA disparada.
+// tower-defense, encounter-zone y palette-size en monster-rpg). No exige que sea la
+// ÚNICA disparada.
 const lintData = (data, pid, opts) => lintGame(data, '', Object.assign({ profile: loadProfile(pid), frontMatterPresent: true }, opts || {}));
 const hasRule = (f, rule) => f.some(x => x.rule === rule);
 // Base front-matter válido (evita required-fields / version-migration).
@@ -112,6 +113,18 @@ const invalid = [
   { p: 'monster-rpg', rule: 'sfx-valid', data: { ...B('monster-rpg'), sfx: { x: { freq: -1, dur: 1 } } } },
   { p: 'monster-rpg', rule: 'economy-bounds', data: { ...B('monster-rpg'), economy: { prices: { P: -5 } } } },
   { p: 'monster-rpg', rule: 'dead-token', data: { ...B('monster-rpg'), balance: { unused: 1 } }, opts: { engineSource: 'const x = 1;' } },
+  // Huecos cerrados tras el stress-test kaiju-island (6 reglas nuevas + 4 extensiones):
+  { p: 'monster-rpg', rule: 'move-bounds', data: { ...B('monster-rpg'), moves: { M: { type: 'NORMAL', power: -50 } } } },
+  { p: 'monster-rpg', rule: 'move-bounds', data: { ...B('monster-rpg'), moves: { M: { type: 'NORMAL', power: 5, chance: 1.5 } } } },
+  { p: 'monster-rpg', rule: 'species-bounds', data: { ...B('monster-rpg'), species: { S: { maxhp: 0 } } } },
+  { p: 'monster-rpg', rule: 'species-bounds', data: { ...B('monster-rpg'), species: { A: { evolvesInto: 'B' }, B: {} } } },
+  { p: 'monster-rpg', rule: 'encounter-zone', data: { ...B('monster-rpg'), encounters: { volcan: [] } } },   // warn
+  { p: 'monster-rpg', rule: 'tile-id-range', data: { ...B('monster-rpg'), tiles: { 99: { name: 'x' } } } },
+  { p: 'monster-rpg', rule: 'sprite-4bpp', data: { ...B('monster-rpg'), sprites: { S: (() => { const m = Array.from({ length: 16 }, () => Array(16).fill(0)); m[0][0] = 99; return m; })() } } },
+  { p: 'monster-rpg', rule: 'palette-size', data: { ...B('monster-rpg'), palettes: { 0: Array.from({ length: 20 }, () => [1, 1, 1]) } } },   // warn
+  { p: 'monster-rpg', rule: 'trainer-bounds', data: { ...B('monster-rpg'), trainers: { T: { prize: 5, team: [] } } } },
+  { p: 'monster-rpg', rule: 'player-ref', data: { ...B('monster-rpg'), items: { TONIC: { effect: 'heal', amount: 1 } }, player: { inventory: { TONIC: -3 } } } },
+  { p: 'monster-rpg', rule: 'overworld-ref', data: { ...B('monster-rpg'), platform: { cols: 8, rows: 8 }, overworld: { area: { npcs: [{ col: 0, row: 999, dialogue: 'x' }] } } } },
 
   // ---- core: version-migration (S2.3) — GAME.md 0.1 lintero contra tooling 0.2 → warn ----
   // El tooling simula specVersion 0.2 (perfil sintético shallow-copy con specVersion subida);
