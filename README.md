@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.3.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.3.1`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,10 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.3.0`** — aditivo: los cinco **pendientes de diseño** del análisis del
+**Release `v2.3.1`** — patch de docs: la lista de suites de `CONTRIBUTING.md`
+sincronizada con las 12 reales de `npm test`.
+
+`v2.3.0` — aditivo: los cinco **pendientes de diseño** del análisis del
 protocolo — [SPEC §1.2](./SPEC.md) gramática formal normativa del subset YAML,
 [§6.1](./SPEC.md) contrato del descriptor de perfil + `validateProfile` en los CLIs,
 familias **`bounds`/`dims` declarativas** en el core (platformer migrado como prueba),

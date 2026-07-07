@@ -4,6 +4,15 @@
 
 _No hay cambios pendientes._
 
+## [2.3.1] — 2026-07-07
+
+Release **patch** sobre `2.3.0` ([SPEC §7.0](./SPEC.md)): solo docs.
+
+### Fixed
+- `CONTRIBUTING.md`: la lista de suites junto a `npm test` estaba desfasada — faltaban
+  `mutation-manual` (desde `1.1.0`) y `profile-descriptor` (`2.3.0`). Ahora enumera las
+  12 reales.
+
 ## [2.3.0] — 2026-07-07
 
 Release **aditivo** sobre `2.2.1` (bump minor, [SPEC §7.0](./SPEC.md)): cierra los cinco
@@ -383,6 +392,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.3.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.1
 [2.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.3.0
 [2.2.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.1
 [2.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.2.0
