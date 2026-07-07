@@ -39,7 +39,10 @@ Cada uno declara `sections`, `required`, `refs` (grafo de referencias), `rules` 
 
 ## Crear un genero nuevo
 
-Un genero = un **perfil** (`profiles/<id>.js`) que exporta `{ id, sections, required, refs, rules, derive }`. El core no se toca. Patron: tabla `refs` (familia broken-ref), funciones `rules` (logica no uniforme), tabla `derive` (claves del `window.GAME`). Es algo que un agente puede autorar.
+Un genero = un **perfil** que exporta `{ id, sections, required, refs, bounds, dims, enums, rules, derive }` (contrato en SPEC §6.1). El core no se toca. Dos vias:
+
+- **Puro-datos (`profiles/<id>.json`)** — la via preferida para un agente: solo tablas declarativas (`refs` sin msg — el core pone el mensaje por defecto —, `bounds` con gt/min/max/integer/required, `dims` con shape [h,w], `enums` con values) y `derive` from/value. Se carga con JSON.parse, NUNCA se ejecuta codigo: seguro de compartir e instalar. Referencia: `profiles/quiz.json` (manifest lo marca `dataOnly: true`).
+- **Con codigo (`profiles/<id>.js`)** — solo si el genero necesita logica no uniforme (funciones `rules`, `derive.fn`). Es codigo ejecutable: se revisa como una dependencia (SPEC §10).
 
 ## Reglas de oro
 

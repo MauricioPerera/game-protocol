@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * game-manifest.js — Emite un manifiesto MAQUINA-LEGIBLE de las capacidades del Protocolo GAME.
- * Auto-derivado de los descriptores de perfil (profiles/*.js): un agente que llega en frio sabe
+ * Auto-derivado de los descriptores de perfil (profiles/*.js y *.json): un agente que llega en frio sabe
  * que perfiles existen, que tokens referencian a que, que reglas valida cada uno y que produce.
  * Uso:  node tools/game-manifest.js [salida.json]   (por defecto: manifest.json)
  */
