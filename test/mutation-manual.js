@@ -22,7 +22,9 @@ const loadProfile = id => require(REPO + '/profiles/' + id + '.js');
 const MD = fs.readFileSync(REPO + '/examples/monster-rpg.GAME.md', 'utf8').replace(/\r\n/g, '\n');
 const { fm, body } = splitFrontMatter(MD);
 const BASE = parseYamlSubset(fm);
-const PID = BASE.profile || 'monster-rpg';
+// `profile` es obligatorio desde 2.0.0 (sin fallback): el fixture debe declararlo.
+const PID = BASE.profile;
+if (!PID) { console.log('FAIL  el fixture monster-rpg.GAME.md no declara profile (obligatorio desde 2.0.0)'); process.exit(1); }
 const prof = loadProfile(PID);
 
 let pass = 0, fail = 0;

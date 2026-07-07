@@ -21,7 +21,9 @@ const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-p
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
-  const pid = data.profile || 'monster-rpg';
+  // `profile` es obligatorio desde 2.0.0 (sin fallback): un ejemplo sin token falla aqui.
+  const pid = data.profile;
+  if (!pid) { ok(false, 'valido  ' + e + '  declara profile (obligatorio desde 2.0.0)'); continue; }
   const er = errs(lintGame(data, body, { profile: loadProfile(pid), frontMatterPresent: !!fm }));
   ok(er.length === 0, 'valido  ' + e + '  [' + pid + ']  (0 errores)', er.slice(0, 3).map(x => x.rule + ': ' + x.msg).join(' | '));
 }

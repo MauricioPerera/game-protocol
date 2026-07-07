@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Fixed
+- README: el conteo de reglas pasa de 101 a **104** — el perfil `advance-wars` añadió
+  3 reglas (`unit-palette-ref`, `unit-dims`, `unit-tiledata-range`) después de fijar el
+  conteo anterior.
+- `test/conformance.js` y `test/mutation-manual.js`: eliminado el fallback interno
+  `|| 'monster-rpg'` (inerte, pero contradecía el contrato 2.0.0). Un ejemplo/fixture
+  sin `profile` ahora falla el test con mensaje claro en vez de lintearse como
+  monster-rpg.
 
 ## [2.0.0] — 2026-07-07
 
