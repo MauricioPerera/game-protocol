@@ -2,7 +2,45 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes. El release `1.0.0` cierra la fase MEDIANO._
+Trabajo posterior al release `1.0.0`, todavía sin release propio: `package.json`
+sigue en `1.0.0` y la versión del protocolo sigue en `0.1`.
+
+### Added — ejemplo monster-rpg + mutation audit (`cd645d5`)
+- `examples/monster-rpg.GAME.md` + `monster-rpg.generated.js` + `monster-rpg.html`:
+  ejemplo mínimo del perfil raíz con demo HTML.
+- `test/mutation-manual.js`: mutation audit manual del oráculo del linter — 15 mutantes
+  quirúrgicos sobre `examples/monster-rpg.GAME.md`, 15/15 atrapados. Añadido a `npm test`
+  (no corre en CI).
+
+### Added — extracción de sprites GBA (`5deb6e2`, `309b594`)
+- `tools/sprite-generator.py`: sprites procedurales → `GAME.md` válido (perfil monster-rpg).
+- `tools/advance-wars-extractor.py`: extractor heurístico específico de Advance Wars
+  (paleta BGR555 + tiles 8×8 4bpp) → `examples/advance-wars-extracted.GAME.md`.
+- `tools/ghidra_extract_sprite_offsets.py` + `tools/gba-sprite-extractor-universal.py`:
+  pipeline universal (Ghidra headless o fallback heurístico puro) → JSON de offsets →
+  `examples/extracted.GAME.md` (monster-rpg, sprites 16×16). Documentado en
+  `tools/SPRITE_EXTRACTION.md` (alcance honesto: candidatos heurísticos, no verificados
+  contra el juego real).
+- `profiles/advance-wars.js`: perfil **experimental (stub)** — solo `id`/`sections`/`required`,
+  sin `refs`, `rules` ni `derive`. Un `GAME.md` con este perfil pasa el lint casi sin
+  validación de dominio y compila solo la meta universal. Pendiente: completarlo o retirarlo.
+
+### Fixed — drift de artefactos (`228212f`)
+- Regenerado lo que los commits anteriores no regeneraron:
+  `examples/advance-wars-extracted.generated.js`, `examples/extracted.generated.js`,
+  `manifest.json` (10 perfiles) y `schemas/advance-wars.schema.json`.
+  `npm test` y los gates sin-drift de CI vuelven a verde.
+
+### Docs — sincronización con lo anterior
+- README: el conteo "94 reglas" pasa al verificable **101** (reglas distintas emitibles por
+  core + wrapper CLI + perfiles; hints en `tools/rule-hints.js`); `tools/shared-helpers.js`
+  corregido a `tools/profile-helpers.js` (nombre real del archivo); sección de estado
+  post-`1.0.0`.
+- SPEC §6, `index.html`, `llms.txt`: reflejan 10 perfiles cargables (9 de referencia +
+  `advance-wars` experimental). `llms.txt` añade `tower-defense`, que faltaba desde `1.0.0`.
+- Errata en la entrada `1.0.0` de este changelog: el helper compartido se llama
+  `tools/profile-helpers.js` (no `shared-helpers.js`) y `ci.yml` corre `lifecycle` pero
+  no `perf-smoke` (que sí corre en `npm test`).
 
 ## [1.0.0] — 2026-06-22 — cierre fase MEDIANO
 
@@ -36,9 +74,10 @@ independiente y reacha `1.0.0`.
   `MIGRATION.md`) y `deprecatedRules` por perfil (ciclo de vida expuesto a agentes).
 
 ### Added — S3 performance + helpers compartidos + parser edge cases (`Q1`, `Q2`, `M4`, `T1`, `STRESS1`)
-- `tools/shared-helpers.js`: helpers isomorfos compartidos (`describeSrc`, `palArray`,
+- `tools/profile-helpers.js`: helpers isomorfos compartidos (`describeSrc`,
   `rulePalettes`, `ruleTileArt`) extraídos de `game-manifest.js`/`game-schema.js` y los
-  perfiles — una sola definición.
+  perfiles — una sola definición. (Errata: esta entrada decía `shared-helpers.js`,
+  nombre que nunca existió en el árbol.)
 - P1/P2/P3: `lintGame` sobre 10K datos < 50ms (mediana ~3ms); pre-tokenización y caché
   de `Set`s en los recorridos.
 - `test/parser.js` ampliado: clave duplicada, string sin cerrar, indentación con TAB,
@@ -69,7 +108,8 @@ independiente y reacha `1.0.0`.
 - `game-lint.js`: `summary` añade `deprecated` (count); `--agent` da hint dedicado para
   hallazgos `deprecated`.
 - `tools/rule-hints.js`: hint para `version-migration`.
-- `package.json` `test` + CI `ci.yml`: añaden `test/lifecycle.js` y `test/perf-smoke.js`.
+- `package.json` `test`: añade `test/lifecycle.js` y `test/perf-smoke.js`; CI `ci.yml`
+  añade `test/lifecycle.js` (perf-smoke corre solo en `npm test`, no en CI).
 
 ### Breaking changes
 - **Política de versionado (no remoción de tokens).** Desde `1.0.0` los cambios breaking al core

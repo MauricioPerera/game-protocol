@@ -33,6 +33,8 @@ Cada uno declara `sections`, `required`, `refs` (grafo de referencias), `rules` 
 - `adventure` — aventura top-down jugable (escena, entidades, meta).
 - `dungeon` — mazmorra multi-sala con combate y minimapa.
 - `roguelike` — mazmorra **procedural 3D** generada en tiempo real (el spec declara el generador, no las salas).
+- `tower-defense` — tower defense (torres, tipos de daño, enemigos, oleadas, mapas, economia). [doc](profiles/tower-defense.md)
+- `advance-wars` — **stub experimental** del pipeline de extraccion GBA: sin `refs`/`rules`/`derive`, casi no valida ni deriva. No usarlo como perfil de referencia.
 
 ## Crear un genero nuevo
 
