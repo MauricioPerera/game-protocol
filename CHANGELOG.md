@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — fricciones de autoría del stress-test (perfil monster-rpg)
+- **Forma compacta hex para el arte 4bpp** (`tileArt` y `sprites`): además de la matriz
+  de números, se acepta un array de strings hex — 1 carácter = 1 celda `0..15`
+  (`tileArt`: 8 strings de 8; `sprites`: 16 de 16). ~4× menos texto. La forma compacta
+  se **decodifica al compilar**: mismo `window.GAME` byte a byte que la forma matriz
+  (verificado con `kaiju-island`, convertido a hex con generado idéntico). Helper
+  isomorfo `decodeArtRows` en `tools/profile-helpers.js` (opt-in vía
+  `ruleTileArt(..., {allowHex})`, disponible para otros perfiles).
+- **Secciones canónicas ampliadas**: `Sprites`, `Moves`, `Trainers`, `Encounters` y
+  `Sfx` son secciones `##` de primera clase (antes había que anidarlas como `###` o
+  aceptar warnings de `section-order`). Aditivo: los docs existentes usan un
+  subconjunto cuyo orden relativo se preserva.
+
+### Fixed
+- Eliminado el warn por comas en `dialogue` de NPCs (`overworld-ref`): era un **falso
+  positivo** — una coma que sobrevive al parseo proviene siempre de un string entre
+  comillas (uso correcto); la coma sin comillas rompe el parseo de flujo con
+  `parse-error` claro antes de llegar a la regla. Guía de los ejemplos actualizada
+  ("diálogos con comas entre comillas" en vez de "sin comas").
 
 ## [2.1.0] — 2026-07-07
 

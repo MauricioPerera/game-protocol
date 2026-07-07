@@ -37,9 +37,6 @@
     "species": {
       "type": "object"
     },
-    "sprites": {
-      "type": "object"
-    },
     "items": {
       "type": "object"
     },
@@ -47,9 +44,6 @@
       "type": "object"
     },
     "player": {
-      "type": "object"
-    },
-    "tileArt": {
       "type": "object"
     },
     "text": {
@@ -69,17 +63,25 @@
     },
     "encounters": {
       "type": "object"
+    },
+    "sprites": {
+      "type": "object"
     }
   },
   "additionalProperties": true,
   "x-sections": [
     "Overview",
     "Tiles",
+    "Sprites",
     "Types",
+    "Moves",
     "Species",
+    "Trainers",
+    "Encounters",
     "Maps",
     "Player",
     "Text",
+    "Sfx",
     "Economy & Balance",
     "Do's and Don'ts"
   ],

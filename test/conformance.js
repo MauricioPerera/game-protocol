@@ -121,6 +121,11 @@ const invalid = [
   { p: 'monster-rpg', rule: 'encounter-zone', data: { ...B('monster-rpg'), encounters: { volcan: [] } } },   // warn
   { p: 'monster-rpg', rule: 'tile-id-range', data: { ...B('monster-rpg'), tiles: { 99: { name: 'x' } } } },
   { p: 'monster-rpg', rule: 'sprite-4bpp', data: { ...B('monster-rpg'), sprites: { S: (() => { const m = Array.from({ length: 16 }, () => Array(16).fill(0)); m[0][0] = 99; return m; })() } } },
+  // Forma compacta hex del arte: caracter no-hex o dimensiones malas deben fallar igual.
+  { p: 'monster-rpg', rule: 'sprite-dims', data: { ...B('monster-rpg'), sprites: { S: Array(16).fill('000000000000000z') } } },
+  { p: 'monster-rpg', rule: 'sprite-dims', data: { ...B('monster-rpg'), sprites: { S: Array(16).fill('0000') } } },
+  { p: 'monster-rpg', rule: 'tileart-dims', data: { ...B('monster-rpg'), palettesCount: 8, tiles: { 20: {} }, tileArt: { 20: Array(8).fill('1121103z') } } },
+  { p: 'monster-rpg', rule: 'tileart-dims', data: { ...B('monster-rpg'), palettesCount: 8, tiles: { 20: {} }, tileArt: { 20: Array(8).fill('11') } } },
   { p: 'monster-rpg', rule: 'palette-size', data: { ...B('monster-rpg'), palettes: { 0: Array.from({ length: 20 }, () => [1, 1, 1]) } } },   // warn
   { p: 'monster-rpg', rule: 'trainer-bounds', data: { ...B('monster-rpg'), trainers: { T: { prize: 5, team: [] } } } },
   { p: 'monster-rpg', rule: 'player-ref', data: { ...B('monster-rpg'), items: { TONIC: { effect: 'heal', amount: 1 } }, player: { inventory: { TONIC: -3 } } } },

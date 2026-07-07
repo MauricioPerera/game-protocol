@@ -28,8 +28,8 @@ module.exports = {
   // --- rangos / dimensiones ---
   'palette-range': 'El indice de paleta debe estar en 0..palettesCount-1.',
   'palette-color-range': 'Cada color es [r,g,b] con valores en 0..31.',
-  'sprite-dims': 'Los sprites deben ser matrices 16x16.',
-  'tileart-dims': 'tileArt debe ser 8x8 con indices de color en 0..palettesCount-1.',
+  'sprite-dims': 'Los sprites deben ser 16x16: matriz de numeros o forma compacta (16 strings hex de 16 chars, 1 char = 1 celda 0..15).',
+  'tileart-dims': 'tileArt debe ser 8x8 con indices de color en 0..palettesCount-1: matriz de numeros o forma compacta (8 strings hex de 8 chars).',
   'tileart-ref': 'El id de tileArt debe estar registrado en `tiles` y en el rango valido.',
   'sfx-valid': 'Cada sfx necesita freq (>0 Hz) y dur (0-5 s).',
   'economy-bounds': 'Los precios deben ser > 0; catchBase+catchScale en [0,1].',
@@ -52,7 +52,7 @@ module.exports = {
   'entity-text': 'El `dialogue` del NPC debe ser una clave existente en `text`.',
   'player-start': 'player.start debe caer dentro de la escena/escena inicial.',
   // --- overworld / cross-checks con el motor (monster-rpg) ---
-  'overworld-ref': 'En cada area de `overworld`: NPC/trainer/warp con col/row numericos dentro de 0..platform.cols-1; NPC con `dialogue` (sin comas, el parser de flujo las corta); `warp.target` debe ser un area de overworld o un mapa declarado; `trainer.name` debe existir en `trainers`.',
+  'overworld-ref': 'En cada area de `overworld`: NPC/trainer/warp con col en 0..platform.cols-1 y row en 0..platform.rows-1; NPC con `dialogue` (si el texto lleva comas, entre comillas); `warp.target` debe ser un area de overworld o un mapa declarado; `trainer.name` debe existir en `trainers`.',
   'type-symmetry': 'La tabla `types` debe ser simetrica: si A->B es x2, entonces B->A debe ser x0.5 (y viceversa x0.5 <-> x2). Corrige el multiplicador inverso.',
   'solid-sync': 'El flag `solid` de cada tile en GAME.md debe coincidir con el Set SOLID_TILES del motor. Pon el tile en SOLID_TILES si es solid, o quitalo / cambia `solid: false` si es caminable. (Cross-check opcional via GAME_ENGINE.)',
   'dead-token': 'La clave de `balance` no aparece en el motor (gBal(...), .clave o ["clave"]). Referenciala en el codigo del motor o elimina la declaracion de GAME.md. (Cross-check opcional via GAME_ENGINE.)',

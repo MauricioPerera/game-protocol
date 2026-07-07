@@ -30,10 +30,12 @@ encounters:
 economy: { startMoney }
 balance: { catchBase, catchScale, xpCurveMul, encounterRate }
 
-palettes:        { <idx>: [[r,g,b], ...] }   # 0..31 por canal, se rellena a 16
+palettes:        { <idx>: [[r,g,b], ...] }   # 0..31 por canal, se rellena a 16 (max 16: palette-size)
 spritePalettes:  { <idx>: [[r,g,b], ...] }
-sprites:         { <name>: [[...16x16...]] }
-tileArt:         { <id>: [[...8x8...]] }
+sprites:         { <name>: [[...16x16...]] }   # o forma compacta: 16 strings hex de 16 chars
+tileArt:         { <id>: [[...8x8...]] }       # o forma compacta: 8 strings hex de 8 chars
+# Forma compacta de arte 4bpp: 1 caracter hex = 1 celda 0..15 (p.ej. "11211031").
+# Se DECODIFICA al compilar: mismo window.GAME byte a byte que la forma matriz.
 sfx:             { <event>: { freq, dur } }
 
 maps:
@@ -55,7 +57,10 @@ text:   { <key>: "string" }
 
 ## Section order (cuerpo Markdown)
 
-`Overview · Tiles · Types · Species · Maps · Player · Text · Economy & Balance · Do's and Don'ts`
+`Overview · Tiles · Sprites · Types · Moves · Species · Trainers · Encounters · Maps · Player · Text · Sfx · Economy & Balance · Do's and Don'ts`
+
+(Todas opcionales; solo el **orden relativo** se valida. Moves/Trainers/Encounters/Sprites/Sfx
+se añadieron como secciones de primera clase — antes había que anidarlas como `###`.)
 
 ## Reglas (28 originales)
 

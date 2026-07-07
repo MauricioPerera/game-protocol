@@ -235,11 +235,16 @@
       "sections": [
         "Overview",
         "Tiles",
+        "Sprites",
         "Types",
+        "Moves",
         "Species",
+        "Trainers",
+        "Encounters",
         "Maps",
         "Player",
         "Text",
+        "Sfx",
         "Economy & Balance",
         "Do's and Don'ts"
       ],
@@ -374,7 +379,7 @@
         },
         {
           "key": "SPRITES",
-          "source": "token:sprites"
+          "source": "derived"
         },
         {
           "key": "ITEMS",
@@ -398,7 +403,7 @@
         },
         {
           "key": "TILE_ART",
-          "source": "token:tileArt"
+          "source": "derived"
         },
         {
           "key": "TEXT",

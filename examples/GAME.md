@@ -102,4 +102,4 @@ Dinero inicial y catálogo `items` (precio + efecto). Captura: `catchBase + catc
 ## Do's and Don'ts
 - Todo `solid:true` debe coincidir con el Set de sólidos del motor (cruce opcional `solid-sync`).
 - Índices de paleta dentro de `0..palettesCount-1`; arte de tile 8×8; sprites 16×16.
-- Listas en **flujo** (`[a, b]`); diálogos en flujo **sin comas**; textos largos como valor de bloque.
+- Listas en **flujo** (`[a, b]`); diálogos con comas **entre comillas**; textos largos como valor de bloque.

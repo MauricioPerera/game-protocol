@@ -157,7 +157,12 @@
   }
 
   function ruleSpriteDims({ data, add }) {
-    for (const [sn, mat] of Object.entries(data.sprites || {})) {
+    for (const [sn, matRaw] of Object.entries(data.sprites || {})) {
+      // Acepta tambien la forma compacta hex (16 strings de 16 chars; ver decodeArtRows).
+      let mat = matRaw;
+      const dec = H.decodeArtRows ? H.decodeArtRows(matRaw) : null;
+      if (dec && dec.error) { add('error', 'sprite-dims', 'sprite ' + sn + ' forma hex invalida: ' + dec.error); continue; }
+      if (dec && dec.grid) mat = dec.grid;
       if (!Array.isArray(mat) || mat.length !== 16 || mat.some(r => !Array.isArray(r) || r.length !== 16))
         add('error', 'sprite-dims', 'sprite ' + sn + ' no es 16x16');
       // celdas 4bpp: indices 0..15 (antes solo se validaba la forma, no el rango)
@@ -224,8 +229,9 @@
         if (typeof n.row === 'number' && !rowOk(n.row))
           add('error', 'overworld-ref', area + ': NPC row ' + n.row + ' fuera de 0..' + (platform.rows - 1));
         if (!n.dialogue) add('warn', 'overworld-ref', area + ': NPC en (' + n.col + ',' + n.row + ') sin dialogue');
-        if (typeof n.dialogue === 'string' && n.dialogue.includes(','))
-          add('warn', 'overworld-ref', area + ': el dialogue de un NPC contiene "," (el parser YAML de flujo lo cortaria)');
+        // (Se elimino el warn por comas en dialogue: era un falso positivo — una coma que
+        // llega aqui SIEMPRE viene de un string entre comillas (uso correcto); la coma sin
+        // comillas rompe el parseo de flujo con un parse-error claro antes de llegar.)
       }
       for (const t of (def.trainers || [])) {
         if (!(t.name in trainers)) add('error', 'overworld-ref', area + ': entrenador inexistente en `trainers`: ' + t.name);
@@ -245,7 +251,7 @@
     }
   }
 
-  function ruleTileArt(ctx) { H.ruleTileArt(ctx, { idRange: [16, 63] }); }
+  function ruleTileArt(ctx) { H.ruleTileArt(ctx, { idRange: [16, 63], allowHex: true }); }
 
   function ruleSfx({ data, add }) {
     for (const [k, s] of Object.entries(data.sfx || {})) {
@@ -292,6 +298,16 @@
   }
 
   // ---------- COMPILACIÓN: derivaciones del dominio (consumidas por game-build-core) ----------
+  // Decodifica cada entrada de un mapa de arte si viene en forma compacta hex; las
+  // matrices pasan intactas. Usada por las claves SPRITES y TILE_ART.
+  function decodeArtMap(obj) {
+    const out = {};
+    for (const [k, v] of Object.entries(obj || {})) {
+      const dec = H.decodeArtRows ? H.decodeArtRows(v) : null;
+      out[k] = (dec && dec.grid) ? dec.grid : v;
+    }
+    return out;
+  }
   // `expand` resuelve una lista de nombres de ataque a objetos completos (usa data.moves).
   function expandFactory(data) {
     const moves = data.moves || {};
@@ -341,7 +357,10 @@
     } },
     { key: 'PALETTES', fn: (data, h) => h.palArray(data.palettes || {}) },
     { key: 'SPRITE_PALETTES', fn: (data, h) => h.palArray(data.spritePalettes || {}) },
-    { key: 'SPRITES', from: 'sprites' },
+    // SPRITES/TILE_ART: la forma compacta hex se DECODIFICA al compilar — el artefacto
+    // siempre lleva matrices de numeros, identicas a las de la forma matriz (determinismo:
+    // mismo arte en cualquiera de las dos formas → mismo window.GAME byte a byte).
+    { key: 'SPRITES', fn: (data) => decodeArtMap(data.sprites) },
     { key: 'ITEMS', from: 'items' },
     { key: 'ENCOUNTERS', fn: (data) => {
       const out = {};
@@ -368,7 +387,7 @@
     } },
     { key: 'OVERWORLD', from: 'overworld' },
     { key: 'PLAYER', from: 'player' },
-    { key: 'TILE_ART', from: 'tileArt' },
+    { key: 'TILE_ART', fn: (data) => decodeArtMap(data.tileArt) },
     { key: 'TEXT', from: 'text' },
     { key: 'SFX', from: 'sfx' },
     { key: 'ECONOMY', fn: (data) => {
@@ -385,7 +404,10 @@
   return {
     id: 'monster-rpg',
     specVersion: '0.1',
-    sections: ['Overview', 'Tiles', 'Types', 'Species', 'Maps', 'Player', 'Text', 'Economy & Balance', "Do's and Don'ts"],
+    // Orden canonico AMPLIADO (friccion de autoria del stress-test): Moves/Trainers/
+    // Encounters/Sprites/Sfx ahora tienen hueco de primera clase. Aditivo: los docs
+    // existentes usan un subconjunto y su orden relativo se preserva.
+    sections: ['Overview', 'Tiles', 'Sprites', 'Types', 'Moves', 'Species', 'Trainers', 'Encounters', 'Maps', 'Player', 'Text', 'Sfx', 'Economy & Balance', "Do's and Don'ts"],
     required: ['version', 'name'],
     refs: refs,
     rules: [
