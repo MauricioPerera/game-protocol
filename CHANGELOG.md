@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Changed
+- **Runtime monster-rpg unificado**: `examples/kaiju-island-3d.html` ya no lleva su
+  copia inline del motor — redirige al player multi-perfil
+  (`game3d.html?game=kaiju-island.generated.js`), cuyo runtime monster-rpg es la
+  versión generalizada del mismo motor. Una sola implementación.
+- Retirado `examples/kaiju-island-3d-standalone.html`: contenía la copia duplicada, y
+  `build-standalone` no puede inlinar módulos ES (el motor unificado se importa como
+  módulo), así que no podía reconstruirse. El juego sigue disponible standalone-menos
+  vía `game3d.html` servido junto a `game3d.js`.
+- Diferencias menores asumidas al generalizar (documentadas): el terreno de respaldo
+  para áreas sin mapa es genérico (no la playa fija de shore) y no hay bonus específico
+  de STORM_BALL (el runtime no hardcodea nombres de items).
 
 ## [2.7.0] — 2026-07-07
 
