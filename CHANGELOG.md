@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added
+- `examples/el-faro-hundido.GAME.md` (+ `.generated.js`, `.html`, `-standalone.html`):
+  **juego completo y jugable** sobre el motor dungeon de referencia — 7 salas con
+  minimapa coherente, progresión por 2 llaves encadenadas (bodega → torreón → linterna),
+  5 enemigos patrullando (h/v, hasta 2 HP), 3 NPCs con pistas, agua animada y meta
+  final. 100% datos: el HTML es el mismo motor del perfil con el `generated`
+  intercambiado. **Jugabilidad verificada end-to-end** en navegador (playthrough
+  scriptado: puerta bloqueada sin llave → llave oxidada → torreón → llave dorada →
+  linterna → victoria). Lint 0/0 a la primera; cubierto por all-examples (15 archivos).
 
 ## [2.4.2] — 2026-07-07
 
