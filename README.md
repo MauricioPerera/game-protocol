@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v1.2.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v1.3.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,14 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v1.2.0`** — aditivo, solo spec (ver [`CHANGELOG.md`](./CHANGELOG.md)):
+**Release `v1.3.0`** — deprecation del **fallback de `profile`** (regla
+`profile-fallback`, `since: 1.3.0`, `removedIn: 2.0.0`, ciclo [SPEC §7.1](./SPEC.md)):
+un `GAME.md` sin `profile` sigue resolviéndose como `monster-rpg` y lintea 0 errores,
+pero emite un hallazgo `deprecated` (y `game-export.js` avisa por stderr). **En `2.0.0`
+`profile` será obligatorio.** Receta de migración en [`MIGRATION.md`](./MIGRATION.md)
+(De 1.x → 2.0.0).
+
+`v1.2.0` — aditivo, solo spec (ver [`CHANGELOG.md`](./CHANGELOG.md)):
 nueva [SPEC §9 **Conformance**](./SPEC.md) — el contrato normativo para
 implementaciones alternativas (parser/linter/compilador/exit codes) más la mitad
 permisiva (tolerancia a tokens `x-`/desconocidos y round-trip sin pérdida) — y

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [1.3.0] — 2026-07-07
+
+Release **aditivo** sobre `1.2.0` (bump minor, [SPEC §7.0](./SPEC.md)) cuyo contenido
+es una **deprecation** (§7.1): el fallback de `profile` entra en su periodo de gracia.
+Nada rompe hoy — el gate sigue en 0 errores para archivos sin `profile` — pero en
+`2.0.0` el token será obligatorio. La versión del protocolo sigue en `0.1`.
+
 ### Deprecated
 - **Fallback de `profile`** — regla `profile-fallback`, `since: 1.3.0`,
   `removedIn: 2.0.0`. Un `GAME.md` sin `profile` sigue resolviéndose como
@@ -234,6 +243,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[1.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.3.0
 [1.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.2.0
 [1.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.1.0
 [1.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.0.0
