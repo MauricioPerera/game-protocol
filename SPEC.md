@@ -62,10 +62,10 @@ Only these tokens are defined by the core. Everything else is profile-defined.
 | `version` | string (semver) | yes | Spec version this file targets |
 | `name` | string | yes | Game title |
 | `description` | string | no | Free-text summary |
-| `profile` | string | yes | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
+| `profile` | string | recommended (CLI default: `monster-rpg`) | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
 | `platform` | object | no | Presentation target (mode, dimensions, etc.) — shape defined by profile |
 
-A file with no `profile` is validated only against the core structural rules (§4).
+**`profile` in practice.** When the core is consumed directly (`lintGame`) and no profile descriptor is resolved, the file is validated only against the core structural rules (§4) and `required-fields` demands `profile`. The reference CLI, however, falls back to the default profile `monster-rpg` when the token is missing (`manifest.json` → `profileSelection`), and a *loaded* profile supplies its own `required` list — the reference profiles use `['version', 'name']` (`advance-wars` also requires `profile`). Net effect: a file without `profile` lints clean under the CLI as monster-rpg. Declare `profile` explicitly anyway; the fallback exists for backward compatibility with the original monster-rpg engine.
 
 ## 3. Compilation contract
 
@@ -110,7 +110,7 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 | Rule | Level | Description |
 |---|---|---|
 | `frontmatter-present` | error | `---` fences present and parseable |
-| `required-fields` | error | `version`, `name`, `profile` exist |
+| `required-fields` | error | `version`, `name` exist — plus `profile` when no profile descriptor is resolved; a loaded profile supplies its own `required` list (see §2) |
 | `profile-known` | error | `profile` resolves to a loadable profile (emitted by `lintGame` when `opts.profileId` is passed but no profile loaded) |
 | `version-migration` | warn/error | `version` vs the spec version supported by the tooling (`profile.specVersion`, core default `0.1`): **warn** if the GAME.md is older (file `<` supported → consult `MIGRATION.md`); **error** if the GAME.md is newer than the tooling supports (file `>` supported → upgrade tooling) |
 | `deprecated` | deprecated | A token/rule/profile marked `deprecated: {since, removedIn}` emits a lifecycle finding with `since`/`removedIn` (not an error; the rule still applies until `removedIn`) |

@@ -96,7 +96,7 @@ win: { text: "Tesoro reclamado. Mazmorra completada, 100% definida en GAME.md." 
 ---
 
 ## Overview
-Mazmorra de 3 salas (sala, sotano, tesoro) conectadas por warps. Busca la llave en el sotano y abre la puerta.
+Mazmorra de 5 salas (sala, sotano, tesoro, galeria y cripta) conectadas por warps. Busca la llave en el sotano y abre la puerta del norte.
 
 ## Tiles
 Suelo, muro, puerta (warp con llave), escaleras (warp), agua (solida), llave, jugador, NPC y cofre-meta. Arte 8x8 en `tileArt`.

@@ -62,7 +62,6 @@ putEntity(pickup, pickup && pickup.col, pickup && pickup.row);
 putEntity(goal, goal && goal.col, goal && goal.row);
 function entityAt(c, r) { // devuelve {tile,pal} de la entidad superior en la celda, o null
   return entityMap.get(c + ',' + r) || null;
-  return null;
 }
 
 // buffer logico PW x PH (RGB)

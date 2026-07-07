@@ -49,6 +49,17 @@ sigue en `1.0.0` y la versión del protocolo sigue en `0.1`.
 - Regenerados `manifest.json` y `schemas/advance-wars.schema.json` (el perfil ahora
   expone reglas y claves de salida).
 
+### Fixed — menores
+- `tools/render-png.js`: eliminado un `return null` inalcanzable en `entityAt` (código
+  muerto, sin cambio de comportamiento).
+- `examples/dungeon.GAME.md`: el Overview decía "3 salas"; son 5 (sala, sótano, tesoro,
+  galería y cripta).
+- SPEC §2/§4: documentado el contrato **real** de `profile` — recomendado, con fallback
+  `monster-rpg` en el CLI de referencia; `required-fields` lo exige solo cuando no se
+  resuelve un descriptor de perfil (el perfil cargado aporta su propia lista `required`).
+  La tabla §2 lo marcaba "required: yes", que no era lo que el código hacía. Hacerlo
+  obligatorio de verdad sería breaking (bump major según §7): queda como decisión futura.
+
 ### Docs — sincronización con lo anterior
 - README: el conteo "94 reglas" pasa al verificable **101** (reglas distintas emitibles por
   core + wrapper CLI + perfiles; hints en `tools/rule-hints.js`); `tools/shared-helpers.js`
