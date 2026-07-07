@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/advance-wars.schema.json",
+  "title": "GAME.md front-matter — perfil advance-wars",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "advance-wars"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Units",
+    "Rendering",
+    "Do's and Don'ts"
+  ],
+  "x-references": [],
+  "x-outputKeys": [],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}
