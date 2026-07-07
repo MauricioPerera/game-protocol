@@ -162,23 +162,21 @@ const tmpOut = path.join(TMP, 'out.js');
   ok(r.code === 2, 'schema  --nope  (exit 2, flag desconocido)', 'exit=' + r.code);
 }
 
-// ===== Deprecation: fallback de `profile` (profile-fallback, since 1.3.0, removedIn 2.0.0) =====
-// (18) GAME.md valido SIN `profile` → lint exit 0 (no rompe el gate) + finding
-//      level=deprecated rule=profile-fallback con since/removedIn; export exit 0 + AVISO stderr.
+// ===== 2.0.0: `profile` obligatorio (fallback removido; deprecado en 1.3.0) =====
+// (18) GAME.md valido SIN `profile` → lint exit 1 + error required-fields sobre profile
+//      (el hallazgo profile-fallback ya NO se emite); export exit 2 + mensaje accionable.
 {
   const noProfileMd = path.join(TMP, 'no-profile.GAME.md');
   fs.writeFileSync(noProfileMd, '---\nversion: "0.1"\nname: x\n---\nbody\n', 'utf8');
   const r = run('game-lint.js', [noProfileMd]);
-  ok(r.code === 0, 'lint  sin profile  (exit 0, fallback deprecado no es error)', 'exit=' + r.code);
-  ok(/profile-fallback/.test(r.stdout) && /"level": "deprecated"/.test(r.stdout),
-     'lint  emite finding deprecated profile-fallback');
-  ok(/"since": "1.3.0"/.test(r.stdout) && /"removedIn": "2.0.0"/.test(r.stdout),
-     'lint  profile-fallback lleva since/removedIn');
-  // run() descarta stderr en exit 0; spawnSync lo captura tambien en exito.
-  const { spawnSync } = require('child_process');
-  const e = spawnSync(process.execPath, [path.join(TOOLS, 'game-export.js'), noProfileMd, tmpOut], { encoding: 'utf8' });
-  ok(e.status === 0, 'export  sin profile  (exit 0)', 'exit=' + e.status);
-  ok(/AVISO/.test(e.stderr) && /deprecado/.test(e.stderr), 'export  aviso de fallback deprecado en stderr', JSON.stringify(e.stderr));
+  ok(r.code === 1, 'lint  sin profile  (exit 1, obligatorio desde 2.0.0)', 'exit=' + r.code);
+  ok(/required-fields/.test(r.stdout) && /obligatorio: profile/.test(r.stdout),
+     'lint  error required-fields por profile');
+  ok(!/profile-fallback/.test(r.stdout), 'lint  sin hallazgo profile-fallback (removido)');
+  const e = run('game-export.js', [noProfileMd, tmpOut]);
+  ok(e.code === 2, 'export  sin profile  (exit 2)', 'exit=' + e.code);
+  ok(/Falta `profile`/.test(e.stderr) && /2\.0\.0/.test(e.stderr),
+     'export  mensaje de profile obligatorio', JSON.stringify(e.stderr));
 }
 
 // Limpieza

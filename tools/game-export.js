@@ -2,7 +2,7 @@
 /**
  * game-export.js — Compila GAME.md -> game-data.generated.js (global window.GAME). Sin dependencias.
  * Uso:  node tools/game-export.js [GAME.md] [salida.js]
- * El perfil de dominio se elige por el token `profile` del front-matter (default: monster-rpg).
+ * El perfil de dominio se elige por el token `profile` del front-matter (OBLIGATORIO desde 2.0.0).
  * GAME.md es la FUENTE DE VERDAD; la salida se regenera, nunca se edita a mano.
  */
 const fs = require('fs');
@@ -45,10 +45,12 @@ if (!fm) { console.error('GAME.md sin front-matter YAML.'); process.exit(2); }
 let data;
 try { data = parseYamlSubset(fm); }
 catch (e) { console.error('Error de parseo: ' + e.message); process.exit(2); }
-const profileId = data.profile || 'monster-rpg';
-// Fallback DEPRECADO (since 1.3.0, removedIn 2.0.0): aviso por stderr, exit sin cambio.
-if (!('profile' in data))
-  console.error('AVISO: GAME.md sin `profile`; usando el fallback monster-rpg (deprecado desde 1.3.0, se remueve en 2.0.0 — declara `profile: <id>`, ver MIGRATION.md)');
+// `profile` OBLIGATORIO desde 2.0.0 (fallback monster-rpg removido; deprecado en 1.3.0).
+if (!('profile' in data)) {
+  console.error('Falta `profile` en el front-matter (obligatorio desde 2.0.0). Declara `profile: <id>`; receta en MIGRATION.md (De 1.x -> 2.0.0).');
+  process.exit(2);
+}
+const profileId = data.profile;
 let profile;
 try { profile = loadProfile(profileId); }
 catch (e) { console.error('El perfil ' + profileId + ' tiene un error: ' + e.message); process.exit(2); }

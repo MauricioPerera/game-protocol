@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v1.3.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.0.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,14 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v1.3.0`** — deprecation del **fallback de `profile`** (regla
+**Release `v2.0.0`** — **breaking** (bump major): ejecuta la remoción anunciada en
+`v1.3.0`. **`profile` es obligatorio**: sin él, `game-lint.js` reporta error
+`required-fields` (exit 1) y `game-export.js` sale con exit 2 sin escribir artefacto.
+Migración: un comando ([`MIGRATION.md`](./MIGRATION.md), De 1.x → 2.0.0, vigente).
+Ciclo [SPEC §7.1](./SPEC.md) completo: deprecar (`1.3.0`) → gracia → remover (`2.0.0`).
+La versión del protocolo sigue en `0.1`.
+
+`v1.3.0` — deprecation del **fallback de `profile`** (regla
 `profile-fallback`, `since: 1.3.0`, `removedIn: 2.0.0`, ciclo [SPEC §7.1](./SPEC.md)):
 un `GAME.md` sin `profile` sigue resolviéndose como `monster-rpg` y lintea 0 errores,
 pero emite un hallazgo `deprecated` (y `game-export.js` avisa por stderr). **En `2.0.0`

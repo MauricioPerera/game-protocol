@@ -64,7 +64,7 @@ const manifest = {
     manifest: 'node tools/game-manifest.js',
     conformance: 'node test/conformance.js',
   },
-  profileSelection: 'El front-matter declara `profile: <id>`. Sin el, el CLI asume monster-rpg — fallback DEPRECADO (since 1.3.0, removedIn 2.0.0): emite el hallazgo `profile-fallback`; en 2.0.0 `profile` sera obligatorio.',
+  profileSelection: 'El front-matter declara `profile: <id>` — OBLIGATORIO desde 2.0.0. Sin el, lint falla con required-fields (error) y export sale con exit 2. (El fallback monster-rpg fue deprecado en 1.3.0 y removido en 2.0.0; ver MIGRATION.md.)',
   // S2.3: ciclo de vida del contrato. `supported` = versiones de spec con las que el
   // tooling actual es compatible; `doc` apunta al documento de migración entre versiones.
   migrations: {

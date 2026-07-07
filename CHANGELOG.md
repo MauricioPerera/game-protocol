@@ -4,6 +4,29 @@
 
 _No hay cambios pendientes._
 
+## [2.0.0] — 2026-07-07
+
+Release **breaking** (bump major, [SPEC §7](./SPEC.md)): ejecuta la remoción anunciada
+en `1.3.0`, cumpliendo el ciclo completo de §7.1 — deprecar primero (`1.3.0`), periodo
+de gracia, remover en la major. La versión del protocolo sigue en `0.1`.
+
+### Removed — breaking
+- **Fallback de `profile`** (deprecado en `1.3.0` como `profile-fallback`). `profile`
+  es **obligatorio** en el front-matter:
+  - `game-lint.js`: sin `profile` no se carga perfil y el core reporta
+    `required-fields` (**error**, exit 1). El hallazgo `profile-fallback` ya no existe.
+  - `game-export.js`: exit **2** con mensaje accionable; no se escribe artefacto.
+  - **Acción requerida** para `GAME.md` que dependían del fallback: añadir
+    `profile: <id>` — receta de un comando en [`MIGRATION.md`](./MIGRATION.md)
+    (De 1.x → 2.0.0, ahora **vigente**).
+
+### Changed
+- SPEC §2: `profile` pasa a "yes (since 2.0.0)"; el fallback queda documentado como
+  historia (`≤1.x`, deprecado `1.3.0`, removido `2.0.0`).
+- `manifest.json` → `profileSelection` refleja la obligatoriedad.
+- `test/cli-errors.js`: los chequeos del camino deprecado pasan a verificar el error
+  (lint exit 1 + `required-fields`; export exit 2).
+
 ## [1.3.0] — 2026-07-07
 
 Release **aditivo** sobre `1.2.0` (bump minor, [SPEC §7.0](./SPEC.md)) cuyo contenido
@@ -243,6 +266,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.0.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.0.0
 [1.3.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.3.0
 [1.2.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.2.0
 [1.1.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v1.1.0

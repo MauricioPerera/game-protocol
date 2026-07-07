@@ -62,12 +62,12 @@ Only these tokens are defined by the core. Everything else is profile-defined.
 | `version` | string (semver) | yes | Spec version this file targets |
 | `name` | string | yes | Game title |
 | `description` | string | no | Free-text summary |
-| `profile` | string | **required from `2.0.0`** — today optional with a **deprecated** CLI fallback (`monster-rpg`) | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
+| `profile` | string | **yes** (since `2.0.0`; `≤1.x` had a deprecated CLI fallback) | Domain profile id (e.g. `monster-rpg`, `tower-defense`) |
 | `platform` | object | no | Presentation target (mode, dimensions, etc.) — shape defined by profile |
 
-**`profile` in practice.** When the core is consumed directly (`lintGame`) and no profile descriptor is resolved, the file is validated only against the core structural rules (§4) and `required-fields` demands `profile`. The reference CLI, however, falls back to the default profile `monster-rpg` when the token is missing (`manifest.json` → `profileSelection`), and a *loaded* profile supplies its own `required` list — the reference profiles use `['version', 'name']` (`advance-wars` also requires `profile`).
+**`profile` in practice.** `profile` is mandatory. When the token is missing, no profile descriptor is resolved: the file is validated only against the core structural rules (§4) and `required-fields` reports the missing `profile` as an **error** (`game-lint.js` exits `1`); `game-export.js` exits `2` without writing an artifact. A *loaded* profile supplies its own `required` list — the reference profiles use `['version', 'name']`, which is safe because a profile can only load when the token is present.
 
-**The fallback is deprecated** (`profile-fallback`, `since: 1.3.0`, `removedIn: 2.0.0`, per the §7.1 lifecycle): a file without `profile` still resolves to `monster-rpg`, but `game-lint.js` emits a `deprecated`-level finding and `game-export.js` warns on stderr. In `2.0.0` the fallback is removed and `profile` becomes mandatory — its absence will be a hard error. Migration recipe: `MIGRATION.md` (De 1.x → 2.0.0). The fallback existed for backward compatibility with the original monster-rpg engine.
+**History.** Up to `1.x` the reference CLI fell back to `monster-rpg` when the token was missing (backward compatibility with the original monster-rpg engine). The fallback was deprecated in `1.3.0` (`profile-fallback`, full §7.1 lifecycle) and **removed in `2.0.0`**. Migration recipe: `MIGRATION.md` (De 1.x → 2.0.0).
 
 ## 3. Compilation contract
 

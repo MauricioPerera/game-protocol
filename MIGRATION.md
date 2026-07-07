@@ -64,25 +64,26 @@ Cada entrada sigue esta forma:
 
 ## 3. Entradas por versión
 
-### De 1.x → 2.0.0  (estado: pendiente — deprecation activa desde 1.3.0)
+### De 1.x → 2.0.0  (estado: **vigente** — removido en `2.0.0`)
 
 > Versiona el **tooling/paquete**, no el spec del protocolo (que sigue en `0.1`).
 
-**Cambios breaking (previstos para `2.0.0`):**
-- Se elimina el **fallback de `profile`** de los CLI (`game-lint.js` / `game-export.js`
-  asumían `monster-rpg` si el token faltaba). `profile` pasa a ser **obligatorio**: su
-  ausencia será **error** (hoy es hallazgo `deprecated`, regla `profile-fallback`).
+**Cambios breaking (aplicados en `2.0.0`):**
+- Eliminado el **fallback de `profile`** de los CLI (`game-lint.js` / `game-export.js`
+  asumían `monster-rpg` si el token faltaba). `profile` es **obligatorio**: su ausencia
+  es **error** `required-fields` en lint (exit 1) y exit **2** en export (sin artefacto).
 
 **Reglas deprecadas:**
-- `profile-fallback` — deprecated since `1.3.0`, removedIn `2.0.0`. Reemplazo: declarar
-  `profile: <id>` explícito en el front-matter.
+- `profile-fallback` — deprecated since `1.3.0`, **removida en `2.0.0`** (el hallazgo ya
+  no se emite; la ausencia de `profile` pasa directamente por `required-fields`).
+  Reemplazo: declarar `profile: <id>` explícito en el front-matter.
 
 **Receta:**
 
 ```sh
 # Añade el token si falta (ajusta monster-rpg al perfil real del documento)
 grep -q '^profile:' GAME.md || sed -i '/^name:/a profile: monster-rpg' GAME.md
-# Re-lint: el hallazgo profile-fallback debe desaparecer
+# Re-lint: debe quedar en 0 errores (sin required-fields sobre profile)
 node tools/game-lint.js GAME.md --agent
 ```
 
