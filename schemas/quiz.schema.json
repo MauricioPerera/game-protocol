@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/quiz.schema.json",
+  "title": "GAME.md front-matter — perfil quiz",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "quiz"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "categories": {
+      "type": "object"
+    },
+    "questions": {
+      "type": "object"
+    },
+    "rounds": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Categories",
+    "Questions",
+    "Rounds",
+    "Text",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "question-category-ref",
+      "from": "questions.*.category",
+      "to": "categories"
+    },
+    {
+      "rule": "round-question-ref",
+      "from": "rounds.*.questions[]",
+      "to": "questions"
+    }
+  ],
+  "x-outputKeys": [
+    "CATEGORIES",
+    "QUESTIONS",
+    "ROUNDS",
+    "TEXT"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

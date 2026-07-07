@@ -80,6 +80,13 @@ module.exports = {
   'unit-tiledata-range': 'Cada celda de tileData es un nibble 4bpp: entero en 0..15 (indexa la paleta de 16 colores).',
   'entrant-decision': 'La decision del solicitante debe ser approve/deny/detain.',
   'recipe-inputs': 'Los inputs de la receta deben referenciar materiales existentes con cantidad > 0.',
+  // --- quiz (perfil puro-datos de referencia) ---
+  'question-category-ref': 'El `category` de la pregunta debe existir en `categories`.',
+  'round-question-ref': 'Cada id de `rounds.*.questions` debe existir en `questions`.',
+  'question-points': 'Cada pregunta necesita `points` > 0.',
+  'question-time': '`seconds` es entero en 5..120 (si se declara).',
+  'question-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
+  'round-reward': '`reward` de la ronda debe ser >= 0 (si se declara).',
   // --- tower-defense ---
   'tower-dmgtype-valid': 'El `dmgType` de la torre debe existir en `dmgTypes`.',
   'wave-enemy-valid': 'Cada `enemy` de `waves.*.spawns` debe estar declarado en `enemies`.',

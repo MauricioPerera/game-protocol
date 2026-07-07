@@ -16,8 +16,8 @@ const ok = (cond, label, extra) => {
   else { fail++; console.log('FAIL  ' + label + (extra ? '  ' + extra : '')); }
 };
 
-// ---- (1) Todos los perfiles reales son descriptores validos ----
-const files = fs.readdirSync(path.join(REPO, 'profiles')).filter(f => f.endsWith('.js'));
+// ---- (1) Todos los perfiles reales son descriptores validos (.js y .json puro-datos) ----
+const files = fs.readdirSync(path.join(REPO, 'profiles')).filter(f => f.endsWith('.js') || f.endsWith('.json'));
 for (const f of files) {
   const p = require(path.join(REPO, 'profiles', f));
   const err = validateProfile(p);
@@ -31,8 +31,9 @@ const bad = [
   ['id no kebab',            (p) => { p.id = 'Bad Id'; }],
   ['sections con no-string', (p) => { p.sections = [1]; }],
   ['rules con no-funcion',   (p) => { p.rules = ['x']; }],
-  ['ref sin msg()',          (p) => { p.refs = [{ rule: 'r', src: { collection: 'a', field: 'b' }, target: { collection: 'c' } }]; }],
+  ['ref con msg no-funcion', (p) => { p.refs = [{ rule: 'r', src: { collection: 'a', field: 'b' }, target: { collection: 'c' }, msg: 'texto' }]; }],
   ['ref sin target',         (p) => { p.refs = [{ rule: 'r', src: { collection: 'a' }, msg: () => '' }]; }],
+  ['enum sin values',        (p) => { p.enums = [{ rule: 'r', collection: 'a', field: 'f' }]; }],
   ['bound sin field',        (p) => { p.bounds = [{ rule: 'r', collection: 'a' }]; }],
   ['bound sin coleccion',    (p) => { p.bounds = [{ rule: 'r', field: 'hp' }]; }],
   ['dim sin shape valido',   (p) => { p.dims = [{ rule: 'r', collection: 'a', shape: [0, 2] }]; }],
@@ -55,6 +56,9 @@ for (const [name, mut] of bad) {
   // cubre cli-errors; aqui validamos el mensaje del validador via lintGame-like unit:
   const badProf = base(); badProf.refs = [{ rule: 'r' }];
   ok(/refs\[0\]/.test(validateProfile(badProf)), 'validador  señala la entrada exacta (refs[0])');
+  // ref SIN msg es VALIDA (perfiles puro-datos: el core genera el mensaje por defecto)
+  const okProf = base(); okProf.refs = [{ rule: 'r', src: { collection: 'a', field: 'b' }, target: { collection: 'c' } }];
+  ok(validateProfile(okProf) === null, 'validador  ref sin msg es valida (mensaje por defecto del core)');
   fs.rmSync(TMP, { recursive: true, force: true });
 }
 

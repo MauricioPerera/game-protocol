@@ -13,7 +13,10 @@ const fs = require('fs'), path = require('path');
 const REPO = path.resolve(__dirname, '..');
 const { buildGame } = require(path.join(REPO, 'tools/game-build-core.js'));
 const { splitFrontMatter, parseYamlSubset } = require(path.join(REPO, 'tools/yaml-min.js'));
-const loadProfile = id => require(path.join(REPO, 'profiles/' + id + '.js'));
+// Los perfiles pueden ser .js (codigo) o .json (puro-datos, SPEC §11).
+const loadProfile = id => fs.existsSync(path.join(REPO, 'profiles/' + id + '.js'))
+  ? require(path.join(REPO, 'profiles/' + id + '.js'))
+  : require(path.join(REPO, 'profiles/' + id + '.json'));
 
 let pass = 0, fail = 0;
 const ok = (cond, label, extra) => {
@@ -113,7 +116,7 @@ const examples = [
   ['GAME.md', 'monster-rpg'], ['platformer.GAME.md', 'platformer'], ['crafting.GAME.md', 'crafting'],
   ['papers-please.GAME.md', 'papers-please'], ['voxel.GAME.md', 'voxel'], ['adventure.GAME.md', 'adventure'],
   ['dungeon.GAME.md', 'dungeon'], ['roguelike.GAME.md', 'roguelike'], ['tower-defense.GAME.md', 'tower-defense'],
-  ['advance-wars-extracted.GAME.md', 'advance-wars'],
+  ['advance-wars-extracted.GAME.md', 'advance-wars'], ['quiz.GAME.md', 'quiz'],
 ];
 const META_KEYS = new Set(['generatedFrom', 'name', 'description', 'platform', 'palettesCount']);
 for (const [mdFile, pid] of examples) {

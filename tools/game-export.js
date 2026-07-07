@@ -15,10 +15,14 @@ const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
   if (!/^[a-z0-9-]+$/.test(id))
     throw new Error('Perfil inválido: "' + id + '" (solo minúsculas, números y guión)');
-  const p = path.join(PROFILES_DIR, id + '.js');
-  if (!fs.existsSync(p)) return null;        // inexistente
-  const prof = require(p);                    // si falla (sintaxis), lanza -> el llamador lo reporta
-  const shapeErr = validateProfile(prof);     // contrato del descriptor (SPEC §6.1)
+  const pjs = path.join(PROFILES_DIR, id + '.js');
+  const pjson = path.join(PROFILES_DIR, id + '.json');
+  let prof;
+  if (fs.existsSync(pjs)) prof = require(pjs);         // si falla (sintaxis), lanza -> el llamador lo reporta
+  // Perfil puro-datos (SPEC §11): JSON.parse, sin ejecutar codigo (SPEC §10).
+  else if (fs.existsSync(pjson)) prof = JSON.parse(fs.readFileSync(pjson, 'utf8'));
+  else return null;                                    // inexistente
+  const shapeErr = validateProfile(prof);              // contrato del descriptor (SPEC §6.1)
   if (shapeErr) throw new Error(shapeErr);
   return prof;
 }

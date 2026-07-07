@@ -1,0 +1,29 @@
+{
+  "$comment": "Perfil de referencia PURO-DE-DATOS (SPEC §11): sin una sola funcion. Se carga con JSON.parse — nunca se ejecuta codigo (SPEC §10) — y valida solo con las familias declarativas del core: refs (broken-ref, msg por defecto), bounds (range), enums y derive from/value.",
+  "id": "quiz",
+  "specVersion": "0.1",
+  "sections": ["Overview", "Categories", "Questions", "Rounds", "Text", "Do's and Don'ts"],
+  "required": ["version", "name", "profile"],
+  "refs": [
+    { "rule": "question-category-ref", "level": "error",
+      "src": { "collection": "questions", "field": "category" }, "target": { "collection": "categories" } },
+    { "rule": "round-question-ref", "level": "error",
+      "src": { "collection": "rounds", "arrayField": "questions" }, "target": { "collection": "questions" } }
+  ],
+  "bounds": [
+    { "rule": "question-points", "collection": "questions", "field": "points", "gt": 0, "required": true },
+    { "rule": "question-time", "collection": "questions", "field": "seconds", "min": 5, "max": 120, "integer": true },
+    { "rule": "round-reward", "collection": "rounds", "field": "reward", "min": 0 }
+  ],
+  "enums": [
+    { "rule": "question-difficulty", "collection": "questions", "field": "difficulty",
+      "values": ["easy", "normal", "hard"], "required": true }
+  ],
+  "dims": [],
+  "derive": [
+    { "key": "CATEGORIES", "from": "categories" },
+    { "key": "QUESTIONS", "from": "questions" },
+    { "key": "ROUNDS", "from": "rounds" },
+    { "key": "TEXT", "from": "text" }
+  ]
+}

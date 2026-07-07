@@ -116,8 +116,18 @@
     for (let i = 0; i < refs.length; i++) {
       const r = refs[i];
       if (!r || typeof r.rule !== 'string' || !r.src || typeof r.src !== 'object' ||
-          !r.target || typeof r.target.collection !== 'string' || typeof r.msg !== 'function')
-        return fail('refs[' + i + '] necesita { rule, src, target.collection, msg() }');
+          !r.target || typeof r.target.collection !== 'string')
+        return fail('refs[' + i + '] necesita { rule, src, target.collection }');
+      // msg es OPCIONAL (perfiles puro-datos): si se omite, el core genera el mensaje.
+      if (r.msg != null && typeof r.msg !== 'function')
+        return fail('refs[' + i + '].msg debe ser funcion (u omitirse para el mensaje por defecto)');
+    }
+    const enums = p.enums || [];
+    for (let i = 0; i < enums.length; i++) {
+      const e = enums[i];
+      if (!e || typeof e.rule !== 'string' || typeof e.field !== 'string' || !(e.collection || e.singleton) ||
+          !Array.isArray(e.values) || e.values.length === 0)
+        return fail('enums[' + i + '] necesita { rule, field, collection|singleton, values: [..] }');
     }
     const bounds = p.bounds || [];
     for (let i = 0; i < bounds.length; i++) {

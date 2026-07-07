@@ -45,6 +45,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "PALETTES",
@@ -83,6 +84,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "PALETTES",
@@ -155,6 +157,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "MATERIALS",
@@ -202,6 +205,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "PALETTES",
@@ -354,6 +358,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "TYPE_CHART",
@@ -502,6 +507,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "COUNTRIES",
@@ -609,6 +615,7 @@
         }
       ],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "TILESETS",
@@ -641,6 +648,96 @@
       ],
       "deprecatedRules": []
     },
+    "quiz": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Categories",
+        "Questions",
+        "Rounds",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name",
+        "profile"
+      ],
+      "references": [
+        {
+          "rule": "question-category-ref",
+          "level": "error",
+          "from": "questions.*.category",
+          "to": "categories",
+          "optional": false
+        },
+        {
+          "rule": "round-question-ref",
+          "level": "error",
+          "from": "rounds.*.questions[]",
+          "to": "questions",
+          "optional": false
+        }
+      ],
+      "rules": [],
+      "bounds": [
+        {
+          "rule": "question-points",
+          "level": "error",
+          "target": "questions.*.points",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "question-time",
+          "level": "error",
+          "target": "questions.*.seconds",
+          "min": 5,
+          "max": 120,
+          "integer": true
+        },
+        {
+          "rule": "round-reward",
+          "level": "error",
+          "target": "rounds.*.reward",
+          "min": 0
+        }
+      ],
+      "dims": [],
+      "enums": [
+        {
+          "rule": "question-difficulty",
+          "level": "error",
+          "target": "questions.*.difficulty",
+          "values": [
+            "easy",
+            "normal",
+            "hard"
+          ],
+          "required": true
+        }
+      ],
+      "dataOnly": true,
+      "output": [
+        {
+          "key": "CATEGORIES",
+          "source": "token:categories"
+        },
+        {
+          "key": "QUESTIONS",
+          "source": "token:questions"
+        },
+        {
+          "key": "ROUNDS",
+          "source": "token:rounds"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ],
+      "deprecatedRules": []
+    },
     "roguelike": {
       "specVersion": "0.1",
       "sections": [
@@ -664,6 +761,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "PALETTES",
@@ -762,6 +860,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "TOWERS",
@@ -861,6 +960,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "enums": [],
       "output": [
         {
           "key": "MATERIALS",

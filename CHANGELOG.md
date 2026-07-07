@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — reglas puras-de-datos (SPEC §11, primera etapa)
+- **Perfiles JSON (puro-datos)**: los CLIs cargan `profiles/<id>.json` con `JSON.parse` —
+  **nunca se ejecuta código** — además de los `.js` (resolución: `.js` primero). Es la
+  vía soportada para perfiles de terceros (SPEC §10 actualizado: un `.json` malicioso
+  como mucho emite hallazgos o claves erróneas). `manifest.json` marca estos perfiles
+  con `dataOnly: true` y expone la tabla `enums`.
+- **Familia `enums` declarativa** en el core: `{ rule, collection|singleton, field,
+  values, required? }` — pertenencia a un conjunto cerrado, con mensaje por defecto.
+- **`refs[].msg` ahora opcional**: sin ella, el core genera el mensaje por defecto
+  (`<owner> referencia un valor inexistente en <coleccion>: <valor>`). Requisito para
+  que `refs` sea expresable en JSON puro.
+- **Perfil de referencia puro-datos `quiz`** (`profiles/quiz.json`, undécimo perfil):
+  categorías/preguntas/rondas validadas íntegramente con refs (mensajes por defecto),
+  bounds y enums — cero funciones. Con `examples/quiz.GAME.md` (+ generated, lint 0/0,
+  cubierto por all-examples/conformance/buildGame-content), 6 reglas nuevas con hints.
+- SPEC §4/§6/§6.1/§10/§11 actualizados; `validateProfile` valida `enums` y el tipo de
+  `msg`; `test/profile-descriptor.js` cubre `.json` y las formas nuevas. README: el
+  conteo de reglas pasa de 110 a **116** (las 6 de quiz, contadas también en perfiles
+  JSON).
 
 ## [2.3.1] — 2026-07-07
 

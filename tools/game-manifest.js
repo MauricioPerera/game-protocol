@@ -42,6 +42,14 @@ function profileEntry(p) {
       integer: b.integer || undefined, required: b.required || undefined,
     })),
     dims: (p.dims || []).map(d => ({ rule: d.rule, level: d.level || 'error', collection: d.collection, shape: d.shape })),
+    enums: (p.enums || []).map(e => ({
+      rule: e.rule, level: e.level || 'error',
+      target: (e.collection ? e.collection + '.*.' : e.singleton + '.') + e.field,
+      values: e.values, required: e.required || undefined,
+    })),
+    // true = descriptor sin una sola funcion (cargable como JSON puro, SPEC §11):
+    // un agente/consumidor sabe que puede confiar en el sin revisar codigo (SPEC §10).
+    dataOnly: ((p.rules || []).length === 0 && (p.derive || []).every(d => !('fn' in d)) && (p.refs || []).every(r => !r.msg)) || undefined,
     output: (p.derive || []).map(d => ({ key: d.key, source: ('fn' in d) ? 'derived' : ('value' in d) ? 'const' : ('token:' + d.from) })),
     tokens: p.tokens || undefined,
     // S2.1: reglas marcadas `fn.deprecated = {since, removedIn}` exponen su ciclo de vida.
@@ -51,7 +59,7 @@ function profileEntry(p) {
   };
 }
 
-const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js'));
+const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js') || f.endsWith('.json'));
 const profiles = {};
 for (const f of files) {
   try { const p = require(path.join(PROFILES_DIR, f)); if (p && p.id) profiles[p.id] = profileEntry(p); }

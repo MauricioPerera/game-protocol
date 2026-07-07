@@ -55,7 +55,7 @@ if (args.includes('--help') || args.includes('-h')) { usage(); process.exit(0); 
 const unknown = args.filter(a => a.startsWith('-') && a.length > 1 && !KNOWN.has(a));
 if (unknown.length) { console.error('Error: flag desconocido: ' + unknown.join(', ')); usage(); process.exit(2); }
 const arg = args.find(a => !a.startsWith('-'));
-const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js'));
+const files = fs.readdirSync(PROFILES_DIR).filter(f => f.endsWith('.js') || f.endsWith('.json'));
 let n = 0;
 for (const f of files) {
   let p; try { p = require(path.join(PROFILES_DIR, f)); } catch (e) { continue; }

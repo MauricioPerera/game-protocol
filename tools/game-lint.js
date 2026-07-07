@@ -15,10 +15,16 @@ const PROFILES_DIR = path.resolve(__dirname, '../profiles');
 function loadProfile(id) {
   if (!/^[a-z0-9-]+$/.test(id))
     return { profile: null, error: 'Perfil inválido: "' + id + '" (solo minúsculas, números y guión)' };
-  const p = path.join(PROFILES_DIR, id + '.js');
-  if (!fs.existsSync(p)) return { profile: null, error: null };       // inexistente
+  const pjs = path.join(PROFILES_DIR, id + '.js');
+  const pjson = path.join(PROFILES_DIR, id + '.json');
   try {
-    const prof = require(p);
+    let prof;
+    if (fs.existsSync(pjs)) prof = require(pjs);
+    // Perfil PURO-DE-DATOS (SPEC §11): un .json se carga con JSON.parse — sin ejecutar
+    // codigo (SPEC §10). Solo puede usar las familias declarativas (refs sin msg,
+    // bounds, dims, enums) y derive from/value.
+    else if (fs.existsSync(pjson)) prof = JSON.parse(fs.readFileSync(pjson, 'utf8'));
+    else return { profile: null, error: null };                        // inexistente
     // Contrato del descriptor (SPEC §6.1): un perfil con forma invalida se reporta como
     // profile-load-error con mensaje accionable, no como TypeError a mitad de lint.
     const shapeErr = validateProfile(prof);

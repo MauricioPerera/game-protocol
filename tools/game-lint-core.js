@@ -63,7 +63,31 @@
     const set = targetSet(entry.target, data, setCache);
     for (const { value, owner } of refValues(entry.src, data)) {
       if (entry.optional && (value == null || value === '')) continue;
-      if (!set.has(value)) add(entry.level, entry.rule, entry.msg(value, owner));
+      // `msg` es opcional (perfiles puro-datos, §11): sin ella, mensaje por defecto.
+      if (!set.has(value)) add(entry.level, entry.rule,
+        entry.msg ? entry.msg(value, owner)
+                  : owner + ' referencia un valor inexistente en `' + entry.target.collection + '`: ' + value);
+    }
+  }
+
+  // ---- FAMILIA enum DECLARATIVA: pertenencia a un conjunto cerrado de valores.
+  // Entrada: { rule, level?, collection|singleton, field, values: [...], required? }.
+  function processEnum(e, data, add) {
+    const level = e.level || 'error';
+    const set = new Set(e.values);
+    const check = (owner, v) => {
+      if (v == null) {
+        if (e.required) add(level, e.rule, owner + '.' + e.field + ' requerido (uno de: ' + e.values.join(', ') + ')');
+        return;
+      }
+      if (!set.has(v)) add(level, e.rule, owner + '.' + e.field + ' invalido: ' + v + ' (esperado: ' + e.values.join(', ') + ')');
+    };
+    if (e.collection) {
+      for (const [k, obj] of Object.entries(data[e.collection] || {}))
+        check(e.collection + '.' + k, obj && obj[e.field]);
+    } else if (e.singleton) {
+      const o = data[e.singleton] || {};
+      if (e.field in o || e.required) check(e.singleton, o[e.field]);
     }
   }
 
@@ -209,9 +233,10 @@
     const setCache = new Map();
     for (const entry of (profile.refs || [])) processRef(entry, data, add, setCache);
 
-    // ---- FAMILIAS range/dims dirigidas por el descriptor del perfil (tablas declarativas) ----
+    // ---- FAMILIAS range/dims/enum dirigidas por el descriptor del perfil (tablas declarativas) ----
     for (const entry of (profile.bounds || [])) processBound(entry, data, add);
     for (const entry of (profile.dims || [])) processDims(entry, data, add);
+    for (const entry of (profile.enums || [])) processEnum(entry, data, add);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
     // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`

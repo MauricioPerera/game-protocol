@@ -10,14 +10,17 @@ const fs = require('fs'), path = require('path');
 const REPO = path.resolve(__dirname, '..');
 const { splitFrontMatter, parseYamlSubset } = require(REPO + '/tools/yaml-min');
 const { lintGame } = require(REPO + '/tools/game-lint-core');
-const loadProfile = id => require(REPO + '/profiles/' + id + '.js');
+// Los perfiles pueden ser .js (codigo) o .json (puro-datos, SPEC §11).
+const loadProfile = id => fs.existsSync(REPO + '/profiles/' + id + '.js')
+  ? require(REPO + '/profiles/' + id + '.js')
+  : require(REPO + '/profiles/' + id + '.json');
 const errs = f => f.filter(x => x.level === 'error');
 
 let pass = 0, fail = 0;
 const ok = (cond, label, extra) => { if (cond) { pass++; console.log('PASS  ' + label); } else { fail++; console.log('FAIL  ' + label); if (extra) console.log('        ' + extra); } };
 
 // ---- VALIDO: ejemplos por perfil → 0 errores ----
-const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md'];
+const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md', 'quiz.GAME.md'];
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
@@ -211,6 +214,14 @@ const invalid = [
   { p: 'advance-wars', rule: 'unit-dims', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 8, height: 8, tileData: [[0]] } } } },
   { p: 'advance-wars', rule: 'unit-tiledata-range', data: { ...B('advance-wars'), palettes: { 0: [[1, 1, 1]] }, units: { A: { palette: 0, width: 1, height: 1, tileData: [[99]] } } } },
 
+  // ---- quiz (perfil puro-datos: profiles/quiz.json, sin funciones) ----
+  { p: 'quiz', rule: 'question-category-ref', data: { ...B('quiz'), categories: {}, questions: { Q: { category: 'NOPE', difficulty: 'easy', points: 1 } } } },
+  { p: 'quiz', rule: 'round-question-ref', data: { ...B('quiz'), questions: {}, rounds: { 1: { questions: ['NOPE'] } } } },
+  { p: 'quiz', rule: 'question-points', data: { ...B('quiz'), categories: { C: {} }, questions: { Q: { category: 'C', difficulty: 'easy' } } } },
+  { p: 'quiz', rule: 'question-time', data: { ...B('quiz'), categories: { C: {} }, questions: { Q: { category: 'C', difficulty: 'easy', points: 1, seconds: 3 } } } },
+  { p: 'quiz', rule: 'question-difficulty', data: { ...B('quiz'), categories: { C: {} }, questions: { Q: { category: 'C', difficulty: 'imposible', points: 1 } } } },
+  { p: 'quiz', rule: 'round-reward', data: { ...B('quiz'), rounds: { 1: { questions: [], reward: -5 } } } },
+
   // ---- voxel ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
   { p: 'voxel', rule: 'prefab-fill-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], fill: 'NOPE' } } } },
@@ -250,6 +261,7 @@ for (const c of invalid) {
     bounds: [{ rule: 'hp-range', collection: 'units', field: 'hp', gt: 0, required: true },
              { rule: 'speed-range', singleton: 'physics', field: 'speed', min: 1, max: 9, integer: true }],
     dims: [{ rule: 'grid-dims', collection: 'grids', shape: [2, 2] }],
+    enums: [{ rule: 'kind-enum', collection: 'units', field: 'kind', values: ['melee', 'ranged'] }],
     rules: [], derive: [] };
   const L = d => lintGame(Object.assign({ version: '0.1', name: 'x', profile: 't2' }, d), '', { profile: prof, frontMatterPresent: true });
   ok(hasRule(L({ units: { A: { hp: -1 } } }), 'hp-range'), 'familia bounds  hp -1 → hp-range');
@@ -257,12 +269,13 @@ for (const c of invalid) {
   ok(hasRule(L({ physics: { speed: 2.5 } }), 'speed-range'), 'familia bounds  integer violado → speed-range');
   ok(hasRule(L({ physics: { speed: 99 } }), 'speed-range'), 'familia bounds  max violado → speed-range');
   ok(hasRule(L({ grids: { g: [[1]] } }), 'grid-dims'), 'familia dims  1x1 vs shape 2x2 → grid-dims');
-  ok(L({ units: { A: { hp: 5 } }, physics: { speed: 3 }, grids: { g: [[1, 2], [3, 4]] } })
+  ok(hasRule(L({ units: { A: { hp: 5, kind: 'magic' } } }), 'kind-enum'), 'familia enums  valor fuera del set → kind-enum');
+  ok(L({ units: { A: { hp: 5, kind: 'melee' } }, physics: { speed: 3 }, grids: { g: [[1, 2], [3, 4]] } })
        .filter(x => x.level === 'error').length === 0, 'familias  datos validos → 0 errores');
 })();
 
 console.log('\n— Cobertura inválidos por perfil —');
-const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'roguelike', 'tower-defense', 'voxel'];
+const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'quiz', 'roguelike', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
 console.log('  TOTAL invalidos: ' + invalid.length + '  (validos: ' + examples.length + ')');
 
