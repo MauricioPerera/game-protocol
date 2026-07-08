@@ -20,7 +20,7 @@ let pass = 0, fail = 0;
 const ok = (cond, label, extra) => { if (cond) { pass++; console.log('PASS  ' + label); } else { fail++; console.log('FAIL  ' + label); if (extra) console.log('        ' + extra); } };
 
 // ---- VALIDO: ejemplos por perfil → 0 errores ----
-const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md', 'quiz.GAME.md', 'neon-swarm.GAME.md', 'senku.GAME.md'];
+const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md', 'quiz.GAME.md', 'neon-swarm.GAME.md', 'sudoku.GAME.md', 'senku.GAME.md'];
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
@@ -222,6 +222,11 @@ const invalid = [
   { p: 'quiz', rule: 'question-difficulty', data: { ...B('quiz'), categories: { C: {} }, questions: { Q: { category: 'C', difficulty: 'imposible', points: 1 } } } },
   { p: 'quiz', rule: 'round-reward', data: { ...B('quiz'), rounds: { 1: { questions: [], reward: -5 } } } },
 
+  // ---- peg-solitaire (perfil puro-datos: profiles/peg-solitaire.json; el layout lo valida pegCheck en game3d-logic) ----
+  { p: 'peg-solitaire', rule: 'player-start-ref', data: { ...B('peg-solitaire'), boards: {}, player: { start: 'NOPE' } } },
+  { p: 'peg-solitaire', rule: 'board-goal', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oo.'], goal: 'sideways', difficulty: 'easy' } } } },
+  { p: 'peg-solitaire', rule: 'board-difficulty', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oo.'], goal: 'clear', difficulty: 'imposible' } } } },
+
   // ---- sudoku (perfil puro-datos: profiles/sudoku.json; grid/solution los valida sudokuCheck en game3d-logic) ----
   { p: 'sudoku', rule: 'player-start-ref', data: { ...B('sudoku'), puzzles: {}, player: { start: 'NOPE' } } },
   { p: 'sudoku', rule: 'puzzle-difficulty', data: { ...B('sudoku'), puzzles: { P: { grid: 'x', solution: 'y', difficulty: 'imposible' } } } },
@@ -295,7 +300,7 @@ for (const c of invalid) {
 })();
 
 console.log('\n— Cobertura inválidos por perfil —');
-const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'quiz', 'roguelike', 'shooter', 'sudoku', 'tower-defense', 'voxel'];
+const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'peg-solitaire', 'platformer', 'quiz', 'roguelike', 'shooter', 'sudoku', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
 console.log('  TOTAL invalidos: ' + invalid.length + '  (validos: ' + examples.length + ')');
 

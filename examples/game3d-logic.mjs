@@ -227,6 +227,59 @@ export function sudokuHint(S) {
   return 'hint';
 }
 
+// ============================================================================
+// Lógica del perfil `peg-solitaire` (senku) — PURA y sin azar. Incluye el
+// VALIDADOR de datos (pegCheck) que cubre lo que las familias declarativas no
+// alcanzan: forma 7x7 y alfabeto del layout. Los tableros reales se validan y
+// sus soluciones se REJUEGAN en los tests de Node.
+// ============================================================================
+const PEG_CENTER = 3 * 7 + 3; // 24
+export function pegCheck(layout) {
+  if (!Array.isArray(layout) || layout.length !== 7) return 'layout debe tener 7 filas';
+  for (const r of layout) if (typeof r !== 'string' || r.length !== 7) return 'cada fila debe tener 7 caracteres';
+  const s = layout.join('');
+  if (/[^_o.]/.test(s)) return 'layout: solo "_" (fuera), "o" (peg) y "." (hueco)';
+  if ((s.match(/o/g) || []).length < 2) return 'layout necesita al menos 2 pegs';
+  if (!s.includes('.')) return 'layout necesita al menos un hueco';
+  return null;
+}
+// Saltos legales: peg -> hueco a 2 casillas ortogonales con peg en medio.
+export function pegMoves(cells) {
+  const out = [];
+  for (let i = 0; i < 49; i++) if (cells[i] === 1)
+    for (const d of [-1, 1, -7, 7]) {
+      const to = i + 2 * d;
+      if (to < 0 || to > 48) continue;
+      if (Math.abs(d) === 1 && ((i / 7) | 0) !== ((to / 7) | 0)) continue; // no cruzar filas
+      if (cells[i + d] === 1 && cells[to] === 0) out.push([i, to]);
+    }
+  return out;
+}
+export function pegInit(G, boardId) {
+  const id = boardId || (G.PLAYER || {}).start || Object.keys(G.BOARDS || {})[0];
+  const B = (G.BOARDS || {})[id] || { layout: [], goal: 'clear' };
+  const err = pegCheck(B.layout);
+  const cells = err ? [] : B.layout.join('').split('').map(c => c === '_' ? -1 : c === 'o' ? 1 : 0);
+  return { id, err, cells, goal: B.goal || 'clear',
+           pegs: cells.filter(v => v === 1).length,
+           sel: Math.max(0, cells.indexOf(1)), picked: -1,
+           moves: 0, won: false, lost: false };
+}
+export function pegMove(S, from, to) {
+  if (S.won || S.lost || S.cells[from] !== 1 || S.cells[to] !== 0) return 'blocked';
+  const d = to - from;
+  const aligned = (Math.abs(d) === 2 && ((from / 7) | 0) === ((to / 7) | 0)) || Math.abs(d) === 14;
+  if (!aligned || S.cells[(from + to) / 2] !== 1) return 'blocked';
+  S.cells[from] = 0; S.cells[(from + to) / 2] = 0; S.cells[to] = 1;
+  S.pegs--; S.moves++;
+  if (S.pegs === 1) {
+    if (S.goal === 'clear' || S.cells[PEG_CENTER] === 1) { S.won = true; return 'win'; }
+    S.lost = true; return 'lose';
+  }
+  if (pegMoves(S.cells).length === 0) { S.lost = true; return 'lose'; }
+  return 'ok';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

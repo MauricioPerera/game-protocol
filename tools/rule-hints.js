@@ -87,8 +87,11 @@ module.exports = {
   'question-time': '`seconds` es entero en 5..120 (si se declara).',
   'question-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   'round-reward': '`reward` de la ronda debe ser >= 0 (si se declara).',
+  // --- peg-solitaire (perfil puro-datos) ---
+  'board-goal': '`goal` obligatorio: clear (dejar 1 peg) | center (dejar 1 peg en el centro).',
+  'board-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   // --- sudoku (perfil puro-datos) ---
-  'player-start-ref': '`player.start` debe existir en la coleccion inicial del perfil (p.ej. `puzzles`).',
+  'player-start-ref': '`player.start` debe existir en la coleccion inicial del perfil (p.ej. `puzzles` o `boards`).',
   'puzzle-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   'sudoku-balance': '`lives` y `hints` enteros >= 0 (si se declaran).',
   // --- shooter (perfil puro-datos) ---

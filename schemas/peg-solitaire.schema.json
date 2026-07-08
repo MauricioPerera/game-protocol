@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/peg-solitaire.schema.json",
+  "title": "GAME.md front-matter — perfil peg-solitaire",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "peg-solitaire"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "boards": {
+      "type": "object"
+    },
+    "player": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Boards",
+    "Text",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "player-start-ref",
+      "from": "player.start",
+      "to": "boards"
+    }
+  ],
+  "x-outputKeys": [
+    "BOARDS",
+    "PLAYER",
+    "TEXT"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

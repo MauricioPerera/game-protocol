@@ -1,0 +1,24 @@
+{
+  "$comment": "Perfil PURO-DE-DATOS 'peg-solitaire' (senku/solitario de clavijas): tableros como 7 filas de 7 caracteres ('_' fuera del tablero, 'o' peg, '.' hueco), objetivo por enum (clear = dejar 1 peg; center = dejar 1 peg en el centro) y dificultad por enum. Limite conocido de las familias declarativas: la forma 7x7 y el alfabeto de los strings no son expresables en refs/bounds/enums (dims exige matrices de arrays, no strings) — los valida la simulacion de referencia (pegCheck en game3d-logic) y sus tests de Node. Material para SPEC §11: validadores de patron/longitud de string.",
+  "id": "peg-solitaire",
+  "specVersion": "0.1",
+  "sections": ["Overview", "Boards", "Text", "Do's and Don'ts"],
+  "required": ["version", "name", "profile"],
+  "refs": [
+    { "rule": "player-start-ref", "level": "error",
+      "src": { "singleton": "player", "field": "start" }, "target": { "collection": "boards" } }
+  ],
+  "bounds": [],
+  "enums": [
+    { "rule": "board-goal", "collection": "boards", "field": "goal",
+      "values": ["clear", "center"], "required": true },
+    { "rule": "board-difficulty", "collection": "boards", "field": "difficulty",
+      "values": ["easy", "normal", "hard"], "required": true }
+  ],
+  "dims": [],
+  "derive": [
+    { "key": "BOARDS", "from": "boards" },
+    { "key": "PLAYER", "from": "player" },
+    { "key": "TEXT", "from": "text" }
+  ]
+}

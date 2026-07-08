@@ -142,10 +142,10 @@ const ok = (cond, label, extra) => {
   }
 
   // ============================================================
-  // Sudoku (Senku): valida los puzzles REALES + juega en Node
+  // Sudoku: valida los puzzles REALES + juega en Node
   // ============================================================
   global.window = {};
-  require(path.resolve(__dirname, '../examples/senku.generated.js'));
+  require(path.resolve(__dirname, '../examples/sudoku.generated.js'));
   const GS = global.window.GAME; delete global.window;
   ok(GS.profile === 'sudoku', 'sudoku  artefacto con meta profile=sudoku');
   for (const [id, p] of Object.entries(GS.PUZZLES))
@@ -156,7 +156,6 @@ const ok = (cond, label, extra) => {
   ok(L.sudokuCheck(P1.grid, P1.solution.slice(0, 80) + 'x') !== null, 'sudoku  solution corrupta -> rechazada');
   const badGiven = '9' + P1.grid.slice(1);
   ok(/no coincide/.test(L.sudokuCheck(badGiven, P1.solution) || ''), 'sudoku  pista que contradice solution -> rechazada');
-  const badSol = P1.solution.slice(0, 79) + P1.solution[79] === P1.solution ? P1.solution : P1.solution; // noop guard
   const swapped = P1.solution.slice(0, 79) + P1.solution[80] + P1.solution[79];
   ok(L.sudokuCheck('.'.repeat(81), swapped) !== null, 'sudoku  solution con celdas intercambiadas -> invalida');
   // (a) VICTORIA: rellenar cada vacio con la solucion
@@ -185,6 +184,67 @@ const ok = (cond, label, extra) => {
     const h0 = S.hints, r = L.sudokuHint(S);
     ok(r === 'hint' && S.hints === h0 - 1, 'sudoku  hint rellena y descuenta');
     ok(S.grid.filter((v, j) => v !== 0 && !S.given[j]).length === 1, 'sudoku  hint escribio exactamente una celda');
+  }
+
+  // ============================================================
+  // Senku (peg-solitaire): valida los tableros REALES y REJUEGA
+  // las soluciones del generador (scratchpad/gen-peg.js) en Node
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/senku.generated.js'));
+  const GP = global.window.GAME; delete global.window;
+  ok(GP.profile === 'peg-solitaire', 'senku  artefacto con meta profile=peg-solitaire');
+  for (const [id, b] of Object.entries(GP.BOARDS))
+    ok(L.pegCheck(b.layout) === null, 'senku  tablero ' + id + ' (' + b.difficulty + ', goal ' + b.goal + ') valido');
+  // el validador rechaza formas rotas
+  ok(L.pegCheck(GP.BOARDS.B1.layout.slice(0, 6)) !== null, 'senku  layout de 6 filas -> rechazado');
+  ok(L.pegCheck(['__...__', '__...__', '..X....', '..ooo..', '...o...', '__.o.__', '__...__']) !== null,
+     'senku  caracter fuera de "_o." -> rechazado');
+  ok(L.pegCheck(['_______', '_______', '.......', '...o...', '.......', '_______', '_______']) !== null,
+     'senku  menos de 2 pegs -> rechazado');
+  // Soluciones emitidas por el solver DFS del generador (no calculadas a mano).
+  const PEG_SOLS = {
+    B1: [[24, 22], [38, 24], [25, 23], [22, 24]],
+    B2: [[11, 25], [24, 22], [26, 24], [32, 30], [45, 31], [24, 38], [39, 37], [37, 23], [22, 24]],
+    B3: [[10, 24], [15, 17], [2, 16], [4, 2], [17, 15], [14, 16], [18, 4], [20, 18], [23, 9], [2, 16],
+         [21, 23], [23, 9], [25, 23], [27, 25], [25, 11], [4, 18], [30, 16], [9, 23], [28, 30], [31, 29],
+         [39, 25], [34, 32], [44, 30], [23, 37], [46, 44], [44, 30], [29, 31], [31, 33], [18, 32],
+         [33, 31], [38, 24]],
+  };
+  // (a) VICTORIA en los 3 tableros rejugando su solucion + conservacion (1 peg menos por salto)
+  for (const [id, sol] of Object.entries(PEG_SOLS)) {
+    const S = L.pegInit(GP, id);
+    const pegs0 = S.pegs;
+    let conserva = true, last = '';
+    for (const [from, to] of sol) {
+      last = L.pegMove(S, from, to);
+      if (S.pegs !== pegs0 - S.moves) conserva = false;
+      if (last === 'blocked') break;
+    }
+    ok(last === 'win' && S.won === true && S.pegs === 1, 'senku  VICTORIA rejugando la solucion de ' + id + ' (' + sol.length + ' saltos)');
+    ok(conserva, 'senku  conservacion en ' + id + ': pegs = iniciales - saltos en cada paso');
+    if (id === 'B3') ok(S.cells[24] === 1, 'senku  B3 (goal center): el ultimo peg queda en el centro');
+  }
+  ok(L.pegInit(GP).id === 'B1', 'senku  init respeta player.start (B1)');
+  // (b) saltos ilegales -> blocked (sin peg, sin alineacion, sin peg en medio, cruce de fila)
+  {
+    const S = L.pegInit(GP, 'B1');
+    ok(L.pegMove(S, 22, 24) === 'blocked', 'senku  salto desde hueco -> blocked');
+    ok(L.pegMove(S, 24, 10) === 'blocked', 'senku  salto sin peg intermedio -> blocked');
+    ok(L.pegMove(S, 24, 25) === 'blocked', 'senku  distancia 1 -> blocked');
+    ok(S.moves === 0, 'senku  los saltos bloqueados no consumen movimientos');
+  }
+  // (c) DERROTA por bloqueo: dos pegs quedan aislados tras el unico salto
+  {
+    const G2 = { BOARDS: { X: { layout: ['oo.....', '.......', '.......', '.......', '.......', '.......', '......o'], goal: 'clear' } }, PLAYER: { start: 'X' } };
+    const S = L.pegInit(G2);
+    ok(L.pegMove(S, 0, 2) === 'lose' && S.lost === true, 'senku  DERROTA: sin saltos posibles con 2 pegs aislados');
+  }
+  // (d) goal center: dejar 1 peg fuera del centro es derrota
+  {
+    const G3 = { BOARDS: { X: { layout: ['oo.....', '.......', '.......', '.......', '.......', '.......', '.......'], goal: 'center' } }, PLAYER: { start: 'X' } };
+    const S = L.pegInit(G3);
+    ok(L.pegMove(S, 0, 2) === 'lose' && S.lost === true && S.pegs === 1, 'senku  goal center: 1 peg fuera del centro -> derrota');
   }
 
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));

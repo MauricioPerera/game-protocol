@@ -540,6 +540,71 @@
       ],
       "deprecatedRules": []
     },
+    "peg-solitaire": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Boards",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name",
+        "profile"
+      ],
+      "references": [
+        {
+          "rule": "player-start-ref",
+          "level": "error",
+          "from": "player.start",
+          "to": "boards",
+          "optional": false
+        }
+      ],
+      "rules": [],
+      "bounds": [],
+      "dims": [],
+      "enums": [
+        {
+          "rule": "board-goal",
+          "level": "error",
+          "target": "boards.*.goal",
+          "values": [
+            "clear",
+            "center"
+          ],
+          "required": true
+        },
+        {
+          "rule": "board-difficulty",
+          "level": "error",
+          "target": "boards.*.difficulty",
+          "values": [
+            "easy",
+            "normal",
+            "hard"
+          ],
+          "required": true
+        }
+      ],
+      "dataOnly": true,
+      "output": [
+        {
+          "key": "BOARDS",
+          "source": "token:boards"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ],
+      "deprecatedRules": []
+    },
     "platformer": {
       "specVersion": "0.1",
       "sections": [

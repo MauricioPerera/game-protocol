@@ -2,14 +2,38 @@
 
 ## [Unreleased]
 
-### Added — perfil `sudoku` (puro-datos) + Senku
+### Added — perfil `peg-solitaire` (puro-datos) + Senku
+- **`profiles/peg-solitaire.json`** (14º perfil, cuarto puro-datos): senku/solitario de
+  clavijas — tableros como 7 filas de 7 caracteres (`_` fuera, `o` peg, `.` hueco),
+  `goal` por enum (`clear` = dejar 1 peg | `center` = dejarlo en el centro),
+  `difficulty` por enum y `player.start` por broken-ref. Límite documentado: la forma
+  7×7 y el alfabeto de los strings no caben en las familias declarativas (dims exige
+  matrices de arrays) — los valida `pegCheck` en la simulación y en `npm test` (tercer
+  caso para SPEC §11: validadores de patrón/longitud de string).
+- **`examples/senku.GAME.md`** (+ generated): 3 tableros **solubles por construcción**
+  — B1 y B2 generados por movimientos inversos desde un único peg (LCG determinista),
+  B3 es el inglés clásico (32 pegs, hueco central, goal center) resuelto por el solver
+  DFS del generador en 4 ms. Ni una celda escrita a mano. Lint 0/0 a la primera.
+- **Lógica pura en `game3d-logic.mjs`** (`pegCheck`/`pegInit`/`pegMoves`/`pegMove`,
+  +21 chequeos en `npm test` y CI): los 3 tableros reales validados y sus **soluciones
+  rejugadas hasta la victoria** (B3: 31 saltos con el último peg en el centro),
+  conservación (pegs = iniciales − saltos en cada paso), saltos ilegales bloqueados,
+  derrota por bloqueo y derrota específica de `goal: center`.
+- **Runtime `peg-solitaire` en game3d** (8º perfil jugable): tablero DOM 7×7 sobre
+  fondo 3D, flechas + Enter/Espacio (elegir peg y saltar) + Escape, overlays de
+  victoria/derrota. **Verificado jugando en navegador.**
+
+### Added — perfil `sudoku` (puro-datos) + Sudoku
+- Nacido de una interpretación errónea de «senku» (es el solitario de clavijas, no el
+  sudoku); el trabajo quedó completo y verificado, así que se conserva como perfil
+  propio con el juego renombrado a `examples/sudoku.GAME.md`.
 - **`profiles/sudoku.json`** (13º perfil, tercer puro-datos): puzzles como strings de
   81 caracteres (`grid` con `.` + `solution`), `difficulty` por enum, `player.start`
   por broken-ref y `balance` (lives/hints). Límite documentado: longitud/patrón de los
   strings y la consistencia grid↔solution **no caben en las familias declarativas** —
   las valida `sudokuCheck` en la simulación de referencia y en `npm test` (segundo caso
   concreto para SPEC §11: validadores de patrón/longitud de string).
-- **`examples/senku.GAME.md`** (+ generated): 3 puzzles **generados por script con
+- **`examples/sudoku.GAME.md`** (+ generated): 3 puzzles **generados por script con
   verificación de unicidad** (backtracking + conteo de soluciones; easy 40 / normal 32
   / hard 27 pistas) — ni un dígito escrito a mano. Lint 0/0 a la primera.
 - **Lógica pura en `game3d-logic.mjs`** (`sudokuCheck`/`sudokuInit`/`sudokuSet`/
@@ -20,8 +44,7 @@
   flechas + dígitos + H para pista, overlays de victoria/derrota. **Verificado jugando
   en navegador**: pista inmutable, fallo que descuenta vida, hint, y tablero resuelto
   hasta el overlay de victoria.
-- README: 128 → **131 reglas** (reconteo; mi sed inicial puso 130 — el número a mano
-  falló otra vez y lo cazó el reconteo en el acto).
+- README: 128 → **133 reglas** (reconteo por script tras ambos perfiles).
 
 ## [2.9.0] — 2026-07-08
 

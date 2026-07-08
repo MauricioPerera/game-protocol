@@ -1,42 +1,64 @@
 // AUTO-GENERADO por tools/game-export.js desde GAME.md — NO EDITAR A MANO.
 // Regenerar con:  node tools/game-export.js
-// profile: sudoku
+// profile: peg-solitaire
 window.GAME = {
   "generatedFrom": "GAME.md",
-  "profile": "sudoku",
+  "profile": "peg-solitaire",
   "name": "Senku",
-  "description": "Sudoku clasico sobre el perfil puro-de-datos sudoku: 3 puzzles generados y verificados (unicidad incluida).",
+  "description": "Solitario de clavijas (peg solitaire) — salta un peg sobre otro para retirarlo hasta dejar uno solo.",
   "platform": {},
   "palettesCount": 0,
-  "PUZZLES": {
-    "P1": {
-      "grid": "..3..2..9.6...385.47958...254231.7...8...419591....243...6.54.113........94...528",
-      "solution": "853142679261973854479586312542319786387264195916857243728695431135428967694731528",
-      "difficulty": "easy"
+  "BOARDS": {
+    "B1": {
+      "goal": "clear",
+      "difficulty": "easy",
+      "layout": [
+        "__...__",
+        "__...__",
+        ".......",
+        "..ooo..",
+        "...o...",
+        "__.o.__",
+        "__...__"
+      ]
     },
-    "P2": {
-      "grid": ".76.5.1....16.7..4.89..37..3..4...1..64.3.2..19..8....7...6....6.8.2.49..52.....6",
-      "solution": "476258139231697854589143762325476918864931275197582643743869521618325497952714386",
-      "difficulty": "normal"
+    "B2": {
+      "goal": "clear",
+      "difficulty": "normal",
+      "layout": [
+        "__...__",
+        "__..o__",
+        "....o..",
+        "..oo.o.",
+        "...oo..",
+        "__.oo__",
+        "__.o.__"
+      ]
     },
-    "P3": {
-      "grid": "..9....35.2.....61.....8.........913..1..4.....8.......74..9..6..5167...1.3845..2",
-      "solution": "489671235527493861316258479742586913951734628638912547874329156295167384163845792",
-      "difficulty": "hard"
+    "B3": {
+      "goal": "center",
+      "difficulty": "hard",
+      "layout": [
+        "__ooo__",
+        "__ooo__",
+        "ooooooo",
+        "ooo.ooo",
+        "ooooooo",
+        "__ooo__",
+        "__ooo__"
+      ]
     }
   },
   "PLAYER": {
-    "start": "P1"
-  },
-  "BALANCE": {
-    "lives": 3,
-    "hints": 3
+    "start": "B1"
   },
   "TEXT": {
-    "intro": "Senku. Flechas para moverte por el tablero; 1-9 para escribir; H para pista.",
-    "correct": "Bien.",
-    "wrong": "Ese numero no va ahi.",
-    "win": "Tablero completo. Senku resuelto.",
-    "lose": "Sin vidas. El tablero te vence esta vez."
+    "intro": "Salta un peg sobre otro vecino hacia un hueco: el saltado se retira. Deja uno solo.",
+    "pick": "Peg elegido. Salta a un hueco a dos casillas (Enter).",
+    "badmove": "Ese salto no es legal.",
+    "jump": "Bien: un peg menos.",
+    "win": "Uno solo. Senku resuelto.",
+    "lose": "Sin saltos posibles.",
+    "loseCenter": "Quedo uno... pero no en el centro."
   }
 };

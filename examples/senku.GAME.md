@@ -1,39 +1,69 @@
 ---
-version: "0.1"
+version: '0.1'
 name: Senku
-profile: sudoku
-description: "Sudoku clasico sobre el perfil puro-de-datos sudoku: 3 puzzles generados y verificados (unicidad incluida)."
-puzzles:
-  P1: { grid: "..3..2..9.6...385.47958...254231.7...8...419591....243...6.54.113........94...528", solution: "853142679261973854479586312542319786387264195916857243728695431135428967694731528", difficulty: easy }
-  P2: { grid: ".76.5.1....16.7..4.89..37..3..4...1..64.3.2..19..8....7...6....6.8.2.49..52.....6", solution: "476258139231697854589143762325476918864931275197582643743869521618325497952714386", difficulty: normal }
-  P3: { grid: "..9....35.2.....61.....8.........913..1..4.....8.......74..9..6..5167...1.3845..2", solution: "489671235527493861316258479742586913951734628638912547874329156295167384163845792", difficulty: hard }
-player: { start: P1 }
-balance: { lives: 3, hints: 3 }
+description: Solitario de clavijas (peg solitaire) — salta un peg sobre otro para retirarlo hasta dejar uno solo.
+profile: peg-solitaire
+boards:
+  B1:
+    goal: clear
+    difficulty: easy
+    layout: ['__...__', '__...__', '.......', '..ooo..', '...o...', '__.o.__', '__...__']
+  B2:
+    goal: clear
+    difficulty: normal
+    layout: ['__...__', '__..o__', '....o..', '..oo.o.', '...oo..', '__.oo__', '__.o.__']
+  B3:
+    goal: center
+    difficulty: hard
+    layout: ['__ooo__', '__ooo__', 'ooooooo', 'ooo.ooo', 'ooooooo', '__ooo__', '__ooo__']
+player: { start: B1 }
 text:
-  intro:   "Senku. Flechas para moverte por el tablero; 1-9 para escribir; H para pista."
-  correct: "Bien."
-  wrong:   "Ese numero no va ahi."
-  win:     "Tablero completo. Senku resuelto."
-  lose:    "Sin vidas. El tablero te vence esta vez."
+  intro: 'Salta un peg sobre otro vecino hacia un hueco: el saltado se retira. Deja uno solo.'
+  pick: 'Peg elegido. Salta a un hueco a dos casillas (Enter).'
+  badmove: 'Ese salto no es legal.'
+  jump: 'Bien: un peg menos.'
+  win: 'Uno solo. Senku resuelto.'
+  lose: 'Sin saltos posibles.'
+  loseCenter: 'Quedo uno... pero no en el centro.'
 ---
 
-## Overview
-Sudoku clasico sobre el **perfil puro-de-datos `sudoku`** (`profiles/sudoku.json`, sin
-funciones): tres tableros de dificultad creciente, generados por script con
-**verificacion de unicidad** (cada puzzle tiene exactamente una solucion) y validados de
-punta a punta por la simulacion de referencia y sus tests de Node.
+# Senku
 
-## Puzzles
-`grid` = 81 caracteres (digitos dados y `.` para vacios); `solution` = los 81 digitos.
-Pistas reales: P1 easy 40, P2 normal 32, P3 hard 27. La consistencia grid↔solution y la
-validez del sudoku no caben en las familias declarativas (limite documentado del perfil):
-las verifica `sudokuCheck` en la simulacion y en `npm test`.
+## Overview
+
+**Senku** (solitario de clavijas / *peg solitaire*) sobre el tablero ingles en cruz de 7x7.
+Un movimiento salta un peg por encima de un vecino ortogonal hacia un hueco a dos casillas;
+el peg saltado se retira. Se gana al dejar **un solo peg** (`goal: clear`) o un solo peg
+**en el centro** (`goal: center`). Se pierde al quedarse sin saltos legales.
+
+Los tres tableros estan **generados por script y son solubles por construccion**: B1 y B2
+nacen aplicando movimientos inversos desde un unico peg central (todo tablero asi construido
+se resuelve deshaciendo el camino), y B3 es el tablero ingles clasico completo (32 pegs,
+hueco central), cuya solucion de 31 saltos encontro el solver DFS del generador. Las
+secuencias de solucion se rejuegan en `npm test`.
+
+## Boards
+
+- **B1** (easy, clear): 5 pegs — una T invertida bajo el centro; se resuelve en 4 saltos.
+- **B2** (normal, clear): 10 pegs repartidos; se resuelve en 9 saltos.
+- **B3** (hard, center): el ingles clasico — 32 pegs, hueco central, y el ultimo peg debe
+  terminar exactamente en el centro (31 saltos).
+
+El `layout` son 7 filas de 7 caracteres: `_` fuera del tablero, `o` peg, `.` hueco. La forma
+7x7 y el alfabeto los valida `pegCheck` (simulacion de referencia) — las familias
+declarativas no alcanzan strings con patron (limite documentado en el perfil, material
+SPEC §11).
 
 ## Text
-Intro, acierto, fallo y finales de victoria/derrota que el motor consume con fallback.
+
+Textos de sistema del runtime: introduccion, seleccion de peg, salto ilegal, salto valido,
+victoria (`win`), derrota por bloqueo (`lose`) y derrota especifica de `goal: center`
+(`loseCenter`).
 
 ## Do's and Don'ts
-- `player.start` debe existir en `puzzles` (familia broken-ref).
-- `difficulty` es un enum cerrado: easy | normal | hard.
-- No edites `grid`/`solution` a mano: regenera con un script y deja que los tests
-  verifiquen unicidad y validez (los strings de 81 no perdonan).
+
+- **Si**: tableros nuevos generados por movimientos inversos (solubilidad garantizada) o
+  verificados con un solver antes de publicarlos.
+- **Si**: `goal: center` solo en tableros donde el centro sea alcanzable como celda final.
+- **No**: editar `layout` a mano sin re-verificar que sigue siendo soluble.
+- **No**: tableros que no sean 7 filas x 7 columnas ni caracteres fuera de `_ o .`.

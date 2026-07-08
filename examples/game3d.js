@@ -15,7 +15,8 @@ import * as THREE from 'three';
 import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          gainXP as gainXPPure, canStep, trainerInSight,
          shooterInit, shooterTick,
-         sudokuInit, sudokuSet, sudokuHint } from './game3d-logic.mjs';
+         sudokuInit, sudokuSet, sudokuHint,
+         pegInit, pegMove, pegMoves } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -487,6 +488,74 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME peg-solitaire (senku) — tablero DOM sobre fondo 3D; lógica pura en
+// game3d-logic (los tableros reales y sus soluciones se rejuegan en npm test).
+// Teclas: flechas mueven el cursor; Enter/Espacio elige peg y luego salta al
+// hueco seleccionado; Escape suelta el peg elegido.
+// ============================================================================
+register('peg-solitaire', G => {
+  const { scene, cam, ren } = makeStage();
+  for (let i = 0; i < 7; i++) {   // fondo: anillo de esferas girando
+    const m = new THREE.Mesh(new THREE.SphereGeometry(.55, 16, 12),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(.08 + i / 14, .6, .5) }));
+    const a = i / 7 * Math.PI * 2; m.position.set(Math.cos(a) * 6, 1 + Math.sin(a), Math.sin(a) * 6 - 6);
+    m.userData.spin = .004 + i * .002; scene.add(m);
+  }
+  cam.position.set(0, 3, 6); cam.lookAt(0, .8, -4);
+  const S = pegInit(G);
+  if (S.err) { ui.msg('Tablero invalido (' + S.id + '): ' + S.err); return { S }; }
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    const B = G.BOARDS[S.id];
+    ui.top('<b>' + (G.name || 'senku') + '</b> · ' + S.id + ' (' + B.difficulty + ' · goal ' + S.goal + ')');
+    ui.side('<div class="chip">Pegs: <b>' + S.pegs + '</b></div>' +
+            '<div class="chip">Saltos: ' + S.moves + '</div>' +
+            '<div class="chip">Legales: ' + pegMoves(S.cells).length + '</div>');
+  }
+  function paint() {
+    let html = '<table style="border-collapse:collapse;margin:0 auto">';
+    for (let r = 0; r < 7; r++) { html += '<tr>';
+      for (let c = 0; c < 7; c++) { const i = r * 7 + c, v = S.cells[i];
+        const bg = i === S.picked ? '#5a3d18' : i === S.sel ? '#2a3d55' : v === -1 ? 'transparent' : '#161d27';
+        html += '<td style="width:34px;height:34px;text-align:center;font-size:17px;border:' +
+          (v === -1 ? 'none' : '1px solid #3a4656') + ';background:' + bg + ';color:' +
+          (v === 1 ? '#ffd27b' : '#5a6472') + '">' + (v === 1 ? '●' : v === 0 ? '·' : '') + '</td>'; }
+      html += '</tr>'; }
+    ui.panel(html + '</table>', true); hud();
+  }
+  addEventListener('keydown', e => {
+    if (S.won || S.lost) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') S.sel = Math.max(0, S.sel - 1);
+    else if (k === 'ArrowRight') S.sel = Math.min(48, S.sel + 1);
+    else if (k === 'ArrowUp') S.sel = Math.max(0, S.sel - 7);
+    else if (k === 'ArrowDown') S.sel = Math.min(48, S.sel + 7);
+    else if (k === 'Escape') { S.picked = -1; ui.msg(''); }
+    else if (k === 'Enter' || k === ' ') {
+      if (S.picked === -1) { if (S.cells[S.sel] === 1) { S.picked = S.sel; beep(660); ui.msg((G.TEXT || {}).pick || 'Peg elegido.'); } }
+      else if (S.sel === S.picked) { S.picked = -1; ui.msg(''); }
+      else { const r = pegMove(S, S.picked, S.sel);
+        if (r === 'blocked') { beep(196, .12); ui.msg((G.TEXT || {}).badmove || 'Salto ilegal.'); }
+        else { S.picked = -1;
+          if (r === 'ok') { beep(880); ui.msg((G.TEXT || {}).jump || 'Un peg menos.'); }
+          else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.TEXT || {}).win || 'Resuelto') +
+            '<br><span style="font-size:13px;color:#7b8696">saltos: ' + S.moves + ' · goal ' + S.goal + ' · perfil peg-solitaire (puro-datos) · game3d</span></div>'); }
+          else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 ' +
+            (S.pegs === 1 ? ((G.TEXT || {}).loseCenter || 'Fuera del centro.') : ((G.TEXT || {}).lose || 'Sin saltos.')) +
+            '<br><span style="font-size:13px;color:#7b8696">pegs restantes: ' + S.pegs + '</span></div>'); } } } }
+    else return;
+    paint(); e.preventDefault();
+  });
+  paint(); ui.msg((G.TEXT || {}).intro || '');
+  (function loop() { requestAnimationFrame(loop);
+    scene.traverse(o => { if (o.userData && o.userData.spin) { o.rotation.y += o.userData.spin; o.rotation.x += o.userData.spin * .7; } });
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ============================================================================
