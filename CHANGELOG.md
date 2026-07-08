@@ -4,6 +4,20 @@
 
 _No hay cambios pendientes._
 
+## [2.8.1] — 2026-07-08
+
+Release **patch** sobre `2.8.0` ([SPEC §7.0](./SPEC.md)): solo docs — fix **duradero**
+de la clase de drift más reincidente de la historia reciente del repo.
+
+### Fixed
+- `CONTRIBUTING.md`: la lista de suites junto a `npm test` (desfasada por tercera vez —
+  faltaba `game3d-logic`) deja de enumerarse; apunta al script `test` de `package.json`
+  como fuente canónica.
+- `index.html`: la card de game3d (le faltaba el runtime quiz) deja de listar perfiles
+  y de contarlos — "un juego por cada perfil con runtime".
+- Principio aplicado: **en docs no se enumera ni se cuenta lo que crece; se enlaza a la
+  fuente canónica** (mismo tratamiento que los conteos de conformance en `2.2.1`).
+
 ## [2.8.0] — 2026-07-07
 
 Release **aditivo** sobre `2.7.1` (bump minor, [SPEC §7.0](./SPEC.md)): tres mejoras
@@ -556,6 +570,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.8.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.1
 [2.8.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.0
 [2.7.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.1
 [2.7.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.0

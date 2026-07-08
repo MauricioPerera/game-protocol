@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.8.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.8.1`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,11 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.8.0`** — aditivo: tres mejoras de `game3d` — **runtime `quiz`** (el
+**Release `v2.8.1`** — patch de docs: fuera las enumeraciones que driftaban
+(suites en CONTRIBUTING → apunta a `package.json`; card de game3d → sin lista de
+perfiles). Principio: no enumerar lo que crece; enlazar a la fuente canónica.
+
+`v2.8.0` — aditivo: tres mejoras de `game3d` — **runtime `quiz`** (el
 perfil puro-datos gana demo jugable; partida perfecta verificada: 450 pts exactos),
 **lógica pura testeada** (`game3d-logic.mjs` + 25 chequeos en `npm test`/CI: daño
 determinista, fórmula de captura, XP/evoluciones, visión, colisión) y **tween de
