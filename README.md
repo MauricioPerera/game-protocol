@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.15.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.16.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.15.0`** — aditivo: **runtime `roguelike` en game3d** (13º perfil
+**Release `v2.16.0`** — aditivo: **runtime `advance-wars` en game3d** (visor), y con
+él **los 14 perfiles del repo tienen runtime**. El perfil `advance-wars` modela
+**solo arte** (PALETTES + UNITS 4bpp), así que su runtime es un desfile 3D sobre la
+rejilla de `platform` con inspección y recolocación — **sin combate inventado**:
+*gameplay as data* significa que sin datos no hay gameplay (SPEC §8). Decode 4bpp
+validado color a color contra la paleta en `npm test`; verificado en navegador con
+eventos de teclado reales.
+
+`v2.15.0` — aditivo: **runtime `roguelike` en game3d** (13º perfil
 jugable). Mazmorra procedural 3D cuya generación es un **port exacto** del visor 2D
 ([`examples/roguelike.html`](./examples/roguelike.html)): mismo mulberry32, mismo
 hash de coordenadas — **el mismo GAME.md produce el mismo mundo en ambos motores**,

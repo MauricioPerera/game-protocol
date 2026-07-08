@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.16.0] — 2026-07-08
+
+Release **aditivo** sobre `2.15.0` (bump minor, [SPEC §7.0](./SPEC.md)): el visor
+`advance-wars` completa el tablero — **los 14 perfiles del repo tienen runtime en
+game3d**. Donde el perfil solo modela arte, el runtime no inventa gameplay: esa es la
+tesis del protocolo aplicada hasta el final. La versión del protocolo sigue en `0.1`.
+
 ### Added — runtime `advance-wars` en game3d (visor): los 14 perfiles con runtime
 - **Runtime `advance-wars`** (14º y último perfil con runtime): **visor 3D del arte
   extraído** — desfile de las unidades 4bpp sobre la rejilla que declara `platform`
@@ -804,6 +813,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.16.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.16.0
 [2.15.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.15.0
 [2.14.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.14.0
 [2.13.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.13.0
