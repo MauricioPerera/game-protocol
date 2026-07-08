@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.13.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.14.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.13.0`** — aditivo: **runtime `platformer` en game3d** (11º perfil
+**Release `v2.14.0`** — aditivo: **runtime `crafting` en game3d** (12º perfil
+jugable). El artefacto ya generado corre en el player sin tocar core ni datos: taller
+DOM (recolectar, estaciones, recetas coloreadas por disponibilidad) sobre fragua 3D.
+La meta es **completar el recetario** — derivada de los datos, sin números
+inventados — con presupuesto de acciones; partida **ganada y perdida en Node dentro
+de `npm test`** con conservación exacta por material (recolectado − consumido =
+inventario) y stack detenido en el tope de MATERIALS.
+
+`v2.13.0` — aditivo: **runtime `platformer` en game3d** (11º perfil
 jugable). El artefacto ya generado corre en el player sin tocar core ni datos: vista
 lateral 3D con cámara que sigue al jugador, suelo por `tileset`, pisotones, huecos y
 bandera en `goal.x`. Los niveles no declaran geometría: el suelo se genera

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.14.0] — 2026-07-08
+
+Release **aditivo** sobre `2.13.0` (bump minor, [SPEC §7.0](./SPEC.md)): el artefacto
+`crafting` ya generado se vuelve jugable en game3d — meta derivada de los datos
+(recetario completo), ganada y perdida en Node con conservación exacta por material.
+La versión del protocolo sigue en `0.1`.
+
 ### Added — runtime `crafting` en game3d
 - **Runtime `crafting`** (12º perfil jugable): el artefacto ya generado corre en
   game3d sin tocar core ni datos — taller DOM (materiales con teclas 1..N, estación
@@ -750,6 +759,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.14.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.14.0
 [2.13.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.13.0
 [2.12.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.12.0
 [2.11.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.11.0
