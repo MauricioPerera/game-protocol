@@ -80,6 +80,67 @@ const ok = (cond, label, extra) => {
   ok(L.trainerInSight(TR, new Set(), { col: 6, row: 4 }, () => false) === null,
      'sight  diagonal => no visto');
 
+  // ============================================================
+  // Simulación shooter: el juego real (neon-swarm) jugado en Node
+  // ============================================================
+  const fs = require('fs');
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/neon-swarm.generated.js'));
+  const G = global.window.GAME; delete global.window;
+  ok(G.profile === 'shooter', 'shooter  artefacto con meta profile=shooter');
+
+  // (a) VICTORIA con IA simple: perseguir en x al enemigo mas bajo y disparar siempre
+  {
+    const S = L.shooterInit(G), rnd = L.lcg(1337);
+    let guard = 60 * 300;
+    while (!S.won && !S.over && guard-- > 0) {
+      let target = null;
+      for (const e of S.enemies) if (!target || e.y < target.y) target = e;
+      const dx = target ? Math.sign(target.x - S.x) : (S.x > S.w / 2 ? -1 : 1);
+      L.shooterTick(G, S, { dx, fire: true }, rnd);
+    }
+    ok(S.won === true && S.over === false, 'shooter  VICTORIA: la IA supera las 5 oleadas',
+       JSON.stringify({ won: S.won, over: S.over, wave: S.wave, score: S.score, kills: S.kills, leaked: S.leaked }));
+    ok(S.wave === 5, 'shooter  las 5 oleadas cargadas (wave=5)');
+    ok(S.score > 0 && S.kills > 0, 'shooter  puntuacion y kills > 0  (score=' + S.score + ', kills=' + S.kills + ')');
+    const totalSpawns = Object.values(G.WAVES).reduce((a, w) => a + w.spawns.reduce((b, s) => b + s.count, 0), 0);
+    ok(S.kills + S.leaked + S.lost === totalSpawns,
+       'shooter  conservacion: kills+leaked+lost == spawns totales (' + totalSpawns + ')',
+       JSON.stringify({ kills: S.kills, leaked: S.leaked, lost: S.lost }));
+  }
+
+  // (b) DERROTA: sin disparar ni moverse, los chasers agotan hp y vidas
+  {
+    const S = L.shooterInit(G), rnd = L.lcg(7);
+    let guard = 60 * 300;
+    while (!S.over && !S.won && guard-- > 0) L.shooterTick(G, S, { dx: 0, fire: false }, rnd);
+    ok(S.over === true && S.won === false, 'shooter  DERROTA: sin input caen hp y vidas',
+       JSON.stringify({ over: S.over, lives: S.lives, wave: S.wave }));
+  }
+
+  // (c) OVERDRIVE duplica la cadencia (cooldown a la mitad)
+  {
+    const S = L.shooterInit(G), rnd = L.lcg(1);
+    L.shooterTick(G, S, { dx: 0, fire: true }, rnd);
+    const coolNormal = S.cool;
+    const S2 = L.shooterInit(G); S2.rapid = 300;
+    L.shooterTick(G, S2, { dx: 0, fire: true }, rnd);
+    ok(S2.cool === Math.max(1, Math.round(coolNormal / 2)), 'shooter  rapid: cooldown a la mitad (' + coolNormal + ' -> ' + S2.cool + ')');
+  }
+
+  // (d) AEGIS bloquea el primer impacto; MEDKIT cura con tope
+  {
+    const S = L.shooterInit(G); S.shield = 100;
+    S.enemies.push({ name: 'DRONE', x: S.x, y: S.y, hp: 1, speed: 0, behavior: 'chaser', points: 0, phase: 0 });
+    S.queue.push({ enemy: 'DRONE', at: 1e9 });   // evita que la oleada 1 cargue en este tick
+    L.shooterTick(G, S, { dx: 0, fire: false }, L.lcg(2));
+    ok(S.hp === S.maxhp && S.enemies.length === 0, 'shooter  shield bloquea el impacto sin perder hp');
+    S.hp = S.maxhp - 1;
+    S.drops.push({ x: S.x, y: S.y, effect: 'heal', amount: 99 });
+    L.shooterTick(G, S, { dx: 0, fire: false }, L.lcg(3));
+    ok(S.hp === S.maxhp, 'shooter  heal cura con tope en maxhp');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

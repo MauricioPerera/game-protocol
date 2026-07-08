@@ -36,6 +36,8 @@ Cada uno declara `sections`, `required`, `refs` (grafo de referencias), `rules` 
 - `tower-defense` — tower defense (torres, tipos de daño, enemigos, oleadas, mapas, economia). [doc](profiles/tower-defense.md)
 - `advance-wars` — sprites GBA extraidos (paletas BGR555 0..31 + unidades 4bpp con tileData de nibbles 0..15). Nace del pipeline de extraccion (tools/SPRITE_EXTRACTION.md).
 - `quiz` — **perfil puro-de-datos de referencia** (profiles/quiz.json, sin funciones): categorias, preguntas, rondas. Se carga con JSON.parse, nunca se ejecuta codigo; valida solo con las familias declarativas (refs/bounds/enums).
+- `shooter` — arena shmup vertical, tambien **puro-de-datos** (profiles/shooter.json): naves, armas, enemigos con behavior (enum), oleadas, powerups, arena continua. Su simulacion de referencia es pura y esta testeada en Node (game3d-logic).
+- La lista canonica de perfiles vive en [manifest.json](manifest.json); esta es orientativa.
 
 ## Crear un genero nuevo
 

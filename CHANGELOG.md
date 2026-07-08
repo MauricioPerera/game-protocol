@@ -2,7 +2,33 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — perfil `shooter` (puro-datos) + Neon Swarm
+- **`profiles/shooter.json`** (12º perfil, segundo puro-datos): arena shmup vertical —
+  `ships` (speed/hp/weapon), `weapons` (damage/rate/bulletSpeed), `enemies` con
+  `behavior` (enum: chaser/drifter), `waves` con spawns, `powerups` (enum:
+  heal/rapid/shield), `arena` continua y `balance` (powerupChance/lives). 4 refs (con
+  mensajes por defecto), 14 bounds, 2 enums — cero funciones, `dataOnly: true`.
+  Límite documentado: `bounds` no alcanza campos dentro de arrays
+  (`waves.*.spawns[].count/gap` sin validar — material para SPEC §11, agregados).
+- **`examples/neon-swarm.GAME.md`** (+ generated): 2 naves, 2 armas, 4 enemigos,
+  5 oleadas, 3 powerups. Lint 0/0 a la primera.
+- **Simulación pura en `game3d-logic.mjs`** (`shooterInit`/`shooterTick` + `lcg`):
+  determinista, un tick = un frame; **el juego entero se gana y se pierde en Node**
+  (`test/game3d-logic.js`, +9 chequeos): victoria con IA simple sobre las 5 oleadas,
+  derrota sin input, conservación kills+leaked+lost == spawns (invariante que cazó un
+  hueco de contabilidad al escribirlo), rapid a mitad de cooldown, shield y heal con
+  tope.
+- **Runtime `shooter` en game3d** (7º... 6º runtime): render Three.js de la simulación
+  (nave cono, enemigos por color de nombre, balas, powerups), input mantenido
+  (keydown/keyup), HUD y overlays de victoria/derrota. En el selector del player.
+- Docs con el principio anti-drift aplicado: el footer de `index.html` y la nota de
+  SPEC §6 dejan de enumerar perfiles (manifest.json = lista canónica); `llms.txt` añade
+  `shooter` y remite al manifest. README: 116 → **128 reglas** (reconteo con los dos
+  perfiles JSON).
+- Verificación en navegador: victoria también sobre el **estado vivo** del runtime
+  (misma simulación importada en la página; 920 pts, conservación 46+5+4=55 exacta).
+  Nota operativa: el bucle RAF del runtime pausa en pestañas ocultas (comportamiento
+  estándar de juegos); los harnesses deben pilotar los ticks directamente.
 
 ## [2.8.1] — 2026-07-08
 

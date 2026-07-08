@@ -195,6 +195,8 @@ The core ships with **9 reference profiles** under `profiles/` (each a loadable 
 
 > **Eleventh profile (pure-data).** `profiles/quiz.json` is the **data-only reference profile** (§6.1): no functions — loaded with `JSON.parse`, never executed (§10) — validating entirely through the declarative families (`refs` with default messages, `bounds`, `enums`). It exists to prove a genre can be a pure-data contract.
 
+> Further application profiles follow the same two patterns (`.js` with code under review, or data-only `.json`); **`manifest.json` is the canonical list** — this section documents the nine reference profiles plus the pattern, not an exhaustive inventory.
+
 > **Design intent.** If you can express a new genre as a profile without touching the core, the core is doing its job. If you cannot, that is a core bug.
 
 ### 6.1 Profile descriptor contract (normative)

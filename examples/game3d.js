@@ -13,7 +13,8 @@ import * as THREE from 'three';
 // Lógica PURA (fórmulas de combate, visión, colisión): módulo aparte SIN THREE/DOM,
 // verificado en Node por test/game3d-logic.js dentro de `npm test`.
 import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
-         gainXP as gainXPPure, canStep, trainerInSight } from './game3d-logic.mjs';
+         gainXP as gainXPPure, canStep, trainerInSight,
+         shooterInit, shooterTick } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -423,6 +424,68 @@ register('quiz', G => {
       if (S.timer <= 0) next(false, 'Tiempo agotado.'); }
     ren.render(scene, cam); })();
   return { S };
+});
+
+// ============================================================================
+// RUNTIME shooter — render Three.js de la simulación PURA (game3d-logic.mjs):
+// el runtime solo pinta el estado y recoge input; la partida entera es
+// verificable en Node (test/game3d-logic.js la gana y la pierde).
+// ============================================================================
+register('shooter', G => {
+  const { scene, cam, ren } = makeStage();
+  const S = shooterInit(G);
+  // mapeo sim -> mundo: (x, y) -> (x, .5, -y); la nave abajo, las oleadas entran por -z lejano
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(S.w, S.h),
+    new THREE.MeshLambertMaterial({ color: 0x0d1420 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.set(S.w / 2, 0, -S.h / 2); scene.add(floor);
+  const ship = new THREE.Mesh(new THREE.ConeGeometry(.45, 1.1, 6),
+    new THREE.MeshStandardMaterial({ color: 0x39d5ff, emissive: 0x0a3b4d }));
+  ship.rotation.x = -Math.PI / 2; scene.add(ship);
+  cam.position.set(S.w / 2, 13, 4.5); cam.lookAt(S.w / 2, 0, -S.h / 2);
+  const hue = s => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % 360; return h / 360; };
+  const meshes = new Map();
+  function sync(list, maker) {
+    const seen = new Set(list);
+    for (const [k, m] of meshes) if (k.__kind === maker.kind && !seen.has(k)) { scene.remove(m); meshes.delete(k); }
+    for (const o of list) { o.__kind = maker.kind;
+      let m = meshes.get(o); if (!m) { m = maker(o); meshes.set(o, m); scene.add(m); }
+      m.position.set(o.x, .5, -o.y); }
+  }
+  const mkEnemy = o => new THREE.Mesh(new THREE.BoxGeometry(.8, .8, .8),
+    new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(hue(o.name), .65, .5) })); mkEnemy.kind = 'e';
+  const mkBullet = () => new THREE.Mesh(new THREE.SphereGeometry(.12, 6, 6),
+    new THREE.MeshBasicMaterial({ color: 0xfff2a0 })); mkBullet.kind = 'b';
+  const mkDrop = o => new THREE.Mesh(new THREE.OctahedronGeometry(.35),
+    new THREE.MeshStandardMaterial({ color: o.effect === 'heal' ? 0x7dff9a : o.effect === 'rapid' ? 0xffd479 : 0x9ab8ff })); mkDrop.kind = 'd';
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .07)); } catch (e) {} };
+  const TONE = { shot: [1200, .03], kill: [523, .08], hit: [196, .18], blocked: [740, .08],
+                 wave: [660, .12], respawn: [330, .2], win: [1046, .3], defeat: [147, .4] };
+  const input = { left: false, right: false, fire: false };
+  addEventListener('keydown', e => { if (e.key === 'ArrowLeft') input.left = true;
+    else if (e.key === 'ArrowRight') input.right = true; else if (e.key === ' ') input.fire = true; else return; e.preventDefault(); });
+  addEventListener('keyup', e => { if (e.key === 'ArrowLeft') input.left = false;
+    else if (e.key === 'ArrowRight') input.right = false; else if (e.key === ' ') input.fire = false; });
+  function hud() {
+    ui.top('<b>' + (G.name || 'shooter') + '</b> · oleada ' + S.wave + '/' + S.waves.length +
+           ' · <span style="color:#ffd479">' + S.score + ' pts</span>');
+    ui.side('<div class="chip">Casco: <b>' + '♥'.repeat(Math.max(0, S.hp)) + '</b></div>' +
+            '<div class="chip">Vidas: ' + Math.max(0, S.lives) + (S.shield > 0 ? ' · 🛡' : '') + (S.rapid > 0 ? ' · ⚡' : '') + '</div>');
+  }
+  hud(); ui.msg((G.TEXT || {}).intro || '');
+  (function loop() { requestAnimationFrame(loop);
+    const ev = shooterTick(G, S, { dx: (input.right ? 1 : 0) - (input.left ? 1 : 0), fire: input.fire }, Math.random());
+    for (const e of ev) { const t = TONE[e.split(':')[0]] || (e.startsWith('power') ? [1046, .1] : null); if (t) beep(t[0], t[1]); }
+    if (ev.length) { hud();
+      if (ev.includes('wave')) ui.msg(((G.TEXT || {}).wave || 'Oleada') + ' ' + S.wave + '/' + S.waves.length);
+      if (ev.some(x => x.startsWith('power'))) ui.msg('Powerup: ' + ev.find(x => x.startsWith('power')).split(':')[1]);
+      if (ev.includes('win')) ui.overlay('<div>🏆 ' + ((G.TEXT || {}).victory || '¡Victoria!') + '<br><span style="font-size:13px;color:#7b8696">' + S.score + ' pts · ' + S.kills + ' derribos · perfil shooter (puro-datos) · game3d</span></div>');
+      if (ev.includes('defeat')) ui.overlay('<div style="color:#ff7b7b">💥 ' + ((G.TEXT || {}).defeat || 'Derrota.') + '<br><span style="font-size:13px;color:#7b8696">' + S.score + ' pts · oleada ' + S.wave + '</span></div>'); }
+    sync(S.enemies, mkEnemy); sync(S.bullets, mkBullet); sync(S.drops, mkDrop);
+    ship.position.set(S.x, .55, -S.y);
+    ren.render(scene, cam); })();
+  return { S, input };
 });
 
 // ---------------- arranque: despacho por la meta `profile` del artefacto ----------------

@@ -1,0 +1,51 @@
+{
+  "$comment": "Perfil PURO-DE-DATOS 'shooter' (arena shmup vertical): naves, armas, enemigos por oleadas, powerups y arena continua. Sin funciones: valida solo con refs/bounds/enums. Limite conocido: bounds no alcanza campos dentro de arrays (waves.*.spawns[].count/gap quedan sin validar — material para SPEC §11, agregados anidados).",
+  "id": "shooter",
+  "specVersion": "0.1",
+  "sections": ["Overview", "Ships", "Weapons", "Enemies", "Waves", "Arena", "Text", "Do's and Don'ts"],
+  "required": ["version", "name", "profile"],
+  "refs": [
+    { "rule": "ship-weapon-ref", "level": "error",
+      "src": { "collection": "ships", "field": "weapon" }, "target": { "collection": "weapons" } },
+    { "rule": "enemy-weapon-ref", "level": "error", "optional": true,
+      "src": { "collection": "enemies", "field": "weapon" }, "target": { "collection": "weapons" } },
+    { "rule": "wave-enemy-ref", "level": "error",
+      "src": { "collection": "waves", "arrayField": "spawns", "itemField": "enemy" }, "target": { "collection": "enemies" } },
+    { "rule": "player-ship-ref", "level": "error",
+      "src": { "singleton": "player", "field": "ship" }, "target": { "collection": "ships" } }
+  ],
+  "bounds": [
+    { "rule": "ship-bounds", "collection": "ships", "field": "speed", "gt": 0, "required": true },
+    { "rule": "ship-bounds", "collection": "ships", "field": "hp", "gt": 0, "required": true, "integer": true },
+    { "rule": "weapon-bounds", "collection": "weapons", "field": "damage", "gt": 0, "required": true },
+    { "rule": "weapon-bounds", "collection": "weapons", "field": "rate", "gt": 0, "required": true },
+    { "rule": "weapon-bounds", "collection": "weapons", "field": "bulletSpeed", "gt": 0, "required": true },
+    { "rule": "enemy-bounds", "collection": "enemies", "field": "hp", "gt": 0, "required": true, "integer": true },
+    { "rule": "enemy-bounds", "collection": "enemies", "field": "speed", "gt": 0, "required": true },
+    { "rule": "enemy-bounds", "collection": "enemies", "field": "points", "min": 0 },
+    { "rule": "powerup-amount", "collection": "powerups", "field": "amount", "gt": 0 },
+    { "rule": "powerup-duration", "collection": "powerups", "field": "duration", "gt": 0, "integer": true },
+    { "rule": "arena-bounds", "singleton": "arena", "field": "width", "gt": 0, "required": true },
+    { "rule": "arena-bounds", "singleton": "arena", "field": "height", "gt": 0, "required": true },
+    { "rule": "balance-bounds", "singleton": "balance", "field": "powerupChance", "min": 0, "max": 1 },
+    { "rule": "balance-bounds", "singleton": "balance", "field": "lives", "min": 0, "integer": true }
+  ],
+  "enums": [
+    { "rule": "enemy-behavior", "collection": "enemies", "field": "behavior",
+      "values": ["chaser", "drifter"], "required": true },
+    { "rule": "powerup-effect", "collection": "powerups", "field": "effect",
+      "values": ["heal", "rapid", "shield"], "required": true }
+  ],
+  "dims": [],
+  "derive": [
+    { "key": "SHIPS", "from": "ships" },
+    { "key": "WEAPONS", "from": "weapons" },
+    { "key": "ENEMIES", "from": "enemies" },
+    { "key": "WAVES", "from": "waves" },
+    { "key": "POWERUPS", "from": "powerups" },
+    { "key": "ARENA", "from": "arena" },
+    { "key": "PLAYER", "from": "player" },
+    { "key": "BALANCE", "from": "balance" },
+    { "key": "TEXT", "from": "text" }
+  ]
+}

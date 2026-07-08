@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://game-protocol/schemas/shooter.schema.json",
+  "title": "GAME.md front-matter — perfil shooter",
+  "type": "object",
+  "required": [
+    "version",
+    "name",
+    "profile"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "profile": {
+      "const": "shooter"
+    },
+    "platform": {
+      "type": "object"
+    },
+    "palettesCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "ships": {
+      "type": "object"
+    },
+    "weapons": {
+      "type": "object"
+    },
+    "enemies": {
+      "type": "object"
+    },
+    "waves": {
+      "type": "object"
+    },
+    "powerups": {
+      "type": "object"
+    },
+    "arena": {
+      "type": "object"
+    },
+    "player": {
+      "type": "object"
+    },
+    "balance": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "x-sections": [
+    "Overview",
+    "Ships",
+    "Weapons",
+    "Enemies",
+    "Waves",
+    "Arena",
+    "Text",
+    "Do's and Don'ts"
+  ],
+  "x-references": [
+    {
+      "rule": "ship-weapon-ref",
+      "from": "ships.*.weapon",
+      "to": "weapons"
+    },
+    {
+      "rule": "enemy-weapon-ref",
+      "from": "enemies.*.weapon",
+      "to": "weapons"
+    },
+    {
+      "rule": "wave-enemy-ref",
+      "from": "waves.*.spawns[].enemy",
+      "to": "enemies"
+    },
+    {
+      "rule": "player-ship-ref",
+      "from": "player.ship",
+      "to": "ships"
+    }
+  ],
+  "x-outputKeys": [
+    "SHIPS",
+    "WEAPONS",
+    "ENEMIES",
+    "WAVES",
+    "POWERUPS",
+    "ARENA",
+    "PLAYER",
+    "BALANCE",
+    "TEXT"
+  ],
+  "x-note": "Las referencias cruzadas (x-references) dependen de datos y se validan con game-lint.js, no con este schema."
+}

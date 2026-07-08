@@ -802,6 +802,219 @@
       ],
       "deprecatedRules": []
     },
+    "shooter": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Ships",
+        "Weapons",
+        "Enemies",
+        "Waves",
+        "Arena",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name",
+        "profile"
+      ],
+      "references": [
+        {
+          "rule": "ship-weapon-ref",
+          "level": "error",
+          "from": "ships.*.weapon",
+          "to": "weapons",
+          "optional": false
+        },
+        {
+          "rule": "enemy-weapon-ref",
+          "level": "error",
+          "from": "enemies.*.weapon",
+          "to": "weapons",
+          "optional": true
+        },
+        {
+          "rule": "wave-enemy-ref",
+          "level": "error",
+          "from": "waves.*.spawns[].enemy",
+          "to": "enemies",
+          "optional": false
+        },
+        {
+          "rule": "player-ship-ref",
+          "level": "error",
+          "from": "player.ship",
+          "to": "ships",
+          "optional": false
+        }
+      ],
+      "rules": [],
+      "bounds": [
+        {
+          "rule": "ship-bounds",
+          "level": "error",
+          "target": "ships.*.speed",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "ship-bounds",
+          "level": "error",
+          "target": "ships.*.hp",
+          "gt": 0,
+          "integer": true,
+          "required": true
+        },
+        {
+          "rule": "weapon-bounds",
+          "level": "error",
+          "target": "weapons.*.damage",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "weapon-bounds",
+          "level": "error",
+          "target": "weapons.*.rate",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "weapon-bounds",
+          "level": "error",
+          "target": "weapons.*.bulletSpeed",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "enemy-bounds",
+          "level": "error",
+          "target": "enemies.*.hp",
+          "gt": 0,
+          "integer": true,
+          "required": true
+        },
+        {
+          "rule": "enemy-bounds",
+          "level": "error",
+          "target": "enemies.*.speed",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "enemy-bounds",
+          "level": "error",
+          "target": "enemies.*.points",
+          "min": 0
+        },
+        {
+          "rule": "powerup-amount",
+          "level": "error",
+          "target": "powerups.*.amount",
+          "gt": 0
+        },
+        {
+          "rule": "powerup-duration",
+          "level": "error",
+          "target": "powerups.*.duration",
+          "gt": 0,
+          "integer": true
+        },
+        {
+          "rule": "arena-bounds",
+          "level": "error",
+          "target": "arena.width",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "arena-bounds",
+          "level": "error",
+          "target": "arena.height",
+          "gt": 0,
+          "required": true
+        },
+        {
+          "rule": "balance-bounds",
+          "level": "error",
+          "target": "balance.powerupChance",
+          "min": 0,
+          "max": 1
+        },
+        {
+          "rule": "balance-bounds",
+          "level": "error",
+          "target": "balance.lives",
+          "min": 0,
+          "integer": true
+        }
+      ],
+      "dims": [],
+      "enums": [
+        {
+          "rule": "enemy-behavior",
+          "level": "error",
+          "target": "enemies.*.behavior",
+          "values": [
+            "chaser",
+            "drifter"
+          ],
+          "required": true
+        },
+        {
+          "rule": "powerup-effect",
+          "level": "error",
+          "target": "powerups.*.effect",
+          "values": [
+            "heal",
+            "rapid",
+            "shield"
+          ],
+          "required": true
+        }
+      ],
+      "dataOnly": true,
+      "output": [
+        {
+          "key": "SHIPS",
+          "source": "token:ships"
+        },
+        {
+          "key": "WEAPONS",
+          "source": "token:weapons"
+        },
+        {
+          "key": "ENEMIES",
+          "source": "token:enemies"
+        },
+        {
+          "key": "WAVES",
+          "source": "token:waves"
+        },
+        {
+          "key": "POWERUPS",
+          "source": "token:powerups"
+        },
+        {
+          "key": "ARENA",
+          "source": "token:arena"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "BALANCE",
+          "source": "token:balance"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ],
+      "deprecatedRules": []
+    },
     "tower-defense": {
       "specVersion": "0.1",
       "sections": [

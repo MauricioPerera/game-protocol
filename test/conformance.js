@@ -20,7 +20,7 @@ let pass = 0, fail = 0;
 const ok = (cond, label, extra) => { if (cond) { pass++; console.log('PASS  ' + label); } else { fail++; console.log('FAIL  ' + label); if (extra) console.log('        ' + extra); } };
 
 // ---- VALIDO: ejemplos por perfil → 0 errores ----
-const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md', 'quiz.GAME.md'];
+const examples = ['GAME.md', 'platformer.GAME.md', 'crafting.GAME.md', 'papers-please.GAME.md', 'voxel.GAME.md', 'adventure.GAME.md', 'dungeon.GAME.md', 'roguelike.GAME.md', 'tower-defense.GAME.md', 'advance-wars-extracted.GAME.md', 'quiz.GAME.md', 'neon-swarm.GAME.md'];
 for (const e of examples) {
   const t = fs.readFileSync(REPO + '/examples/' + e, 'utf8').replace(/\r\n/g, '\n');
   const { fm, body } = splitFrontMatter(t); const data = fm ? parseYamlSubset(fm) : {};
@@ -222,6 +222,21 @@ const invalid = [
   { p: 'quiz', rule: 'question-difficulty', data: { ...B('quiz'), categories: { C: {} }, questions: { Q: { category: 'C', difficulty: 'imposible', points: 1 } } } },
   { p: 'quiz', rule: 'round-reward', data: { ...B('quiz'), rounds: { 1: { questions: [], reward: -5 } } } },
 
+  // ---- shooter (perfil puro-datos: profiles/shooter.json, sin funciones) ----
+  { p: 'shooter', rule: 'ship-weapon-ref', data: { ...B('shooter'), weapons: {}, ships: { V: { speed: 1, hp: 1, weapon: 'NOPE' } } } },
+  { p: 'shooter', rule: 'enemy-weapon-ref', data: { ...B('shooter'), weapons: {}, enemies: { D: { hp: 1, speed: 1, behavior: 'chaser', weapon: 'NOPE' } } } },
+  { p: 'shooter', rule: 'wave-enemy-ref', data: { ...B('shooter'), enemies: {}, waves: { 1: { spawns: [{ enemy: 'NOPE', count: 1, gap: 1 }] } } } },
+  { p: 'shooter', rule: 'player-ship-ref', data: { ...B('shooter'), ships: {}, player: { ship: 'NOPE' } } },
+  { p: 'shooter', rule: 'ship-bounds', data: { ...B('shooter'), weapons: { W: { damage: 1, rate: 1, bulletSpeed: 1 } }, ships: { V: { speed: 0, hp: 1, weapon: 'W' } } } },
+  { p: 'shooter', rule: 'weapon-bounds', data: { ...B('shooter'), weapons: { W: { damage: 0, rate: 1, bulletSpeed: 1 } } } },
+  { p: 'shooter', rule: 'enemy-bounds', data: { ...B('shooter'), enemies: { D: { hp: 0, speed: 1, behavior: 'chaser' } } } },
+  { p: 'shooter', rule: 'enemy-behavior', data: { ...B('shooter'), enemies: { D: { hp: 1, speed: 1, behavior: 'zigzag' } } } },
+  { p: 'shooter', rule: 'powerup-effect', data: { ...B('shooter'), powerups: { P: { effect: 'nuke' } } } },
+  { p: 'shooter', rule: 'powerup-amount', data: { ...B('shooter'), powerups: { P: { effect: 'heal', amount: 0 } } } },
+  { p: 'shooter', rule: 'powerup-duration', data: { ...B('shooter'), powerups: { P: { effect: 'rapid', duration: 0 } } } },
+  { p: 'shooter', rule: 'arena-bounds', data: { ...B('shooter'), arena: { width: 0, height: 5 } } },
+  { p: 'shooter', rule: 'balance-bounds', data: { ...B('shooter'), balance: { powerupChance: 2 } } },
+
   // ---- voxel ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
   { p: 'voxel', rule: 'prefab-fill-ref', data: { ...B('voxel'), materials: {}, prefabs: { P: { size: [1, 1, 1], fill: 'NOPE' } } } },
@@ -275,7 +290,7 @@ for (const c of invalid) {
 })();
 
 console.log('\n— Cobertura inválidos por perfil —');
-const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'quiz', 'roguelike', 'tower-defense', 'voxel'];
+const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'platformer', 'quiz', 'roguelike', 'shooter', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
 console.log('  TOTAL invalidos: ' + invalid.length + '  (validos: ' + examples.length + ')');
 
