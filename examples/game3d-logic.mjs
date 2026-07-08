@@ -548,6 +548,51 @@ export function pfTick(G, S, input) {
   return ev;
 }
 
+// ============================================================================
+// Lógica del perfil `crafting` — PURA, por turnos y sin azar. El balance sale
+// del artefacto: MATERIALS (stack), RECIPES (station/inputs/qty/outputValue),
+// ITEMS, STATIONS. Semántica del motor (SPEC §8): la meta es COMPLETAR EL
+// RECETARIO (craftear cada receta ≥1 vez — derivada de los datos, sin números
+// inventados) con un presupuesto de CR_ACTIONS acciones; recolectar, moverse
+// de estación y craftear cuestan 1 acción; derrota al agotarlas.
+// ============================================================================
+export const CR_ACTIONS = 30;
+export function crInit(G) {
+  const inv = {}; for (const m of Object.keys(G.MATERIALS || {})) inv[m] = 0;
+  const gathered = { ...inv };
+  return { inv, gathered, items: {}, value: 0, at: null,
+           actionsLeft: CR_ACTIONS, crafted: {}, won: false, lost: false };
+}
+function crSpend(S) { // cuesta 1 accion; agotar sin recetario completo = derrota
+  S.actionsLeft--;
+  if (S.actionsLeft <= 0 && !S.won) { S.lost = true; return 'lose'; }
+  return null;
+}
+export function crGather(G, S, mat) {
+  const M = (G.MATERIALS || {})[mat];
+  if (S.won || S.lost || !M) return 'blocked';
+  if (S.inv[mat] >= (M.stack || Infinity)) return 'full';
+  S.inv[mat]++; S.gathered[mat]++;
+  return crSpend(S) || 'ok';
+}
+export function crMove(G, S, station) {
+  if (S.won || S.lost || !(station in (G.STATIONS || {})) || S.at === station) return 'blocked';
+  S.at = station;
+  return crSpend(S) || 'ok';
+}
+export function crCraft(G, S, recipeId) {
+  const R = (G.RECIPES || {})[recipeId];
+  if (S.won || S.lost || !R) return 'blocked';
+  if (R.station && S.at !== R.station) return 'blocked';
+  if ((R.inputs || []).some(i => (S.inv[i.material] || 0) < i.qty)) return 'blocked';
+  for (const i of (R.inputs || [])) S.inv[i.material] -= i.qty;
+  S.items[R.output] = (S.items[R.output] || 0) + (R.qty || 1);
+  S.value += (R.outputValue != null ? R.outputValue : ((G.ITEMS || {})[R.output] || {}).value || 0) * (R.qty || 1);
+  S.crafted[recipeId] = (S.crafted[recipeId] || 0) + 1;
+  if (Object.keys(G.RECIPES || {}).every(r => S.crafted[r])) { S.won = true; return 'win'; }
+  return crSpend(S) || 'crafted';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

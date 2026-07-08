@@ -19,7 +19,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          pegInit, pegMove, pegMoves,
          ppInit, ppDecide, ppEntrant,
          tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS,
-         pfInit, pfTick } from './game3d-logic.mjs';
+         pfInit, pfTick,
+         crInit, crGather, crMove, crCraft, CR_ACTIONS } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -491,6 +492,92 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME crafting — taller DOM sobre fragua 3D; lógica pura por turnos en
+// game3d-logic (recetario completo ganado y perdido en Node en npm test).
+// Teclas: 1..N recolecta el material N, M cambia de estación, A..Z craftea
+// la receta correspondiente.
+// ============================================================================
+register('crafting', G => {
+  const { scene, cam, ren } = makeStage();
+  // fragua: yunque + brasas parpadeantes
+  const anvil = new THREE.Mesh(new THREE.BoxGeometry(1.6, .7, .8),
+    new THREE.MeshStandardMaterial({ color: 0x555a63 }));
+  anvil.position.set(0, .9, -5); scene.add(anvil);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(.5, .7, .6, 8),
+    new THREE.MeshStandardMaterial({ color: 0x4a3626 }));
+  base.position.set(0, .3, -5); scene.add(base);
+  const embers = [];
+  for (let i = 0; i < 6; i++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(.3, .3, .3),
+      new THREE.MeshStandardMaterial({ color: 0xff8030, emissive: 0xcc4400 }));
+    const a = i / 6 * Math.PI * 2;
+    m.position.set(Math.cos(a) * 3, .2, Math.sin(a) * 3 - 6); m.userData.ph = i;
+    scene.add(m); embers.push(m);
+  }
+  cam.position.set(0, 3, 4); cam.lookAt(0, .8, -5);
+  const S = crInit(G);
+  const mats = Object.keys(G.MATERIALS || {});
+  const stations = Object.keys(G.STATIONS || {});
+  const recipes = Object.keys(G.RECIPES || {});
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function paint() {
+    ui.top('<b>' + (G.name || 'crafting') + '</b> · estación: ' + (S.at || 'ninguna') + ' [M]');
+    ui.side('<div class="chip">Acciones: <b>' + S.actionsLeft + '</b>/' + CR_ACTIONS + '</div>' +
+            '<div class="chip">Valor: ' + S.value + '</div>' +
+            '<div class="chip">Recetas: ' + Object.keys(S.crafted).length + '/' + recipes.length + '</div>');
+    let html = '<div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap">';
+    html += '<div><div style="color:#7b8696;margin-bottom:4px">Materiales (recolectar)</div>' +
+      mats.map((m, i) => '<div style="font-size:14px">[' + (i + 1) + '] ' + m + ': <b>' + S.inv[m] + '</b>/' + G.MATERIALS[m].stack + '</div>').join('') + '</div>';
+    html += '<div><div style="color:#7b8696;margin-bottom:4px">Recetas (craftear)</div>' +
+      recipes.map((rid, i) => {
+        const R = G.RECIPES[rid];
+        const puede = (!R.station || S.at === R.station) && (R.inputs || []).every(x => S.inv[x.material] >= x.qty);
+        return '<div style="font-size:14px;color:' + (puede ? '#8fd68f' : '#7b8696') + '">[' + String.fromCharCode(65 + i) + '] ' + rid +
+          ' @' + R.station + ' — ' + (R.inputs || []).map(x => x.qty + '×' + x.material).join(' + ') +
+          ' → ' + R.output + ' (' + R.outputValue + ')</div>';
+      }).join('') + '</div>';
+    html += '<div><div style="color:#7b8696;margin-bottom:4px">Objetos</div>' +
+      (Object.keys(S.items).length ? Object.entries(S.items).map(([k, v]) => '<div style="font-size:14px">' + k + ' ×' + v + '</div>').join('') :
+       '<div style="font-size:14px;color:#7b8696">—</div>') + '</div></div>';
+    ui.panel(html, true);
+  }
+  function fin(r) {
+    if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 Recetario completo.<br><span style="font-size:13px;color:#7b8696">valor: ' +
+      S.value + ' · acciones restantes: ' + S.actionsLeft + ' · perfil crafting · game3d</span></div>'); }
+    else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 Sin acciones: el recetario quedó a ' +
+      (recipes.length - Object.keys(S.crafted).length) + ' recetas.<br><span style="font-size:13px;color:#7b8696">valor: ' + S.value + '</span></div>'); }
+  }
+  addEventListener('keydown', e => {
+    if (S.won || S.lost) return;
+    const k = e.key;
+    let handled = true;
+    if (/^[1-9]$/.test(k) && mats[+k - 1]) {
+      const r = crGather(G, S, mats[+k - 1]);
+      if (r === 'ok' || r === 'lose') { beep(620); ui.msg(mats[+k - 1] + ' +1.'); fin(r); }
+      else ui.msg('Inventario de ' + mats[+k - 1] + ' lleno.');
+    } else if (k === 'm' || k === 'M') {
+      const next = stations[(stations.indexOf(S.at) + 1) % stations.length];
+      const r = crMove(G, S, next);
+      if (r === 'ok' || r === 'lose') { beep(520); ui.msg('En ' + S.at + '.'); fin(r); }
+    } else if (/^[a-zA-Z]$/.test(k) && recipes[k.toUpperCase().charCodeAt(0) - 65] !== undefined) {
+      const rid = recipes[k.toUpperCase().charCodeAt(0) - 65];
+      const r = crCraft(G, S, rid);
+      if (r === 'blocked') { beep(196, .12); ui.msg('No puedes craftear ' + rid + ' (estación/materiales).'); }
+      else { beep(880, .15); ui.msg((G.TEXT || {}).done || 'Crafted!'); fin(r); }
+    } else handled = false;
+    if (handled) { paint(); e.preventDefault(); }
+  });
+  paint(); ui.msg('Recolecta (1..' + mats.length + '), ve a la estación (M) y completa el recetario (A..' + String.fromCharCode(64 + recipes.length) + ').');
+  (function loop() { requestAnimationFrame(loop);
+    const t = performance.now() / 300;
+    for (const m of embers) m.material.emissive.setHSL(.05, 1, .25 + .15 * Math.sin(t + m.userData.ph * 2));
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ============================================================================

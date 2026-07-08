@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `crafting` en game3d
+- **Runtime `crafting`** (12º perfil jugable): el artefacto ya generado corre en
+  game3d sin tocar core ni datos — taller DOM (materiales con teclas 1..N, estación
+  con M, recetas con A..Z coloreadas por disponibilidad, objetos e inventario) sobre
+  fragua 3D (yunque y brasas que laten), overlays de victoria/derrota.
+- **Lógica pura en `game3d-logic.mjs`** (`crInit`/`crGather`/`crMove`/`crCraft`,
+  +12 chequeos en `npm test` y CI): stack por MATERIALS, estación e inputs por
+  RECIPES, valor por outputValue. **Recetario completado y perdido en Node**;
+  conservación exacta por material (recolectado − consumido = inventario); craftear
+  sin estación / en la equivocada / sin materiales → `blocked`; stack se detiene
+  en el tope declarado.
+- Semántica del motor documentada (SPEC §8): la meta es **completar el recetario**
+  (craftear cada receta ≥1 vez — derivada de los datos, sin números inventados) con
+  presupuesto de `CR_ACTIONS = 30` acciones; recolectar/moverse/craftear cuestan 1;
+  derrota al agotarlas.
+- **Verificado jugando en navegador**: craft en vacío bloqueado, recolección por
+  teclas, cambio de estación y recetario completo hasta el overlay de victoria
+  (valor 90, 22 acciones sobrantes).
 
 ## [2.13.0] — 2026-07-08
 

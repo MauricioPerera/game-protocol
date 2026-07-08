@@ -424,6 +424,72 @@ const ok = (cond, label, extra) => {
        'pf  caida al hueco: muerte, respawn en x=1 y una vida menos');
   }
 
+  // ============================================================
+  // Crafting: recetario completo (meta derivada de los datos)
+  // ganado y perdido en Node, con conservacion de materiales
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/crafting.generated.js'));
+  const GC = global.window.GAME; delete global.window;
+  ok(GC.profile === 'crafting', 'cr  artefacto con meta profile=crafting');
+  // (a) VICTORIA: recolectar lo que piden TODAS las recetas (desde los datos), ir a la estacion y craftear
+  {
+    const S = L.crInit(GC);
+    ok(Object.keys(S.inv).sort().join() === Object.keys(GC.MATERIALS).sort().join() && S.actionsLeft === L.CR_ACTIONS,
+       'cr  init: inventario desde MATERIALS y ' + L.CR_ACTIONS + ' acciones');
+    const need = {};
+    for (const R of Object.values(GC.RECIPES)) for (const i of (R.inputs || [])) need[i.material] = (need[i.material] || 0) + i.qty;
+    let acciones = 0;
+    for (const [m, q] of Object.entries(need)) for (let k = 0; k < q; k++) { L.crGather(GC, S, m); acciones++; }
+    let r = '';
+    for (const [rid, R] of Object.entries(GC.RECIPES)) {
+      if (S.at !== R.station) { L.crMove(GC, S, R.station); acciones++; }
+      r = L.crCraft(GC, S, rid); acciones++;
+    }
+    const valorEsperado = Object.values(GC.RECIPES).reduce((a, R) => a + R.outputValue * (R.qty || 1), 0);
+    ok(r === 'win' && S.won, 'cr  VICTORIA: recetario completo en ' + acciones + ' acciones (de ' + L.CR_ACTIONS + ')');
+    ok(S.value === valorEsperado, 'cr  valor acumulado = suma de outputValue = ' + valorEsperado);
+    const conserva = Object.keys(GC.MATERIALS).every(m => {
+      let consumido = 0;
+      for (const [rid, R] of Object.entries(GC.RECIPES))
+        for (const i of (R.inputs || [])) if (i.material === m) consumido += i.qty * (S.crafted[rid] || 0);
+      return S.gathered[m] - consumido === S.inv[m];
+    });
+    ok(conserva, 'cr  conservacion exacta: recolectado - consumido = inventario (por material)');
+  }
+  // (b) craftear sin estacion / en la estacion equivocada / sin inputs -> blocked
+  {
+    const S = L.crInit(GC);
+    const [rid, R] = Object.entries(GC.RECIPES)[0];
+    for (const i of R.inputs) for (let k = 0; k < i.qty; k++) L.crGather(GC, S, i.material);
+    ok(L.crCraft(GC, S, rid) === 'blocked', 'cr  craftear sin estar en la estacion -> blocked');
+    const otra = Object.keys(GC.STATIONS).find(s => s !== R.station);
+    L.crMove(GC, S, otra);
+    ok(L.crCraft(GC, S, rid) === 'blocked', 'cr  craftear en la estacion equivocada (' + otra + ') -> blocked');
+    L.crMove(GC, S, R.station);
+    const S2 = L.crInit(GC); L.crMove(GC, S2, R.station);
+    ok(L.crCraft(GC, S2, rid) === 'blocked', 'cr  craftear sin materiales -> blocked');
+    ok(L.crCraft(GC, S, rid) !== 'blocked', 'cr  con estacion y materiales SI se puede');
+  }
+  // (c) tope de stack desde MATERIALS
+  {
+    const S = L.crInit(GC);
+    const [m, M] = Object.entries(GC.MATERIALS)[0];
+    S.inv[m] = M.stack - 1;
+    ok(L.crGather(GC, S, m) === 'ok' && L.crGather(GC, S, m) === 'full' && S.inv[m] === M.stack,
+       'cr  stack de ' + m + ' se detiene en ' + M.stack);
+  }
+  // (d) DERROTA: malgastar todas las acciones sin completar el recetario
+  {
+    const S = L.crInit(GC);
+    const m = Object.keys(GC.MATERIALS)[2]; // COAL: ninguna receta lo usa
+    let r = '', guard = 0;
+    while (!S.lost && guard++ < 1000) { r = L.crGather(GC, S, m); if (r === 'full') S.inv[m] = 0; }
+    ok(r === 'lose' && S.lost && S.actionsLeft === 0, 'cr  DERROTA al agotar ' + L.CR_ACTIONS + ' acciones recolectando ' + m);
+    ok(L.crGather(GC, S, m) === 'blocked' && L.crCraft(GC, S, Object.keys(GC.RECIPES)[0]) === 'blocked',
+       'cr  partida terminada -> blocked');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();
