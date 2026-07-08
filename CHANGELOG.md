@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.10.0] — 2026-07-08
+
+Release **aditivo** sobre `2.9.0` (bump minor, [SPEC §7.0](./SPEC.md)): dos géneros
+nuevos de punta a punta sin tocar el core — el **Senku** real (perfil puro-datos
+`peg-solitaire`, tableros solubles por construcción, soluciones rejugadas en `npm test`)
+y el perfil `sudoku`, nacido de un malentendido del nombre y conservado como género
+propio. La versión del protocolo sigue en `0.1`.
+
 ### Added — perfil `peg-solitaire` (puro-datos) + Senku
 - **`profiles/peg-solitaire.json`** (14º perfil, cuarto puro-datos): senku/solitario de
   clavijas — tableros como 7 filas de 7 caracteres (`_` fuera, `o` peg, `.` hueco),
@@ -647,6 +657,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.10.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.10.0
 [2.9.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.9.0
 [2.8.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.1
 [2.8.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.0

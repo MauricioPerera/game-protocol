@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.9.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.10.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,18 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.9.0`** — aditivo: un **shooter** de punta a punta sin tocar el core —
+**Release `v2.10.0`** — aditivo: dos géneros nuevos sin tocar el core. El **Senku** real —
+perfil puro-datos [`profiles/peg-solitaire.json`](./profiles/peg-solitaire.json) (tableros
+7×7 por strings, goal `clear`/`center`, dificultad) y el juego
+[`examples/senku.GAME.md`](./examples/senku.GAME.md): tableros **solubles por
+construcción** (movimientos inversos desde un peg + solver DFS) cuyas soluciones se
+**rejuegan hasta la victoria en `npm test`**, más su runtime en `game3d`. Y el perfil
+`sudoku` ([`profiles/sudoku.json`](./profiles/sudoku.json) +
+[`examples/sudoku.GAME.md`](./examples/sudoku.GAME.md), puzzles con unicidad verificada),
+nacido de un malentendido del nombre y conservado como género propio. 133 reglas;
+14 perfiles (4 puro-datos).
+
+`v2.9.0` — aditivo: un **shooter** de punta a punta sin tocar el core —
 perfil puro-datos [`profiles/shooter.json`](./profiles/shooter.json) (naves, armas,
 enemigos con enum de comportamiento, oleadas, powerups, arena), el juego **Neon Swarm**
 ([`examples/neon-swarm.GAME.md`](./examples/neon-swarm.GAME.md), lint 0/0 a la primera),
