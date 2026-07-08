@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — mejoras del runtime game3d
+- **Runtime `quiz`**: el perfil puro-datos gana su primera demo jugable — rondas,
+  timer por pregunta (`seconds`), puntuación (`points` + `reward` por ronda), teclas
+  1-N para responder, overlay final con aciertos. Fondo 3D de cubos por categoría.
+  Verificado con partida perfecta scriptada: 5/5 aciertos y **450 pts exactos** (la
+  suma derivada de los datos). En el selector del player.
+- **Lógica pura extraída y testeada** (`examples/game3d-logic.mjs` +
+  `test/game3d-logic.js`, 25 chequeos en `npm test` y CI): fórmulas de combate
+  deterministas (daño con eficacia/varianza/nivel/slow, con `rnd` inyectado), captura
+  (la fórmula de `BALANCE`), XP/niveles/evoluciones, colisión de grid y visión de
+  entrenadores — el motor entra a la disciplina de verificación del repo. `game3d.js`
+  consume el módulo (sin THREE/DOM en la lógica). Cambio menor asumido: el daño del
+  rival ahora aplica el mismo factor de nivel simétrico que el del jugador.
+- **Tween de movimiento + orientación del sprite** en los runtimes tile y monster-rpg:
+  el estado sigue siendo instantáneo (lógica y tests intactos) y el sprite interpola
+  la posición; `face` voltea el billboard según la dirección horizontal.
 
 ## [2.7.1] — 2026-07-07
 

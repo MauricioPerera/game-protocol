@@ -10,6 +10,10 @@
  * Uso: game3d.html?game=<archivo>.generated.js
  */
 import * as THREE from 'three';
+// Lógica PURA (fórmulas de combate, visión, colisión): módulo aparte SIN THREE/DOM,
+// verificado en Node por test/game3d-logic.js dentro de `npm test`.
+import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
+         gainXP as gainXPPure, canStep, trainerInSight } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -90,13 +94,14 @@ function tileRuntime(G, kind) {
   const SOLIDT = new Set(Object.entries(G.TILES || {}).filter(([, t]) => t.solid).map(([id]) => Number(id)));
   const { scene, cam, ren } = makeStage();
   const sfx = sfxPlayer(G);
-  const S = { cur: start.scene, pos: { col: start.col, row: start.row }, hp: G.PLAYER.hp || 3,
+  const S = { cur: start.scene, pos: { col: start.col, row: start.row }, face: 1, hp: G.PLAYER.hp || 3,
               inv: new Set(), collected: new Set(), won: false, enemies: {} };
   const sc = () => SCENES[S.cur];
   const enemiesOf = n => S.enemies[n] || (S.enemies[n] = (SCENES[n].enemies || []).map(e => ({ ...e, hp: e.hp || 1, dir: e.dir || 1, axis: e.axis || 'h', alive: true })));
 
   let world = null; const dyn = new THREE.Group(); scene.add(dyn);
   const playerSpr = billboard(gridCanvas(G.TILE_ART[G.PLAYER.tile] || [[0]], G.PALETTES[G.PLAYER.pal || 0], true), 1); scene.add(playerSpr);
+  playerSpr.position.set(start.col, .6, start.row);
   function build() {
     if (world) scene.remove(world);
     const s = sc(); world = tilemapGroup(G, s.tilemap, s.attrs, SOLIDT, { 17: 1.0, 51: .25, 52: .9, 50: .7, 20: .25 }); scene.add(world);
@@ -128,6 +133,7 @@ function tileRuntime(G, kind) {
     return SOLIDT.has(tm[r][c]); };
   function move(dc, dr) {
     if (S.won) return;
+    if (dc) S.face = dc < 0 ? -1 : 1;
     const nc = S.pos.col + dc, nr = S.pos.row + dr, s = sc();
     const w = (s.warps || []).find(w => w.col === nc && w.row === nr);
     if (w) { if (w.locked && !S.inv.has(w.locked)) { ui.msg((G.TEXT || {}).locked || 'Cerrada.'); return; }
@@ -166,7 +172,9 @@ function tileRuntime(G, kind) {
       const bad = nc < 0 || nr < 0 || nr >= tm.length || nc >= tm[0].length || SOLIDT.has(tm[nr][nc]);
       if (bad) e.dir *= -1; else { e.col = nc; e.row = nr; if (e.col === S.pos.col && e.row === S.pos.row) hurt(); } }
       refreshDyn(); }
-    playerSpr.position.set(S.pos.col, .6, S.pos.row);
+    // tween visual: el estado es instantaneo (logica/tests intactos), el sprite interpola
+    playerSpr.position.lerp(new THREE.Vector3(S.pos.col, .6, S.pos.row), .25);
+    playerSpr.scale.set(S.face, 1, 1);
     cam.position.lerp(new THREE.Vector3(S.pos.col, 7.5, S.pos.row + 7), .12);
     cam.lookAt(S.pos.col, .5, S.pos.row); ren.render(scene, cam); })();
   return { S, kind };
@@ -221,12 +229,10 @@ register('monster-rpg', G => {
   const S = { mode: 'world', area: Object.keys(G.OVERWORLD || {})[0] || 'field', inside: null, returnTo: null,
               pos: { col: Math.min(COLS-2, Math.max(1, Math.round((G.PLAYER.start && G.PLAYER.start.x || 16) / 8))),
                      row: Math.min(ROWS-2, Math.max(1, Math.round((G.PLAYER.start && G.PLAYER.start.y || 16) / 8))) },
-              money: (G.ECONOMY || {}).startMoney || 0, bag: Object.assign({}, G.PLAYER.inventory || {}),
+              face: 1, money: (G.ECONOMY || {}).startMoney || 0, bag: Object.assign({}, G.PLAYER.inventory || {}),
               party: [], battle: null, victory: false };
-  const expand = l => (l || []).map(m => typeof m === 'string' ? Object.assign({ name: m }, (G.MOVES || {})[m]) : m);
-  function makeMon(src, lvl) { const b = typeof src === 'string' ? Object.assign({ name: src }, (G.SPECIES || {})[src]) : src;
-    const maxhp = (b.maxhp || 20) + Math.max(0, lvl - 5) * 2;
-    return { name: b.name, type: b.type, lvl, maxhp, hp: maxhp, xp: 0, sprite: b.sprite, moves: expand(b.moves), status: null }; }
+  const expand = l => expandMoves(l, G.MOVES);
+  const makeMon = (src, lvl) => makeMonPure(src, lvl, G.SPECIES, G.MOVES);
   S.party.push(makeMon(G.PLAYER.starter || Object.keys(G.SPECIES || { X: 1 })[0], G.PLAYER.level || 5));
   const playerSpr = billboard(monCanvas(S.party[0].sprite || 'x', 0), 1); scene.add(playerSpr);
   function build(area) { if (world) scene.remove(world);
@@ -240,8 +246,8 @@ register('monster-rpg', G => {
   function hud() { ui.top('<b>' + (G.name || 'monster-rpg') + '</b> · ' + (S.inside || S.area) + ' · <span style="color:#ffd479">' + S.money + ' ₲</span>');
     ui.side(S.party.map(m => '<div class="chip"><b>' + m.name + '</b> N' + m.lvl + ' · ' + m.hp + '/' + m.maxhp + '</div>').join('')); }
   const cell = (c, r) => (terrain.tilemap[r] || [])[c];
-  const solidAt = (c, r) => { const t = cell(c, r); return t == null || SOLID.has(t); };
-  const mult = (a, d) => { const r = ((G.TYPE_CHART || {})[a] || {})[d]; return r == null ? 1 : r; };
+  const solidAt = (c, r) => !canStep(terrain.tilemap, SOLID, c, r);
+  const mult = (a, d) => typeMult(G.TYPE_CHART, a, d);
   function bpaint() { const B = S.battle;
     const bar = m => '<span class="bar"><i style="width:' + Math.max(0, 100 * m.hp / m.maxhp) + '%"></i></span>';
     const menu = B.sub === 'moves' ? B.mine.moves.map((m, i) => '<b>' + (i+1) + '</b> ' + m.name).join(' · ') + ' · <b>0</b> volver'
@@ -262,8 +268,7 @@ register('monster-rpg', G => {
     if (B.foeSkip) { B.foeSkip = false; }
     else if (!(B.foe.status === 'paralyze' && Math.random() < .4)) {
       const mv = B.foe.moves[Math.floor(Math.random() * B.foe.moves.length)] || { name: 'golpe', power: 4, type: 'NORMAL' };
-      let d = Math.max(1, Math.round((mv.power || 4) * mult(mv.type, B.mine.type) * (.9 + .2 * Math.random())));
-      if (B.foe.status === 'slow') d = Math.max(1, Math.round(d * .8));
+      const d = damage(mv, B.foe, B.mine, G.TYPE_CHART, Math.random());
       B.mine.hp = Math.max(0, B.mine.hp - d); sfx('hit'); blog(B.foe.name + ': ' + mv.name + ' -' + d);
       if (mv.effect && Math.random() < (mv.chance || 0)) applyEffect(mv, B.foe, B.mine); }
     if (B.mine.status === 'burn') B.mine.hp = Math.max(0, B.mine.hp - 1);
@@ -274,13 +279,11 @@ register('monster-rpg', G => {
         S.inside = null; S.area = Object.keys(G.OVERWORLD || { field: 1 })[0]; build(S.area);
         endBattle('Te has quedado sin criaturas... despiertas al inicio.'); return; } }
     if (B.foe.hp <= 0) { foeDown(); return; } bpaint(); }
-  function gainXP(w, foe) { w.xp += 6 + Math.round(foe.maxhp / 2) + foe.lvl;
-    let need = Math.round(w.lvl * 10 * (BAL.xpCurveMul || 1));
-    while (w.xp >= need) { w.xp -= need; w.lvl++; w.maxhp += 3; w.hp = Math.min(w.maxhp, w.hp + 3); sfx('levelup'); blog(w.name + ' sube a N' + w.lvl);
-      const evo = (G.EVOLUTIONS || {})[w.name];
-      if (evo && w.lvl >= (evo.level || 99)) { blog('¡Evoluciona a ' + evo.into + '!'); w.name = evo.into; w.type = evo.type || w.type;
-        w.maxhp = (evo.maxhp || w.maxhp) + (w.lvl - 5) * 2; w.hp = w.maxhp; w.moves = expand((evo.moves || w.moves).map(m => m.name || m)); }
-      need = Math.round(w.lvl * 10 * (BAL.xpCurveMul || 1)); } }
+  function gainXP(w, foe) {
+    const log = gainXPPure(w, foe, BAL, G.EVOLUTIONS, G.MOVES);
+    if (log.length) sfx('levelup');
+    log.forEach(blog);
+  }
   function foeDown() { const B = S.battle; sfx('win'); blog(B.foe.name + ' cae'); gainXP(B.mine, B.foe); hud();
     if (B.queue.length) { B.foe = B.queue.shift(); blog('Envía a ' + B.foe.name); bpaint(); return; }
     if (B.meta.trainer) { S.money += B.meta.prize || 0; defeated.add(B.meta.trainer);
@@ -296,8 +299,7 @@ register('monster-rpg', G => {
     if (k === '0') { B.sub = 'menu'; bpaint(); return; }
     const i = parseInt(k, 10) - 1; if (isNaN(i) || i < 0) return;
     if (B.sub === 'moves') { const mv = B.mine.moves[i]; if (!mv) return; B.sub = 'menu';
-      let d = Math.max(1, Math.round((mv.power || 4) * mult(mv.type, B.foe.type) * (.9 + .2 * Math.random()) * (1 + .03 * (B.mine.lvl - B.foe.lvl))));
-      if (B.mine.status === 'slow') d = Math.max(1, Math.round(d * .8));
+      const d = damage(mv, B.mine, B.foe, G.TYPE_CHART, Math.random());
       B.foe.hp = Math.max(0, B.foe.hp - d); sfx(mult(mv.type, B.foe.type) > 1 ? 'crit' : 'hit');
       blog(B.mine.name + ': ' + mv.name + ' -' + d);
       if (mv.effect && Math.random() < (mv.chance || 0)) applyEffect(mv, B.mine, B.foe);
@@ -307,22 +309,19 @@ register('monster-rpg', G => {
       if (def.effect === 'heal') { S.bag[it]--; B.mine.hp = Math.min(B.mine.maxhp, B.mine.hp + (def.amount || 10)); blog(it + ' +' + (def.amount || 10)); }
       else if (def.effect === 'cure') { S.bag[it]--; B.mine.status = null; blog(it + ': curado'); }
       else if (def.effect === 'catch') { if (!B.meta.wild) { blog('¡Es de otro entrenador!'); foeTurn(); bpaint(); return; }
-        S.bag[it]--; const p = (BAL.catchBase || .3) + (BAL.catchScale || .5) * (1 - B.foe.hp / B.foe.maxhp);
+        S.bag[it]--; const p = catchProb(BAL, B.foe);
         if (Math.random() < p) { sfx('catch'); B.foe.status = null;
           if (S.party.length < 6) S.party.push(B.foe); endBattle('¡' + B.foe.name + ' capturado!'); hud(); return; }
         blog('¡Se libera!'); }
       foeTurn(); bpaint(); return; } }
   function trainerSight() { const ow = !S.inside && (G.OVERWORLD || {})[S.area]; if (!ow) return false;
-    for (const t of (ow.trainers || [])) { if (defeated.has(t.name)) continue;
-      const dc = S.pos.col - t.col, dr = S.pos.row - t.row, sg = t.sight || 3;
-      if (!((dc === 0 && Math.abs(dr) <= sg) || (dr === 0 && Math.abs(dc) <= sg))) continue;
-      let blocked = false; const n = Math.max(Math.abs(dc), Math.abs(dr));
-      for (let i = 1; i < n; i++) if (solidAt(dr === 0 ? t.col + Math.sign(dc) * i : t.col, dc === 0 ? t.row + Math.sign(dr) * i : t.row)) { blocked = true; break; }
-      if (blocked) continue;
-      const def = G.TRAINERS[t.name] || {}; ui.msg(t.name + ': "' + (def.dialogue || '...') + '"'); sfx('encounter');
-      startBattle((def.team || []).map(m => makeMon(m, def.level || m.level || 5)), { trainer: t.name, prize: def.prize || 0 });
-      return true; } return false; }
+    const t = trainerInSight(ow.trainers, defeated, S.pos, solidAt);
+    if (!t) return false;
+    const def = G.TRAINERS[t.name] || {}; ui.msg(t.name + ': "' + (def.dialogue || '...') + '"'); sfx('encounter');
+    startBattle((def.team || []).map(m => makeMon(m, def.level || m.level || 5)), { trainer: t.name, prize: def.prize || 0 });
+    return true; }
   function move(dc, dr) { if (S.mode !== 'world' || S.victory) return;
+    if (dc) S.face = dc < 0 ? -1 : 1;
     const nc = S.pos.col + dc, nr = S.pos.row + dr;
     const ow = !S.inside && (G.OVERWORLD || {})[S.area];
     if (ow) { const w = (ow.warps || []).find(w => w.col === nc && w.row === nr);
@@ -351,11 +350,79 @@ register('monster-rpg', G => {
     else if (e.key === 'ArrowUp') move(0, -1); else if (e.key === 'ArrowDown') move(0, 1);
     else if (e.key === ' ') talk(); else return; e.preventDefault(); });
   build(S.area); hud(); ui.msg(TEXTS.intro || (G.name || ''));
+  playerSpr.position.set(S.pos.col, .6, S.pos.row);
   (function loop() { requestAnimationFrame(loop);
-    playerSpr.position.set(S.pos.col, .6, S.pos.row);
+    // tween visual: el estado es instantaneo (logica/tests intactos), el sprite interpola
+    playerSpr.position.lerp(new THREE.Vector3(S.pos.col, .6, S.pos.row), .25);
+    playerSpr.scale.set(S.face, 1, 1);
     cam.position.lerp(new THREE.Vector3(S.pos.col, 7.5, S.pos.row + 7), .12);
     cam.lookAt(S.pos.col, .5, S.pos.row); ren.render(scene, cam); })();
   return { S, defeated };
+});
+
+// ============================================================================
+// RUNTIME quiz — el perfil puro-datos, jugable: rondas, timer y puntuación
+// ============================================================================
+register('quiz', G => {
+  const { scene, cam, ren } = makeStage();
+  // fondo: un cubo giratorio por categoría
+  const cats = Object.keys(G.CATEGORIES || {});
+  cats.forEach((c, i) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / Math.max(1, cats.length), .55, .5) }));
+    m.position.set(i * 2.4 - cats.length, 1.4, 0); m.userData.spin = .004 + i * .002; scene.add(m);
+  });
+  cam.position.set(0, 2.4, 7); cam.lookAt(0, 1.2, 0);
+  const rounds = Object.keys(G.ROUNDS || {}).sort((a, b) => Number(a) - Number(b));
+  const S = { round: 0, qIdx: 0, score: 0, aciertos: 0, total: 0, timer: 0, done: false };
+  const qlist = () => (G.ROUNDS[rounds[S.round]] || {}).questions || [];
+  const q = () => (G.QUESTIONS || {})[qlist()[S.qIdx]];
+  function paint() {
+    const Q = q(); if (!Q) return;
+    ui.top('<b>' + (G.name || 'quiz') + '</b> · ronda ' + rounds[S.round] + '/' + rounds.length +
+           ' · <span style="color:#ffd479">' + S.score + ' pts</span> · ' + S.aciertos + '/' + S.total + ' aciertos');
+    ui.panel('<div class="row"><span><b>' + ((G.CATEGORIES[Q.category] || {}).name || Q.category) + '</b> · ' +
+      Q.difficulty + ' · ' + (Q.points || 0) + ' pts · ⏱ <span id="g3d-qt">' + Math.ceil(S.timer / 60) + '</span>s</span></div>' +
+      '<div class="menu" style="font-size:15px;margin-bottom:6px;color:#e6edf5">' + Q.text + '</div>' +
+      '<div class="menu">' + (Q.options || []).map((o, i) => '<b>' + (i + 1) + '</b> ' + o).join(' · ') + '</div>', true);
+  }
+  function next(hit, why) {
+    if (S.done) return;
+    S.total++;
+    if (hit) { S.score += (q().points || 0); S.aciertos++; sfx3(880); ui.msg((G.TEXT || {}).correct || '¡Correcto!'); }
+    else { sfx3(196); ui.msg(why || (G.TEXT || {}).wrong || 'Fallo.'); }
+    S.qIdx++;
+    if (S.qIdx >= qlist().length) {
+      const reward = (G.ROUNDS[rounds[S.round]] || {}).reward || 0; S.score += reward;
+      ui.msg(((G.TEXT || {}).win || 'Ronda superada') + ' +' + reward + ' pts');
+      S.round++; S.qIdx = 0;
+      if (S.round >= rounds.length) {
+        S.done = true; ui.panel('', false);
+        ui.overlay('<div>🏆 ' + S.score + ' pts · ' + S.aciertos + '/' + S.total + ' aciertos<br>' +
+          '<span style="font-size:13px;color:#7b8696">' + (G.name || '') + ' · perfil quiz (puro-datos) · game3d</span></div>');
+        return;
+      }
+    }
+    S.timer = ((q() || {}).seconds || 20) * 60; paint();
+  }
+  function sfx3(freq) { try { const A = sfx3.ctx || (sfx3.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = freq;
+    g.gain.value = .04; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + .12); } catch (e) {} }
+  addEventListener('keydown', e => {
+    if (S.done) return;
+    const i = parseInt(e.key, 10) - 1; if (isNaN(i) || i < 0) return;
+    const Q = q(); if (!Q || !(Q.options || [])[i]) return;
+    next(String(Q.options[i]) === String(Q.answer)); e.preventDefault();
+  });
+  if (!rounds.length || !q()) { ui.msg('Este quiz no declara rondas/preguntas.'); return { S }; }
+  S.timer = ((q() || {}).seconds || 20) * 60; paint(); ui.msg((G.TEXT || {}).intro || '');
+  (function loop() { requestAnimationFrame(loop);
+    scene.traverse(o => { if (o.userData && o.userData.spin) { o.rotation.y += o.userData.spin; o.rotation.x += o.userData.spin * .6; } });
+    if (!S.done && q()) { S.timer--;
+      const el = document.getElementById('g3d-qt'); if (el) el.textContent = Math.max(0, Math.ceil(S.timer / 60));
+      if (S.timer <= 0) next(false, 'Tiempo agotado.'); }
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ---------------- arranque: despacho por la meta `profile` del artefacto ----------------
