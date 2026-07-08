@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.10.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.11.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.10.0`** — aditivo: dos géneros nuevos sin tocar el core. El **Senku** real —
+**Release `v2.11.0`** — aditivo: **runtime `papers-please` en game3d** (9º perfil
+jugable). El artefacto ya generado corre en el player sin tocar core ni datos:
+ventanilla DOM con los documentos como fichas, fondo 3D con barrera fronteriza,
+teclas A/D y cita de la regla violada. Lógica pura con **oráculo de autoría** — la
+evaluación por RULES reproduce la `decision` declarada de todos los solicitantes del
+ejemplo — y partida **ganada y perdida en Node dentro de `npm test`** con la
+contabilidad verificada desde ECONOMY.
+
+`v2.10.0` — aditivo: dos géneros nuevos sin tocar el core. El **Senku** real —
 perfil puro-datos [`profiles/peg-solitaire.json`](./profiles/peg-solitaire.json) (tableros
 7×7 por strings, goal `clear`/`center`, dificultad) y el juego
 [`examples/senku.GAME.md`](./examples/senku.GAME.md): tableros **solubles por

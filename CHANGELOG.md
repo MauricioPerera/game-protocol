@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.11.0] — 2026-07-08
+
+Release **aditivo** sobre `2.10.0` (bump minor, [SPEC §7.0](./SPEC.md)): el artefacto
+`papers-please` ya generado se vuelve jugable en game3d — sin tocar core ni datos, con
+la evaluación por RULES verificada contra las decisiones declaradas del ejemplo. La
+versión del protocolo sigue en `0.1`.
+
 ### Added — runtime `papers-please` en game3d
 - **Runtime `papers-please`** (9º perfil jugable): el artefacto ya generado
   (`examples/papers-please.generated.js`) corre en game3d sin tocar core ni datos —
@@ -672,6 +681,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.11.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.11.0
 [2.10.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.10.0
 [2.9.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.9.0
 [2.8.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.1
