@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.15.0] — 2026-07-08
+
+Release **aditivo** sobre `2.14.0` (bump minor, [SPEC §7.0](./SPEC.md)): el artefacto
+`roguelike` ya generado se vuelve jugable en game3d con la generación **portada tal
+cual** del visor 2D — el mismo GAME.md produce el mismo mundo procedural en ambos
+motores, verificado en vivo. La versión del protocolo sigue en `0.1`.
+
 ### Added — runtime `roguelike` en game3d
 - **Runtime `roguelike`** (13º perfil jugable): mazmorra procedural 3D — salas
   reconstruidas al cruzar puertas (misma planta) y escaleras ▲▼ (otro piso), enemigos
@@ -777,6 +786,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.15.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.15.0
 [2.14.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.14.0
 [2.13.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.13.0
 [2.12.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.12.0

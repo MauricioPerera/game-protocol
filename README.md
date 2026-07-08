@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.14.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.15.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,16 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.14.0`** — aditivo: **runtime `crafting` en game3d** (12º perfil
+**Release `v2.15.0`** — aditivo: **runtime `roguelike` en game3d** (13º perfil
+jugable). Mazmorra procedural 3D cuya generación es un **port exacto** del visor 2D
+([`examples/roguelike.html`](./examples/roguelike.html)): mismo mulberry32, mismo
+hash de coordenadas — **el mismo GAME.md produce el mismo mundo en ambos motores**,
+verificado en vivo (la ruta al cofre del test de Node coincide sala a sala con la
+del navegador). Invariantes por BFS en `npm test` (toda sala tiene salida, puertas y
+escaleras mutuas, cofre único a profundidad ≥ maxDepth) y **cofre ganado jugando**
+movimiento a movimiento.
+
+`v2.14.0` — aditivo: **runtime `crafting` en game3d** (12º perfil
 jugable). El artefacto ya generado corre en el player sin tocar core ni datos: taller
 DOM (recolectar, estaciones, recetas coloreadas por disponibilidad) sobre fragua 3D.
 La meta es **completar el recetario** — derivada de los datos, sin números
