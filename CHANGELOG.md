@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.13.0] — 2026-07-08
+
+Release **aditivo** sobre `2.12.0` (bump minor, [SPEC §7.0](./SPEC.md)): el artefacto
+`platformer` ya generado se vuelve jugable en game3d — geometría procedural salvable
+por construcción y verificada por test contra PHYSICS, con partida ganada por bot en
+Node. La versión del protocolo sigue en `0.1`.
+
 ### Added — runtime `platformer` en game3d
 - **Runtime `platformer`** (11º perfil jugable): el artefacto ya generado corre en
   game3d sin tocar core ni datos — vista lateral 3D con cámara que sigue al jugador,
@@ -724,6 +733,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.13.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.13.0
 [2.12.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.12.0
 [2.11.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.11.0
 [2.10.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.10.0

@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.12.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.13.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.12.0`** — aditivo: **runtime `tower-defense` en game3d** (10º perfil
+**Release `v2.13.0`** — aditivo: **runtime `platformer` en game3d** (11º perfil
+jugable). El artefacto ya generado corre en el player sin tocar core ni datos: vista
+lateral 3D con cámara que sigue al jugador, suelo por `tileset`, pisotones, huecos y
+bandera en `goal.x`. Los niveles no declaran geometría: el suelo se genera
+determinista y **salvable por construcción**, verificado por test contra PHYSICS
+(hueco máximo ≤ 60% del alcance de salto derivado). Partida **ganada por bot y
+perdida en Node dentro de `npm test`**.
+
+`v2.12.0` — aditivo: **runtime `tower-defense` en game3d** (10º perfil
 jugable). El artefacto ya generado corre en el player sin tocar core ni datos: tablero
 3D completo (rejilla 12×8, camino en S — el ejemplo no declara `MAPS` —, torres por
 tipo, enemigos por blindaje), construir/vender/lanzar con teclado y `step()` expuesto
