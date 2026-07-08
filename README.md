@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.8.1`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.9.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,14 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.8.1`** — patch de docs: fuera las enumeraciones que driftaban
+**Release `v2.9.0`** — aditivo: un **shooter** de punta a punta sin tocar el core —
+perfil puro-datos [`profiles/shooter.json`](./profiles/shooter.json) (naves, armas,
+enemigos con enum de comportamiento, oleadas, powerups, arena), el juego **Neon Swarm**
+([`examples/neon-swarm.GAME.md`](./examples/neon-swarm.GAME.md), lint 0/0 a la primera),
+su **simulación pura ganada y perdida en Node dentro de `npm test`** (invariante de
+conservación incluido) y el runtime en `game3d`. 128 reglas; 12 perfiles.
+
+`v2.8.1` — patch de docs: fuera las enumeraciones que driftaban
 (suites en CONTRIBUTING → apunta a `package.json`; card de game3d → sin lista de
 perfiles). Principio: no enumerar lo que crece; enlazar a la fuente canónica.
 

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.9.0] — 2026-07-08
+
+Release **aditivo** sobre `2.8.1` (bump minor, [SPEC §7.0](./SPEC.md)): un género nuevo
+de punta a punta sin tocar el core — perfil puro-datos `shooter`, el juego Neon Swarm,
+su simulación pura **ganada y perdida en Node dentro de `npm test`**, y su runtime en
+game3d. La versión del protocolo sigue en `0.1`.
+
 ### Added — perfil `shooter` (puro-datos) + Neon Swarm
 - **`profiles/shooter.json`** (12º perfil, segundo puro-datos): arena shmup vertical —
   `ships` (speed/hp/weapon), `weapons` (damage/rate/bulletSpeed), `enemies` con
@@ -596,6 +605,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.9.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.9.0
 [2.8.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.1
 [2.8.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.0
 [2.7.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.1
