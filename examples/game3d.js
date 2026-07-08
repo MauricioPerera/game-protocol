@@ -20,7 +20,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          ppInit, ppDecide, ppEntrant,
          tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS,
          pfInit, pfTick,
-         crInit, crGather, crMove, crCraft, CR_ACTIONS } from './game3d-logic.mjs';
+         crInit, crGather, crMove, crCraft, CR_ACTIONS,
+         rgInit, rgMove, rgAttack, rgPatrol } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -492,6 +493,93 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME roguelike — mazmorra procedural 3D; la generación es el PORT EXACTO
+// del visor 2D (misma semilla → mismo mundo en ambos motores) y vive en
+// game3d-logic, donde npm test la verifica por BFS y GANA el cofre jugando.
+// Teclas: flechas mueven (puertas = misma planta, escaleras ▲▼ = otro piso),
+// Espacio ataca.
+// ============================================================================
+register('roguelike', G => {
+  const { scene, cam, ren } = makeStage();
+  const SOLIDT = new Set(Object.entries(G.TILES || {}).filter(([, t]) => t.solid).map(([id]) => Number(id)));
+  const S = rgInit(G);
+  const sprite = (tile, pal, scale) => billboard(gridCanvas(G.TILE_ART[tile] || [[0]], G.PALETTES[pal || 0], true), scale || .9);
+  const playerSpr = sprite(G.PLAYER.tile, G.PLAYER.pal, 1); scene.add(playerSpr);
+  let world = null; const dyn = new THREE.Group(); scene.add(dyn);
+  const enemySprs = new Map();
+  const room = () => S.rooms[S.cur];
+  function build() {
+    if (world) scene.remove(world);
+    world = tilemapGroup(G, room().tilemap, [], SOLIDT, { [G.GENERATOR.wall]: 1.0 });
+    scene.add(world);
+    dyn.clear(); enemySprs.clear();
+    for (const it of room().items) if (!it.taken) { const b = sprite(it.tile, it.pal, .8); b.position.set(it.col, .5, it.row); b.userData.it = it; dyn.add(b); }
+    if (room().goal) { const b = sprite(room().goal.tile, room().goal.pal, .95); b.position.set(room().goal.col, .55, room().goal.row); dyn.add(b); }
+    refresh();
+  }
+  function refresh() {
+    for (const [e, m] of enemySprs) if (!e.alive) { dyn.remove(m); enemySprs.delete(e); }
+    for (const e of room().enemies) {
+      if (!e.alive) continue;
+      if (!enemySprs.has(e)) { const b = sprite(e.tile, e.pal, .9); dyn.add(b); enemySprs.set(e, b); }
+      enemySprs.get(e).position.set(e.col, .55, e.row);
+    }
+    for (const b of dyn.children) if (b.userData.it && b.userData.it.taken) dyn.remove(b);
+  }
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    const r = room();
+    ui.top('<b>' + (G.name || 'roguelike') + '</b> · Piso ' + r.z + ' · sala (' + r.x + ',' + r.y + ')');
+    ui.side('<div class="chip">Vida: <b style="color:#ff7b7b">' + '♥'.repeat(Math.max(0, S.hp)) + '</b>' +
+            '<span style="color:#553">' + '♡'.repeat(Math.max(0, S.maxHp - S.hp)) + '</span></div>' +
+            '<div class="chip">Arma: ' + S.weapon + ' (atq ' + S.atk + ')</div>' +
+            '<div class="chip">Salas: ' + Object.keys(S.rooms).length + ' · Bajas: ' + S.kills + '</div>');
+  }
+  const T = G.TEXT || {};
+  function onEvent(r) {
+    if (r === 'door-new' || r === 'stairs-new') { beep(660); ui.msg(T.enter || 'Nueva sala generada.'); build(); }
+    else if (r === 'door') { beep(620); ui.msg('Sala (' + room().x + ',' + room().y + ')'); build(); }
+    else if (r === 'stairs') { beep(620); ui.msg('Piso ' + room().z); build(); }
+    else if (r === 'heal') { beep(740); ui.msg((T.heal || 'Curado.') + ' (+' + S.lastItem.amount + ')'); refresh(); }
+    else if (r === 'weapon') { beep(780); ui.msg((T.equip || 'Equipas') + ': ' + S.weapon + ' (atq ' + S.atk + ')'); refresh(); }
+    else if (r === 'weapon-worse') { ui.msg((S.lastItem.name || 'Arma') + ' — ya tienes algo mejor'); refresh(); }
+    else if (r === 'hurt') { beep(196, .15); ui.msg(T.hit || 'Te golpearon.'); }
+    else if (r === 'fallen') { beep(147, .3); ui.msg(T.fallen || 'Has caido.'); build(); }
+    else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.WIN || {}).text || 'Victoria') +
+      '<br><span style="font-size:13px;color:#7b8696">salas: ' + Object.keys(S.rooms).length + ' · bajas: ' + S.kills +
+      ' · caídas: ' + S.deaths + ' · perfil roguelike · game3d (mismo mundo que el visor 2D)</span></div>'); }
+    hud();
+  }
+  addEventListener('keydown', e => {
+    if (S.won) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') onEvent(rgMove(G, S, -1, 0));
+    else if (k === 'ArrowRight') onEvent(rgMove(G, S, 1, 0));
+    else if (k === 'ArrowUp') onEvent(rgMove(G, S, 0, -1));
+    else if (k === 'ArrowDown') onEvent(rgMove(G, S, 0, 1));
+    else if (k === ' ') { const r = rgAttack(G, S);
+      if (r === 'kill') { beep(880, .15); ui.msg((T.defeat || 'Enemigo derrotado.') + ' (' + S.weapon + ')'); refresh(); hud(); }
+      else if (r === 'hit') { beep(520); ui.msg('Golpeas con ' + S.weapon + '.'); } }
+    else return;
+    e.preventDefault();
+  });
+  build(); hud(); ui.msg(T.intro || '');
+  let frame = 0;
+  (function loop() { requestAnimationFrame(loop); frame++;
+    if (frame % 24 === 0 && !S.won) { const r = rgPatrol(G, S);
+      if (r === 'hurt' || r === 'fallen') onEvent(r); else refresh(); }
+    playerSpr.material.opacity = S.invuln > 0 && ((frame >> 2) & 1) ? .3 : 1;
+    playerSpr.material.transparent = true;
+    playerSpr.position.lerp(new THREE.Vector3(S.pos.col, .6, S.pos.row), .25);
+    cam.position.lerp(new THREE.Vector3(S.pos.col, 7.5, S.pos.row + 7), .12);
+    cam.lookAt(S.pos.col, .5, S.pos.row);
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ============================================================================

@@ -593,6 +593,150 @@ export function crCraft(G, S, recipeId) {
   return crSpend(S) || 'crafted';
 }
 
+// ============================================================================
+// Lógica del perfil `roguelike` — PURA y determinista. Es un PORT EXACTO de la
+// generación del visor 2D de referencia (examples/roguelike.html): mismo
+// mulberry32, mismo hash de coordenadas, mismas reglas de puertas/escaleras
+// mutuas y cofre en la primera sala generada a profundidad >= maxDepth. El
+// mismo GAME.md produce EL MISMO mundo procedural en ambos motores. Todo el
+// balance sale del artefacto: GENERATOR, ENEMY_POOL, ITEM_POOL, PLAYER.
+// ============================================================================
+export const rgMulberry = a => function () { a |= 0; a = a + 0x6D2B79F5 | 0;
+  let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const RG_DIRS = W => ({ N: { dx: 0, dy: -1, c: W.midC, r: 0 }, S: { dx: 0, dy: 1, c: W.midC, r: W.H - 1 },
+                        W: { dx: -1, dy: 0, c: 0, r: W.midR }, E: { dx: 1, dy: 0, c: W.W - 1, r: W.midR } });
+export const RG_STEP = { N: [0, -1], S: [0, 1], W: [-1, 0], E: [1, 0] };
+const RG_OPP = { N: 'S', S: 'N', E: 'W', W: 'E' };
+const rgK = (x, y, z) => x + ',' + y + ',' + z;
+const rgDims = G => { const GEN = G.GENERATOR; return { W: GEN.roomW, H: GEN.roomH, midC: GEN.roomW >> 1, midR: GEN.roomH >> 1 }; };
+export function rgGenRoom(G, S, x, y, z) {
+  const GEN = G.GENERATOR, D = rgDims(G), key = rgK(x, y, z), depth = Math.abs(x) + Math.abs(y) + Math.abs(z);
+  const rng = rgMulberry((GEN.seed ^ Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791) ^ 0x9e3779b9) >>> 0);
+  const tm = [];
+  for (let r = 0; r < D.H; r++) { const tr = [];
+    for (let c = 0; c < D.W; c++) tr.push((r === 0 || c === 0 || r === D.H - 1 || c === D.W - 1) ? GEN.wall : GEN.floor);
+    tm.push(tr); }
+  const opens = [];
+  for (const [d, info] of Object.entries(RG_DIRS(D))) {
+    const nKey = rgK(x + info.dx, y + info.dy, z);
+    let open;
+    if (S.rooms[nKey]) open = S.rooms[nKey].doors.some(dr => dr.dir === RG_OPP[d]);
+    else open = depth < GEN.maxDepth ? rng() < (GEN.branch / 100) : false;
+    opens.push({ d, info, open });
+  }
+  const belowK = rgK(x, y, z - 1), aboveK = rgK(x, y, z + 1);
+  let hasDown = S.rooms[belowK] ? !!S.rooms[belowK].hasUp : (z > -GEN.maxFloor ? rng() < (GEN.floorChance / 100) : false);
+  let hasUp = S.rooms[aboveK] ? !!S.rooms[aboveK].hasDown : (z < GEN.maxFloor ? rng() < (GEN.floorChance / 100) : false);
+  if (!opens.some(o => o.open) && !hasDown && !hasUp) opens[Math.floor(rng() * 4)].open = true;
+  const doors = [];
+  for (const o of opens) if (o.open) { tm[o.info.r][o.info.c] = GEN.door; doors.push({ col: o.info.c, row: o.info.r, dir: o.d }); }
+  const stairs = [];
+  if (hasDown) { tm[1][1] = GEN.stairsDown; stairs.push({ col: 1, row: 1, go: 'down' }); }
+  if (hasUp) { tm[1][D.W - 2] = GEN.stairsUp; stairs.push({ col: D.W - 2, row: 1, go: 'up' }); }
+  const enemies = [];
+  if (depth > 0) { const n = Math.floor(rng() * (depth >= 2 ? 3 : 2));
+    for (let i = 0; i < n; i++) { const ec = 1 + Math.floor(rng() * (D.W - 2)), er = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[er][ec] !== GEN.floor) continue;
+      const t = G.ENEMY_POOL[Math.floor(rng() * Math.max(1, G.ENEMY_POOL.length))] || {};
+      enemies.push({ col: ec, row: er, tile: t.tile || GEN.enemy, pal: t.pal || 0, hp: t.hp || 1,
+                     dir: rng() < .5 ? 1 : -1, axis: rng() < .5 ? 'h' : 'v', alive: true }); } }
+  const items = [];
+  if (depth > 0 && (G.ITEM_POOL || []).length && rng() < (GEN.itemChance / 100)) {
+    for (let tries = 0; tries < 8; tries++) {
+      const ic = 1 + Math.floor(rng() * (D.W - 2)), ir = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[ir][ic] !== GEN.floor || enemies.some(e => e.col === ic && e.row === ir)) continue;
+      items.push(Object.assign({ col: ic, row: ir, taken: false }, G.ITEM_POOL[Math.floor(rng() * G.ITEM_POOL.length)])); break;
+    }
+  }
+  let goal = null;
+  if (depth >= GEN.maxDepth && !S.goalPlaced) { goal = { col: D.midC, row: D.midR, tile: GEN.goal, pal: 0 }; S.goalPlaced = true; }
+  S.rooms[key] = { tilemap: tm, doors, stairs, hasUp, hasDown, enemies, items, goal, depth, x, y, z };
+  return S.rooms[key];
+}
+export function rgEnter(G, S, x, y, z, from) {
+  const D = rgDims(G), key = rgK(x, y, z), isNew = !S.rooms[key];
+  if (isNew) rgGenRoom(G, S, x, y, z);
+  S.cur = key;
+  if (from === 'E') S.pos = { col: 1, row: D.midR };
+  else if (from === 'W') S.pos = { col: D.W - 2, row: D.midR };
+  else if (from === 'S') S.pos = { col: D.midC, row: 1 };
+  else if (from === 'N') S.pos = { col: D.midC, row: D.H - 2 };
+  else if (from === 'down') S.pos = { col: 1, row: 1 };
+  else if (from === 'up') S.pos = { col: D.W - 2, row: 1 };
+  else S.pos = { col: D.midC, row: D.midR };
+  return isNew;
+}
+export function rgInit(G) {
+  const S = { rooms: {}, goalPlaced: false, cur: null, pos: null,
+              hp: (G.PLAYER || {}).hp || 5, maxHp: (G.PLAYER || {}).hp || 5,
+              atk: (G.PLAYER || {}).atk || 1, weapon: 'puños',
+              invuln: 0, kills: 0, deaths: 0, won: false };
+  rgEnter(G, S, 0, 0, 0, null);
+  return S;
+}
+const rgRoom = S => S.rooms[S.cur];
+const rgSolid = (G, room, c, r) => {
+  const tm = room.tilemap;
+  if (c < 0 || r < 0 || r >= tm.length || c >= tm[0].length) return true;
+  return !!((G.TILES || {})[String(tm[r][c])] || {}).solid;
+};
+function rgHurt(G, S) {
+  const D = rgDims(G);
+  if (S.invuln > 0 || S.won) return 'ok';
+  S.hp--; S.invuln = 2;
+  if (S.hp <= 0) { S.hp = S.maxHp; S.invuln = 3; S.deaths++; rgEnter(G, S, 0, 0, 0, null); return 'fallen'; }
+  S.pos = { col: D.midC, row: D.midR };
+  return 'hurt';
+}
+export function rgMove(G, S, dc, dr) {
+  if (S.won) return 'blocked';
+  const room = rgRoom(S), nc = S.pos.col + dc, nr = S.pos.row + dr;
+  const door = room.doors.find(d => d.col === nc && d.row === nr);
+  if (door) { const st = RG_STEP[door.dir];
+    return rgEnter(G, S, room.x + st[0], room.y + st[1], room.z, door.dir) ? 'door-new' : 'door'; }
+  const st = room.stairs.find(s => s.col === nc && s.row === nr);
+  if (st) { const nz = room.z + (st.go === 'up' ? 1 : -1);
+    return rgEnter(G, S, room.x, room.y, nz, st.go === 'up' ? 'down' : 'up') ? 'stairs-new' : 'stairs'; }
+  if (rgSolid(G, room, nc, nr)) return 'blocked';
+  S.pos = { col: nc, row: nr };
+  let ev = 'ok';
+  const it = room.items.find(i => !i.taken && i.col === nc && i.row === nr);
+  if (it) { it.taken = true; S.lastItem = it;
+    if (it.kind === 'heal') { S.hp = Math.min(S.maxHp, S.hp + it.amount); ev = 'heal'; }
+    else if ((it.power || 1) > S.atk) { S.atk = it.power; S.weapon = it.name || 'arma'; ev = 'weapon'; }
+    else ev = 'weapon-worse'; }
+  if (room.enemies.some(e => e.alive && e.col === nc && e.row === nr)) {
+    const h = rgHurt(G, S); if (h !== 'ok') return h;
+  }
+  if (room.goal && room.goal.col === nc && room.goal.row === nr) { S.won = true; return 'win'; }
+  return ev;
+}
+export function rgAttack(G, S) {
+  if (S.won) return 'none';
+  for (const e of rgRoom(S).enemies)
+    if (e.alive && Math.abs(e.col - S.pos.col) + Math.abs(e.row - S.pos.row) === 1) {
+      e.hp -= S.atk;
+      if (e.hp <= 0) { e.alive = false; S.kills++; return 'kill'; }
+      return 'hit';
+    }
+  return 'none';
+}
+export function rgPatrol(G, S) {
+  if (S.won) return 'ok';
+  if (S.invuln > 0) S.invuln--;
+  const room = rgRoom(S);
+  for (const e of room.enemies) {
+    if (!e.alive) continue;
+    const dx = e.axis === 'v' ? 0 : e.dir, dy = e.axis === 'v' ? e.dir : 0;
+    let nc = e.col + dx, nr = e.row + dy;
+    if (rgSolid(G, room, nc, nr)) { e.dir *= -1; nc = e.col - dx; nr = e.row - dy; if (rgSolid(G, room, nc, nr)) continue; }
+    e.col = nc; e.row = nr;
+    if (e.col === S.pos.col && e.row === S.pos.row) { const h = rgHurt(G, S); if (h !== 'ok') return h; }
+  }
+  return 'ok';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

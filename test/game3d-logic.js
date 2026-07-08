@@ -490,6 +490,165 @@ const ok = (cond, label, extra) => {
        'cr  partida terminada -> blocked');
   }
 
+  // ============================================================
+  // Roguelike: port exacto del generador del visor 2D — mismo
+  // mundo en ambos motores; invariantes por BFS y cofre GANADO
+  // jugando movimiento a movimiento en Node
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/roguelike.generated.js'));
+  const GR = global.window.GAME; delete global.window;
+  ok(GR.profile === 'roguelike', 'rg  artefacto con meta profile=roguelike');
+  // (a) determinismo: dos inits generan la sala origen identica
+  {
+    const a = L.rgInit(GR), b = L.rgInit(GR);
+    ok(JSON.stringify(a.rooms['0,0,0']) === JSON.stringify(b.rooms['0,0,0']), 'rg  sala (0,0,0) identica entre inits (mismo seed)');
+  }
+  // (b) invariantes estructurales explorando 150 salas por BFS (via rgEnter, la misma
+  //     funcion que usan puertas y escaleras)
+  const S_EXP = L.rgInit(GR);
+  let goalKey = null;
+  {
+    const queue = [[0, 0, 0]], seen = new Set(['0,0,0']);
+    while (queue.length && seen.size < 150) {
+      const [x, y, z] = queue.shift();
+      const room = S_EXP.rooms[x + ',' + y + ',' + z] || (L.rgEnter(GR, S_EXP, x, y, z, null), S_EXP.rooms[x + ',' + y + ',' + z]);
+      if (room.goal && !goalKey) goalKey = x + ',' + y + ',' + z;
+      const next = room.doors.map(d => { const s = L.RG_STEP[d.dir]; return [x + s[0], y + s[1], z]; });
+      if (room.hasDown) next.push([x, y, z - 1]);
+      if (room.hasUp) next.push([x, y, z + 1]);
+      for (const n of next) { const k = n.join(','); if (!seen.has(k)) { seen.add(k); queue.push(n); } }
+    }
+    const rooms = Object.values(S_EXP.rooms);
+    ok(rooms.length >= 50, 'rg  BFS genero ' + rooms.length + ' salas');
+    ok(rooms.every(r => r.doors.length + r.stairs.length > 0), 'rg  toda sala tiene al menos una salida (puerta o escalera)');
+    let mutuas = true;
+    for (const r of rooms) for (const d of r.doors) {
+      const s = L.RG_STEP[d.dir], nk = (r.x + s[0]) + ',' + (r.y + s[1]) + ',' + r.z;
+      if (S_EXP.rooms[nk] && !S_EXP.rooms[nk].doors.some(dd => L.RG_STEP[dd.dir][0] === -s[0] && L.RG_STEP[dd.dir][1] === -s[1])) mutuas = false;
+    }
+    ok(mutuas, 'rg  puertas mutuas entre salas vecinas generadas');
+    let escaleras = true;
+    for (const r of rooms) {
+      const abajo = S_EXP.rooms[r.x + ',' + r.y + ',' + (r.z - 1)];
+      if (r.hasDown && abajo && !abajo.hasUp) escaleras = false;
+      const arriba = S_EXP.rooms[r.x + ',' + r.y + ',' + (r.z + 1)];
+      if (r.hasUp && arriba && !arriba.hasDown) escaleras = false;
+    }
+    ok(escaleras, 'rg  escaleras mutuas entre pisos generados');
+    ok(rooms.filter(r => r.goal).length === 1 && S_EXP.rooms[goalKey].depth >= GR.GENERATOR.maxDepth,
+       'rg  cofre UNICO y a profundidad >= maxDepth (' + goalKey + ', depth ' + S_EXP.rooms[goalKey].depth + ')');
+  }
+  // (c) combate: matar un enemigo cuesta hp/atk golpes (datos del POOL)
+  {
+    const S = L.rgInit(GR);
+    // buscar una sala con enemigo via BFS jugable
+    let found = null;
+    const queue = [[0, 0, 0]], seen = new Set(['0,0,0']);
+    while (queue.length && !found) {
+      const [x, y, z] = queue.shift();
+      L.rgEnter(GR, S, x, y, z, null);
+      const room = S.rooms[S.cur];
+      if (room.enemies.some(e => e.alive)) { found = room; break; }
+      for (const d of room.doors) { const s = L.RG_STEP[d.dir]; const k = (x + s[0]) + ',' + (y + s[1]) + ',' + z;
+        if (!seen.has(k)) { seen.add(k); queue.push([x + s[0], y + s[1], z]); } }
+    }
+    ok(!!found, 'rg  BFS encontro una sala con enemigo');
+    const e = found.enemies.find(x => x.alive);
+    S.pos = { col: e.col - 1, row: e.row };  // adyacente
+    const golpes = Math.ceil(e.hp / S.atk);
+    let r = '';
+    for (let k = 0; k < golpes; k++) r = L.rgAttack(GR, S);
+    ok(r === 'kill' && !e.alive && S.kills === 1, 'rg  enemigo (hp del POOL) cae en ' + golpes + ' golpes con atk ' + S.atk);
+    ok(L.rgAttack(GR, S) === 'none', 'rg  sin enemigos adyacentes -> none');
+  }
+  // (d) dano y caida: contacto sin invulnerabilidad resta vida; a 0 -> respawn en el origen
+  {
+    const S = L.rgInit(GR);
+    let r = '', guard = 0;
+    while (r !== 'fallen' && guard++ < 50) {
+      S.invuln = 0;
+      const room = S.rooms[S.cur];
+      let e = room.enemies.find(x => x.alive);
+      if (!e) { // fuerza un enemigo para el test si el azar no dio ninguno cercano
+        room.enemies.push(e = { col: S.pos.col + 1, row: S.pos.row, tile: 54, pal: 0, hp: 9, dir: 0, axis: 'h', alive: true });
+      }
+      S.pos = { col: e.col - 1, row: e.row };
+      r = L.rgMove(GR, S, 1, 0);
+    }
+    ok(r === 'fallen' && S.cur === '0,0,0' && S.hp === S.maxHp && S.deaths === 1,
+       'rg  DERROTA por contacto: respawn en (0,0,0) con vida restaurada');
+  }
+  // (e) VICTORIA jugando: caminar hasta el cofre movimiento a movimiento (matando lo adyacente)
+  {
+    const S = L.rgInit(GR);
+    const [gx, gy, gz] = goalKey.split(',').map(Number);
+    // ruta a nivel de salas: reusa el grafo ya explorado (S_EXP) con BFS de salas
+    const path = (function bfsPath() {
+      const prev = new Map([['0,0,0', null]]); const queue = ['0,0,0'];
+      while (queue.length) {
+        const k = queue.shift(); if (k === goalKey) break;
+        const r = S_EXP.rooms[k]; if (!r) continue;
+        const nexts = r.doors.map(d => { const s = L.RG_STEP[d.dir]; return (r.x + s[0]) + ',' + (r.y + s[1]) + ',' + r.z; });
+        if (r.hasDown) nexts.push(r.x + ',' + r.y + ',' + (r.z - 1));
+        if (r.hasUp) nexts.push(r.x + ',' + r.y + ',' + (r.z + 1));
+        for (const n of nexts) if (!prev.has(n)) { prev.set(n, k); queue.push(n); }
+      }
+      const out = []; let k = goalKey;
+      while (k) { out.unshift(k); k = prev.get(k); }
+      return out;
+    })();
+    ok(path[0] === '0,0,0' && path[path.length - 1] === goalKey, 'rg  BFS de salas: ruta al cofre en ' + (path.length - 1) + ' transiciones');
+    // caminar la ruta con rgMove: hacia la puerta/escalera de cada transicion, matando enemigos adyacentes
+    const D = { W: GR.GENERATOR.roomW, H: GR.GENERATOR.roomH };
+    let r = '', guard = 0;
+    const stepToward = (tc, tr) => {
+      // las puertas O/E viven en la columna-muro: alli hay que alinear la FILA primero
+      // (y la columna al final); para el resto, columna primero. El interior es abierto.
+      let mc = 0, mr = 0;
+      if (tc === 0 || tc === D.W - 1) {
+        if (S.pos.row !== tr) mr = Math.sign(tr - S.pos.row); else mc = Math.sign(tc - S.pos.col);
+      } else {
+        if (S.pos.col !== tc) mc = Math.sign(tc - S.pos.col); else mr = Math.sign(tr - S.pos.row);
+      }
+      const room = S.rooms[S.cur];
+      const adj = room.enemies.find(e => e.alive && e.col === S.pos.col + mc && e.row === S.pos.row + mr);
+      if (adj) { L.rgAttack(GR, S); return 'atk'; }
+      return L.rgMove(GR, S, mc, mr);
+    };
+    for (let i = 1; i < path.length && guard < 5000; i++) {
+      const [nx, ny, nz] = path[i].split(',').map(Number);
+      const cur = () => S.rooms[S.cur];
+      // objetivo dentro de la sala actual: puerta o escalera que lleva a path[i]
+      while (S.cur !== path[i] && guard++ < 5000) {
+        const room = cur();
+        let target;
+        if (nz !== room.z) { const st = room.stairs.find(s => s.go === (nz > room.z ? 'up' : 'down')); target = st; }
+        else { const dir = Object.entries(L.RG_STEP).find(([d, s]) => room.x + s[0] === nx && room.y + s[1] === ny);
+               target = room.doors.find(d => d.dir === dir[0]); }
+        if (!target) break; // la ruta se rompio (no deberia: puertas mutuas)
+        r = stepToward(target.col, target.row);
+        if (r === 'fallen') { i = 0; break; } // vuelta al origen: reintenta la ruta entera
+      }
+    }
+    // dentro de la sala del cofre: caminar al centro
+    const room = S.rooms[S.cur];
+    while (!S.won && guard++ < 5000 && room === S.rooms[S.cur]) r = stepToward(room.goal.col, room.goal.row);
+    ok(r === 'win' && S.won, 'rg  VICTORIA: cofre alcanzado JUGANDO (' + guard + ' acciones, ' + S.kills + ' bajas, ' + S.deaths + ' caidas)');
+  }
+  // (f) items: pocion cura con tope y el arma mejor sustituye (datos de ITEM_POOL)
+  {
+    const S = L.rgInit(GR);
+    const room = S.rooms[S.cur];
+    room.items.push({ col: S.pos.col + 1, row: S.pos.row, taken: false, kind: 'heal', amount: 2, name: 'Pocion' });
+    S.hp = 1;
+    ok(L.rgMove(GR, S, 1, 0) === 'heal' && S.hp === Math.min(S.maxHp, 3), 'rg  pocion cura +2 con tope en maxHp');
+    room.items.push({ col: S.pos.col + 1, row: S.pos.row, taken: false, kind: 'weapon', power: 3, name: 'Hacha' });
+    ok(L.rgMove(GR, S, 1, 0) === 'weapon' && S.atk === 3 && S.weapon === 'Hacha', 'rg  arma mejor equipa (atk 1 -> 3)');
+    room.items.push({ col: S.pos.col + 1, row: S.pos.row, taken: false, kind: 'weapon', power: 2, name: 'Espada' });
+    ok(L.rgMove(GR, S, 1, 0) === 'weapon-worse' && S.atk === 3, 'rg  arma peor NO sustituye');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

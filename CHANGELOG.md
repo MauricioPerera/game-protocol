@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `roguelike` en game3d
+- **Runtime `roguelike`** (13º perfil jugable): mazmorra procedural 3D — salas
+  reconstruidas al cruzar puertas (misma planta) y escaleras ▲▼ (otro piso), enemigos
+  patrullando, ítems y cofre como billboards del TILE_ART, parpadeo de
+  invulnerabilidad, flechas + Espacio.
+- **La generación es un PORT EXACTO del visor 2D** (`examples/roguelike.html`): mismo
+  mulberry32, mismo hash de coordenadas, mismas reglas de puertas/escaleras mutuas y
+  cofre en la primera sala a profundidad ≥ `maxDepth`. **El mismo GAME.md produce el
+  mismo mundo en ambos motores** — verificado en vivo: la ruta al cofre del test de
+  Node y la del navegador coinciden sala a sala.
+- **Lógica pura en `game3d-logic.mjs`** (`rgGenRoom`/`rgEnter`/`rgInit`/`rgMove`/
+  `rgAttack`/`rgPatrol`, +16 chequeos en `npm test` y CI): determinismo, invariantes
+  por BFS sobre ~100 salas generadas (toda sala tiene salida; puertas y escaleras
+  mutuas; cofre único a profundidad ≥ maxDepth), combate con hp del ENEMY_POOL,
+  caída con respawn en el origen, pociones con tope y armas que solo mejoran
+  (ITEM_POOL), y el **cofre GANADO jugando movimiento a movimiento** (BFS de salas +
+  caminado real, 39 acciones).
+- **Verificado jugando en navegador**: bot por eventos de teclado reales hasta el
+  overlay de victoria con el `WIN.text` del GAME.md.
 
 ## [2.14.0] — 2026-07-08
 
