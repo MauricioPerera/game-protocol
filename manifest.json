@@ -822,6 +822,8 @@
         "rulePalettes",
         "ruleTileArt",
         "ruleGenerator",
+        "ruleBoss",
+        "ruleProgression",
         "ruleText"
       ],
       "bounds": [],
@@ -855,6 +857,14 @@
         {
           "key": "PLAYER",
           "source": "token:player"
+        },
+        {
+          "key": "BOSS",
+          "source": "token:boss"
+        },
+        {
+          "key": "PROGRESSION",
+          "source": "token:progression"
         },
         {
           "key": "TEXT",

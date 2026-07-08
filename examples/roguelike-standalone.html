@@ -1,24 +1,24 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>GAME Protocol · roguelike 3D (pisos procedurales desde la spec)</title>
+<title>GAME Protocol · roguelike 2D (pisos procedurales desde la spec)</title>
 <style>
   html,body{margin:0;height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
   #title{font-weight:600}#title b{color:#8fd6ff}
-  #hud{display:flex;gap:18px;font-size:13px;color:#9fb0c3}#hud b{color:#ffd86b}
+  #hud{display:flex;gap:14px;font-size:13px;color:#9fb0c3}#hud b{color:#ffd86b}
   canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#000}
   #msg{min-height:2.2em;max-width:640px;text-align:center;padding:6px 10px;background:#141a22;border-radius:6px}
-  #msg.win{color:#9fffa6;font-weight:600}
+  #msg.win{color:#9fffa6;font-weight:600}#msg.dead{color:#ff8a8a;font-weight:600}
   #hint{color:#6b7685;font-size:12px}
   #mapwrap{position:fixed;top:14px;right:14px;background:#11161d;border:1px solid #2a3340;border-radius:8px;padding:8px 10px}
   #mapwrap #maplabel{font-size:11px;color:#7b8696;margin-bottom:4px;text-align:center;letter-spacing:.5px}
   #map{display:block;image-rendering:pixelated}
 </style>
 <div id="title"></div>
-<div id="hud"><span id="floor"></span><span id="depth"></span><span id="hp"></span><span id="weapon"></span></div>
+<div id="hud"><span id="floor"></span><span id="depth"></span><span id="hp"></span><span id="weapon"></span><span id="keys"></span></div>
 <canvas id="c"></canvas>
 <div id="mapwrap"><div id="maplabel">MAPA</div><canvas id="map"></canvas></div>
 <div id="msg"></div>
-<div id="hint">← ↑ → ↓ moverse · Espacio: atacar · puertas = mismo piso · escaleras ▲▼ = cambiar de piso</div>
+<div id="hint">← ↑ → ↓ moverse · Espacio: atacar · puertas = mismo piso (🔒 pide llave) · escaleras ▲▼ = cambiar de piso</div>
 
 <script>
 // AUTO-GENERADO por tools/game-export.js desde GAME.md — NO EDITAR A MANO.
@@ -158,6 +158,18 @@ window.GAME = {
     },
     "59": {
       "name": "axe",
+      "solid": false
+    },
+    "60": {
+      "name": "key",
+      "solid": false
+    },
+    "61": {
+      "name": "locked_door",
+      "solid": false
+    },
+    "62": {
+      "name": "boss",
       "solid": false
     }
   },
@@ -1063,6 +1075,252 @@ window.GAME = {
         0,
         0
       ]
+    ],
+    "60": [
+      [
+        0,
+        0,
+        9,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        8,
+        0,
+        8,
+        9,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        8,
+        0,
+        8,
+        9,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        9,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        9,
+        0,
+        0,
+        0
+      ]
+    ],
+    "61": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        7,
+        7,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        9,
+        9,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        9,
+        9,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        8,
+        8,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "62": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        12
+      ],
+      [
+        12,
+        12,
+        0,
+        0,
+        0,
+        0,
+        12,
+        12
+      ],
+      [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        0
+      ],
+      [
+        12,
+        12,
+        15,
+        12,
+        12,
+        15,
+        12,
+        12
+      ],
+      [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      [
+        12,
+        13,
+        13,
+        12,
+        12,
+        13,
+        13,
+        12
+      ],
+      [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        0
+      ],
+      [
+        12,
+        0,
+        12,
+        0,
+        0,
+        12,
+        0,
+        12
+      ]
     ]
   },
   "GENERATOR": {
@@ -1074,13 +1332,17 @@ window.GAME = {
     "floorChance": 45,
     "maxFloor": 3,
     "itemChance": 42,
+    "lockChance": 25,
+    "keyChance": 30,
     "floor": 48,
     "wall": 17,
     "door": 19,
     "enemy": 54,
     "goal": 53,
     "stairsUp": 55,
-    "stairsDown": 56
+    "stairsDown": 56,
+    "key": 60,
+    "lockedDoor": 61
   },
   "ENEMY_POOL": [
     {
@@ -1123,6 +1385,17 @@ window.GAME = {
     "hp": 5,
     "atk": 1
   },
+  "BOSS": {
+    "tile": 62,
+    "pal": 0,
+    "hp": 8,
+    "damage": 2
+  },
+  "PROGRESSION": {
+    "killsPerAtk": 3,
+    "maxBonus": 2,
+    "permadeath": false
+  },
   "TEXT": {
     "intro": "Roguelike 3D — flechas para mover, Espacio para atacar. Cruza puertas (mismo piso) y pisa escaleras ▲▼ para cambiar de piso. Las salas se generan y se fijan en el mapa.",
     "enter": "Nueva sala generada.",
@@ -1130,7 +1403,13 @@ window.GAME = {
     "defeat": "Enemigo derrotado.",
     "fallen": "Has caido. Vuelves al inicio.",
     "heal": "Bebes una pocion. Vida recuperada.",
-    "equip": "Equipas un arma mejor."
+    "equip": "Equipas un arma mejor.",
+    "key": "Encuentras una llave.",
+    "locked": "Puerta cerrada. Necesitas una llave.",
+    "unlock": "La llave abre la puerta.",
+    "boss": "El guardian bloquea el cofre. Derrotalo.",
+    "bossdown": "El guardian cae. El cofre es tuyo.",
+    "levelup": "Tu ataque crece con la experiencia."
   },
   "WIN": {
     "text": "Cofre encontrado. Mazmorra procedural completada."
@@ -1175,143 +1454,979 @@ window.GAME = {
 })();
 
 </script>
-<script>
-const G = window.GAME, GEN = G.GENERATOR, SCALE = 6, TS = 8 * SCALE;
-const ART = G.TILE_ART, PAL = G.PALETTES, TILES = G.TILES;
-const W = GEN.roomW, H = GEN.roomH, midC = W >> 1, midR = H >> 1;
-const DOWN_POS = { col: 1, row: 1 }, UP_POS = { col: W - 2, row: 1 };
-document.getElementById('title').innerHTML = `<b>${EngineCore.esc(G.name || 'Roguelike')}</b> — pisos generados en tiempo real desde el generador del GAME.md`;
+<script type="module">
+// VISOR 2D = renderer FINO sobre la MISMA logica pura que usa game3d
+// (game3d-logic.mjs): un solo generador y unas solas reglas -> el mismo
+// GAME.md produce el mismo mundo y las mismas mecanicas en ambos motores
+// por construccion (la logica se verifica en npm test).
+// --- modulo inlinado: ./game3d-logic.mjs ---
+/**
+ * game3d-logic.mjs — Lógica PURA del runtime game3d (sin THREE, sin DOM).
+ * Separada para que `npm test` la verifique en Node (test/game3d-logic.js): las
+ * fórmulas de combate, la visión de entrenadores y la colisión son deterministas
+ * (el azar entra por parámetro `rnd` en [0,1)).
+ */
 
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+// Multiplicador de eficacia del TYPE_CHART (ausente => x1, como en los motores 2D).
+const typeMult = (chart, atk, def) => {
+  const r = ((chart || {})[atk] || {})[def];
+  return r == null ? 1 : r;
+};
 
-const rooms = {};            // "x,y,z" -> sala (persisten en sesion)
-const visited = new Set();
-const maxHp = G.PLAYER.hp || 5;
-let goalPlaced = false, cur, curRoom, player, hp = maxHp, atk = G.PLAYER.atk || 1, weapon = 'puños', invuln = 0, won = false, frame = 0;
+// Expande nombres de moves a objetos completos usando la tabla MOVES del artefacto.
+const expandMoves = (list, moves) =>
+  (list || []).map(m => typeof m === 'string' ? Object.assign({ name: m }, (moves || {})[m]) : m);
 
-const DIRS = { N:{dx:0,dy:-1,c:midC,r:0}, S:{dx:0,dy:1,c:midC,r:H-1}, W:{dx:-1,dy:0,c:0,r:midR}, E:{dx:1,dy:0,c:W-1,r:midR} };
-const STEP = { N:[0,-1], S:[0,1], W:[-1,0], E:[1,0] };
-const OPP = { N:'S', S:'N', E:'W', W:'E' };
-const k3 = (x,y,z) => x+','+y+','+z;
+// Instancia una criatura a un nivel dado: +2 maxhp por nivel sobre 5 (curva del motor).
+function makeMon(src, lvl, species, moves) {
+  const b = typeof src === 'string' ? Object.assign({ name: src }, (species || {})[src]) : src;
+  const maxhp = (b.maxhp || 20) + Math.max(0, lvl - 5) * 2;
+  return { name: b.name, type: b.type, lvl, maxhp, hp: maxhp, xp: 0,
+           sprite: b.sprite, moves: expandMoves(b.moves, moves), status: null };
+}
 
-function genRoom(x, y, z) {
-  const key = k3(x,y,z), depth = Math.abs(x)+Math.abs(y)+Math.abs(z);
-  const rng = mulberry32((GEN.seed ^ Math.imul(x,73856093) ^ Math.imul(y,19349663) ^ Math.imul(z,83492791) ^ 0x9e3779b9) >>> 0);
-  const tm = [], at = [];
-  for (let r=0;r<H;r++){const tr=[],ar=[];for(let c=0;c<W;c++){const wall=(r===0||c===0||r===H-1||c===W-1);tr.push(wall?GEN.wall:GEN.floor);ar.push(0);}tm.push(tr);at.push(ar);}
-  // puertas horizontales (mutuas)
-  const opens = [];
-  for (const [d,info] of Object.entries(DIRS)) {
-    const nKey = k3(x+info.dx, y+info.dy, z);
-    let open;
-    if (rooms[nKey]) open = rooms[nKey].doors.some(dr => dr.dir === OPP[d]);
-    else open = depth < GEN.maxDepth ? rng() < (GEN.branch/100) : false;
-    opens.push({d,info,open});
+// Daño de un move: power × eficacia × varianza (.9–1.1 vía rnd) × factor de nivel
+// (+3% por nivel de diferencia); `slow` en el atacante reduce un 20%.
+function damage(mv, atk, def, chart, rnd) {
+  let d = Math.max(1, Math.round((mv.power || 4)
+    * typeMult(chart, mv.type, def.type)
+    * (.9 + .2 * rnd)
+    * (1 + .03 * ((atk.lvl || 1) - (def.lvl || 1)))));
+  if (atk.status === 'slow') d = Math.max(1, Math.round(d * .8));
+  return d;
+}
+
+// Probabilidad de captura: la fórmula documentada de BALANCE
+// (catchBase + catchScale·(1 − hp/maxhp), ver README/SPEC del perfil monster-rpg).
+const catchProb = (bal, foe) =>
+  ((bal || {}).catchBase || .3) + ((bal || {}).catchScale || .5) * (1 - foe.hp / foe.maxhp);
+
+// XP y niveles (curva lvl·10·xpCurveMul) con evoluciones vía EVOLUTIONS.
+// Muta `winner`; devuelve las líneas de log (el runtime decide cómo mostrarlas).
+function gainXP(winner, foe, bal, evolutions, moves) {
+  const log = [];
+  winner.xp += 6 + Math.round(foe.maxhp / 2) + (foe.lvl || 1);
+  let need = Math.round(winner.lvl * 10 * ((bal || {}).xpCurveMul || 1));
+  while (winner.xp >= need) {
+    winner.xp -= need; winner.lvl++; winner.maxhp += 3;
+    winner.hp = Math.min(winner.maxhp, winner.hp + 3);
+    log.push(winner.name + ' sube a N' + winner.lvl);
+    const evo = (evolutions || {})[winner.name];
+    if (evo && winner.lvl >= (evo.level || 99)) {
+      log.push('¡Evoluciona a ' + evo.into + '!');
+      winner.name = evo.into; winner.type = evo.type || winner.type;
+      winner.maxhp = (evo.maxhp || winner.maxhp) + (winner.lvl - 5) * 2; winner.hp = winner.maxhp;
+      winner.moves = expandMoves((evo.moves || winner.moves).map(m => m.name || m), moves);
+    }
+    need = Math.round(winner.lvl * 10 * ((bal || {}).xpCurveMul || 1));
   }
-  // escaleras verticales (mutuas): abajo = z-1, arriba = z+1
-  const belowK = k3(x,y,z-1), aboveK = k3(x,y,z+1);
-  let hasDown = rooms[belowK] ? !!rooms[belowK].hasUp : (z > -GEN.maxFloor ? rng() < (GEN.floorChance/100) : false);
-  let hasUp   = rooms[aboveK] ? !!rooms[aboveK].hasDown : (z <  GEN.maxFloor ? rng() < (GEN.floorChance/100) : false);
-  // garantizar al menos una salida (puerta o escalera)
-  if (!opens.some(o=>o.open) && !hasDown && !hasUp) opens[Math.floor(rng()*4)].open = true;
-  const doors = [];
-  for (const o of opens) if (o.open) { tm[o.info.r][o.info.c] = GEN.door; doors.push({col:o.info.c,row:o.info.r,dir:o.d}); }
-  const stairs = [];
-  if (hasDown) { tm[DOWN_POS.row][DOWN_POS.col] = GEN.stairsDown; stairs.push({col:DOWN_POS.col,row:DOWN_POS.row,go:'down'}); }
-  if (hasUp)   { tm[UP_POS.row][UP_POS.col]   = GEN.stairsUp;   stairs.push({col:UP_POS.col,row:UP_POS.row,go:'up'}); }
+  return log;
+}
+
+// Colisión de grid: fuera de límites o tile sólido => no se puede pisar.
+const canStep = (tilemap, solidSet, c, r) => {
+  const t = ((tilemap || [])[r] || [])[c];
+  return t != null && !solidSet.has(t);
+};
+
+// ============================================================================
+// SIMULACIÓN del perfil `shooter` (shmup vertical) — PURA y determinista:
+// el azar entra por `rnd()`; un tick = un frame a 60fps. El runtime solo
+// renderiza el estado y recoge input; los tests la juegan entera en Node.
+// ============================================================================
+function shooterInit(G) {
+  const shipDef = (G.SHIPS || {})[(G.PLAYER || {}).ship] || { speed: .1, hp: 5, weapon: null };
+  const weapon = (G.WEAPONS || {})[shipDef.weapon] || { damage: 1, rate: 4, bulletSpeed: .25 };
+  const A = G.ARENA || { width: 24, height: 16 };
+  return {
+    w: A.width, h: A.height,
+    x: A.width / 2, y: 1.5, hp: shipDef.hp, maxhp: shipDef.hp, speed: shipDef.speed,
+    weapon, cool: 0, rapid: 0, shield: 0,
+    lives: (G.BALANCE || {}).lives != null ? G.BALANCE.lives : 2,
+    bullets: [], enemies: [], drops: [],
+    waves: Object.keys(G.WAVES || {}).sort((a, b) => Number(a) - Number(b)),
+    wave: 0, queue: [], tick: 0, score: 0, kills: 0, leaked: 0, lost: 0,
+    over: false, won: false,
+  };
+}
+function shooterTick(G, S, input, rnd) {
+  const ev = [];
+  if (S.over || S.won) return ev;
+  S.tick++;
+  // nave
+  S.x = Math.min(S.w - .5, Math.max(.5, S.x + (input.dx || 0) * S.speed));
+  // disparo (rate en disparos/segundo; OVERDRIVE duplica cadencia)
+  if (S.cool > 0) S.cool--;
+  if (input.fire && S.cool <= 0) {
+    S.cool = Math.max(1, Math.round(60 / S.weapon.rate / (S.rapid > 0 ? 2 : 1)));
+    S.bullets.push({ x: S.x, y: S.y + .6 }); ev.push('shot');
+  }
+  // balas
+  for (const b of S.bullets) b.y += S.weapon.bulletSpeed;
+  S.bullets = S.bullets.filter(b => b.y < S.h + 1);
+  // oleadas: cuando no queda nada, cargar la siguiente (o victoria)
+  if (!S.queue.length && !S.enemies.length) {
+    if (S.wave >= S.waves.length) { S.won = true; ev.push('win'); return ev; }
+    const def = G.WAVES[S.waves[S.wave]] || {}; S.wave++; ev.push('wave');
+    for (const sp of (def.spawns || []))
+      for (let i = 0; i < (sp.count || 0); i++)
+        S.queue.push({ enemy: sp.enemy, at: S.tick + 30 + i * (sp.gap || 30) });
+  }
+  // spawns pendientes
+  S.queue = S.queue.filter(q => {
+    if (q.at > S.tick) return true;
+    const d = (G.ENEMIES || {})[q.enemy] || { hp: 1, speed: .05, behavior: 'chaser', points: 0 };
+    S.enemies.push({ name: q.enemy, x: .5 + rnd() * (S.w - 1), y: S.h - .5,
+                     hp: d.hp, speed: d.speed, behavior: d.behavior, points: d.points || 0,
+                     phase: Math.floor(rnd() * 628) });
+    return false;
+  });
   // enemigos
+  for (const e of S.enemies) {
+    if (e.behavior === 'chaser') {
+      const dx = S.x - e.x, dy = S.y - e.y, n = Math.hypot(dx, dy) || 1;
+      e.x += e.speed * dx / n; e.y += e.speed * dy / n;
+    } else { e.y -= e.speed; e.x += Math.sin((S.tick + e.phase) * .05) * .04; }
+  }
+  S.enemies = S.enemies.filter(e => { if (e.y < -.5) { S.leaked++; return false; } return true; });
+  // balas x enemigos
+  for (const b of S.bullets) for (const e of S.enemies) {
+    if (b.hit || e.hp <= 0) continue;
+    if (Math.hypot(b.x - e.x, b.y - e.y) < .7) {
+      b.hit = true; e.hp -= S.weapon.damage;
+      if (e.hp <= 0) { S.score += e.points; S.kills++; ev.push('kill');
+        if (rnd() < ((G.BALANCE || {}).powerupChance || 0)) {
+          const keys = Object.keys(G.POWERUPS || {});
+          if (keys.length) { const p = (G.POWERUPS)[keys[Math.floor(rnd() * keys.length)]];
+            S.drops.push({ x: e.x, y: e.y, effect: p.effect, amount: p.amount, duration: p.duration }); }
+        } }
+    }
+  }
+  S.bullets = S.bullets.filter(b => !b.hit);
+  S.enemies = S.enemies.filter(e => e.hp > 0);
+  // powerups: caen y se recogen
+  for (const d of S.drops) d.y -= .03;
+  S.drops = S.drops.filter(d => {
+    if (d.y < -.5) return false;
+    if (Math.hypot(d.x - S.x, d.y - S.y) < .9) {
+      if (d.effect === 'heal') S.hp = Math.min(S.maxhp, S.hp + (d.amount || 1));
+      else if (d.effect === 'rapid') S.rapid = d.duration || 300;
+      else if (d.effect === 'shield') S.shield = d.duration || 240;
+      ev.push('power:' + d.effect); return false;
+    }
+    return true;
+  });
+  if (S.rapid > 0) S.rapid--; if (S.shield > 0) S.shield--;
+  // enemigos que alcanzan la nave (contados en `lost`: ni kill ni leak)
+  S.enemies = S.enemies.filter(e => {
+    if (Math.hypot(e.x - S.x, e.y - S.y) >= .8) return true;
+    S.lost++;
+    if (S.shield > 0) { ev.push('blocked'); return false; }
+    S.hp--; ev.push('hit');
+    if (S.hp <= 0) {
+      S.lives--;
+      if (S.lives < 0) { S.over = true; ev.push('defeat'); }
+      else { S.hp = S.maxhp; S.lost += S.enemies.filter(x => x !== e).length;
+             S.enemies.length = 0; S.bullets.length = 0; ev.push('respawn'); }
+    }
+    return false;
+  });
+  return ev;
+}
+// ============================================================================
+// Lógica del perfil `sudoku` — PURA y sin azar. Incluye el VALIDADOR de datos
+// (sudokuCheck) que cubre lo que las familias declarativas no alcanzan:
+// longitud/dígitos de los strings, consistencia grid↔solution y validez del
+// sudoku (filas/columnas/cajas). Los tests de Node validan los puzzles reales.
+// ============================================================================
+function sudokuCheck(gridStr, solStr) {
+  if (typeof gridStr !== 'string' || gridStr.length !== 81) return 'grid debe tener 81 caracteres';
+  if (/[^1-9.]/.test(gridStr)) return 'grid: solo digitos 1-9 y "." para vacios';
+  if (typeof solStr !== 'string' || solStr.length !== 81 || /[^1-9]/.test(solStr)) return 'solution: 81 digitos 1-9';
+  for (let i = 0; i < 81; i++)
+    if (gridStr[i] !== '.' && gridStr[i] !== solStr[i]) return 'la pista de la celda ' + i + ' no coincide con solution';
+  for (let u = 0; u < 9; u++) {
+    const row = new Set(), col = new Set(), box = new Set();
+    for (let k = 0; k < 9; k++) {
+      row.add(solStr[u * 9 + k]);
+      col.add(solStr[k * 9 + u]);
+      box.add(solStr[(((u / 3) | 0) * 3 + ((k / 3) | 0)) * 9 + ((u % 3) * 3 + (k % 3))]);
+    }
+    if (row.size !== 9 || col.size !== 9 || box.size !== 9) return 'solution invalida (unidad ' + u + ')';
+  }
+  return null;
+}
+function sudokuInit(G, puzzleId) {
+  const id = puzzleId || (G.PLAYER || {}).start || Object.keys(G.PUZZLES || {})[0];
+  const P = (G.PUZZLES || {})[id] || { grid: '.'.repeat(81), solution: '123456789'.repeat(9) };
+  const err = sudokuCheck(P.grid, P.solution);
+  const firstEmpty = P.grid.indexOf('.');
+  return { id, err,
+           grid: P.grid.split('').map(c => c === '.' ? 0 : +c),
+           given: P.grid.split('').map(c => c !== '.'),
+           solution: P.solution,
+           lives: (G.BALANCE || {}).lives != null ? G.BALANCE.lives : 3,
+           hints: (G.BALANCE || {}).hints != null ? G.BALANCE.hints : 3,
+           sel: firstEmpty === -1 ? 0 : firstEmpty,
+           mistakes: 0, won: false, lost: false };
+}
+function sudokuSet(S, idx, val) {
+  if (S.won || S.lost || S.given[idx] || S.grid[idx] !== 0) return 'blocked';
+  if (String(val) !== S.solution[idx]) {
+    S.mistakes++; S.lives--; if (S.lives < 0) { S.lost = true; return 'lose'; }
+    return 'wrong';
+  }
+  S.grid[idx] = val;
+  if (S.grid.every((v, i) => String(v) === S.solution[i])) { S.won = true; return 'win'; }
+  return 'ok';
+}
+function sudokuHint(S) {
+  if (S.won || S.lost || S.hints <= 0) return 'blocked';
+  const i = S.grid.findIndex((v, j) => v === 0 && !S.given[j]);
+  if (i === -1) return 'blocked';
+  S.hints--; S.grid[i] = +S.solution[i];
+  if (S.grid.every((v, j) => String(v) === S.solution[j])) { S.won = true; return 'win'; }
+  return 'hint';
+}
+
+// ============================================================================
+// Lógica del perfil `peg-solitaire` (senku) — PURA y sin azar. Incluye el
+// VALIDADOR de datos (pegCheck) que cubre lo que las familias declarativas no
+// alcanzan: forma 7x7 y alfabeto del layout. Los tableros reales se validan y
+// sus soluciones se REJUEGAN en los tests de Node.
+// ============================================================================
+const PEG_CENTER = 3 * 7 + 3; // 24
+function pegCheck(layout) {
+  if (!Array.isArray(layout) || layout.length !== 7) return 'layout debe tener 7 filas';
+  for (const r of layout) if (typeof r !== 'string' || r.length !== 7) return 'cada fila debe tener 7 caracteres';
+  const s = layout.join('');
+  if (/[^_o.]/.test(s)) return 'layout: solo "_" (fuera), "o" (peg) y "." (hueco)';
+  if ((s.match(/o/g) || []).length < 2) return 'layout necesita al menos 2 pegs';
+  if (!s.includes('.')) return 'layout necesita al menos un hueco';
+  return null;
+}
+// Saltos legales: peg -> hueco a 2 casillas ortogonales con peg en medio.
+function pegMoves(cells) {
+  const out = [];
+  for (let i = 0; i < 49; i++) if (cells[i] === 1)
+    for (const d of [-1, 1, -7, 7]) {
+      const to = i + 2 * d;
+      if (to < 0 || to > 48) continue;
+      if (Math.abs(d) === 1 && ((i / 7) | 0) !== ((to / 7) | 0)) continue; // no cruzar filas
+      if (cells[i + d] === 1 && cells[to] === 0) out.push([i, to]);
+    }
+  return out;
+}
+function pegInit(G, boardId) {
+  const id = boardId || (G.PLAYER || {}).start || Object.keys(G.BOARDS || {})[0];
+  const B = (G.BOARDS || {})[id] || { layout: [], goal: 'clear' };
+  const err = pegCheck(B.layout);
+  const cells = err ? [] : B.layout.join('').split('').map(c => c === '_' ? -1 : c === 'o' ? 1 : 0);
+  return { id, err, cells, goal: B.goal || 'clear',
+           pegs: cells.filter(v => v === 1).length,
+           sel: Math.max(0, cells.indexOf(1)), picked: -1,
+           moves: 0, won: false, lost: false };
+}
+function pegMove(S, from, to) {
+  if (S.won || S.lost || S.cells[from] !== 1 || S.cells[to] !== 0) return 'blocked';
+  const d = to - from;
+  const aligned = (Math.abs(d) === 2 && ((from / 7) | 0) === ((to / 7) | 0)) || Math.abs(d) === 14;
+  if (!aligned || S.cells[(from + to) / 2] !== 1) return 'blocked';
+  S.cells[from] = 0; S.cells[(from + to) / 2] = 0; S.cells[to] = 1;
+  S.pegs--; S.moves++;
+  if (S.pegs === 1) {
+    if (S.goal === 'clear' || S.cells[PEG_CENTER] === 1) { S.won = true; return 'win'; }
+    S.lost = true; return 'lose';
+  }
+  if (pegMoves(S.cells).length === 0) { S.lost = true; return 'lose'; }
+  return 'ok';
+}
+
+// ============================================================================
+// Lógica del perfil `papers-please` — PURA y sin azar. La "verdad" de cada
+// solicitante se COMPUTA desde las RULES del día (require-document,
+// ban-country, require-field-match, not-expired); la `decision` declarada en
+// el GAME.md es el oráculo de autoría y los tests exigen que ambas coincidan.
+// Semántica del motor (SPEC §8): fecha de corte PP_TODAY para not-expired,
+// derrota al 3er error, money = aciertos*salary − fallos*penaltyFee − rent
+// al cerrar cada día (puede ser negativo: es el marcador).
+// ============================================================================
+const PP_TODAY = '1983.01';
+// `rules` acepta la forma EXPANDIDA del artefacto (DAYS.*.rules: objetos con id)
+// o ids sueltos que se resuelven contra G.RULES.
+function ppEval(G, entrant, rules, today) {
+  const docs = (entrant || {}).docs || {};
+  const bad = [];
+  for (const x of (rules || [])) {
+    const r = typeof x === 'string' ? Object.assign({ id: x }, (G.RULES || {})[x]) : x;
+    if (r.type === 'require-document') { if (!docs[r.document]) bad.push(r.id); }
+    else if (r.type === 'ban-country') {
+      if (Object.values(docs).some(d => d.country === r.country)) bad.push(r.id);
+    } else if (r.type === 'require-field-match') {
+      const present = (r.documents || []).filter(n => docs[n]);
+      if (present.length >= 2 && new Set(present.map(n => String(docs[n][r.field]))).size > 1) bad.push(r.id);
+    } else if (r.type === 'not-expired') {
+      const d = docs[r.document];
+      if (d && String(d[r.field]) < (today || PP_TODAY)) bad.push(r.id);
+    }
+  }
+  return { decision: bad.length ? 'deny' : 'approve', reasons: bad };
+}
+function ppInit(G, today) {
+  return { today: today || PP_TODAY,
+           dayIds: Object.keys(G.DAYS || {}).sort((a, b) => +a - +b),
+           day: 0, idx: 0, money: 0, correct: 0, wrong: 0, maxWrong: 3,
+           log: [], won: false, lost: false };
+}
+// Solicitante en ventanilla (objeto expandido del día, o null si terminó).
+function ppEntrant(G, S) {
+  const D = (G.DAYS || {})[S.dayIds[S.day]];
+  return (D && D.entrants[S.idx]) || null;
+}
+function ppDecide(G, S, choice) {
+  if (S.won || S.lost) return 'blocked';
+  const D = G.DAYS[S.dayIds[S.day]];
+  const E = D.entrants[S.idx];
+  const truth = ppEval(G, E, D.rules, S.today);
+  const okDec = choice === truth.decision;
+  const eco = G.ECONOMY || {};
+  if (okDec) { S.correct++; S.money += eco.salary || 0; }
+  else { S.wrong++; S.money -= eco.penaltyFee || 0; }
+  S.log.push({ entrant: E.id, choice, truth: truth.decision, reasons: truth.reasons });
+  if (!okDec && S.wrong >= S.maxWrong) { S.lost = true; return 'lose'; }
+  S.idx++;
+  if (S.idx >= D.entrants.length) {
+    S.money -= eco.rent || 0; S.day++; S.idx = 0;
+    if (S.day >= S.dayIds.length) { S.won = true; return 'win'; }
+    return 'day';
+  }
+  return okDec ? 'correct' : 'wrong';
+}
+
+// ============================================================================
+// Lógica del perfil `tower-defense` — PURA, por ticks y SIN azar (spawns por
+// count/gap, targeting al enemigo más avanzado en rango). Todo el balance sale
+// del artefacto: TOWERS, DMG_CHART, ENEMIES (via spawns expandidos), WAVES,
+// ECONOMY, BALANCE. Semántica del motor (SPEC §8): el ejemplo no declara MAPS,
+// así que el camino es una ruta en S fija sobre rejilla 12x8 (TD_COLS/TD_ROWS);
+// 30 ticks ~ 1s nominal: speed = celdas/s, rate = disparos/s, gap en ticks.
+// Recompensa de oleada y luego interés (floor(gold*interestRate)) al limpiarla.
+// ============================================================================
+const TD_COLS = 12, TD_ROWS = 8;
+function tdPath() {
+  const pts = [[0, 1], [9, 1], [9, 4], [2, 4], [2, 6], [11, 6]];
+  const path = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    let [c, r] = pts[i]; const [c2, r2] = pts[i + 1];
+    while (c !== c2 || r !== r2) { path.push({ col: c, row: r }); c += Math.sign(c2 - c); r += Math.sign(r2 - r); }
+  }
+  path.push({ col: pts[pts.length - 1][0], row: pts[pts.length - 1][1] });
+  return path;
+}
+// Posición interpolada de un enemigo por su progreso (en celdas) sobre el camino.
+function tdPos(path, prog) {
+  const i = Math.min(path.length - 1, Math.floor(prog));
+  const a = path[i], b = path[Math.min(path.length - 1, i + 1)], f = prog - i;
+  return { col: a.col + (b.col - a.col) * f, row: a.row + (b.row - a.row) * f };
+}
+function tdInit(G) {
+  return { gold: (G.ECONOMY || {}).startGold || 0, lives: (G.ECONOMY || {}).startLives || 1,
+           waveIds: Object.keys(G.WAVES || {}).sort((a, b) => +a - +b),
+           wave: 0, waveActive: false, t: 0, queue: [], towers: [], enemies: [],
+           spawned: 0, killed: 0, leaked: 0, won: false, lost: false };
+}
+const tdCell = (S, path, col, row) =>
+  path.some(p => p.col === col && p.row === row) ? 'path' :
+  S.towers.some(t => t.col === col && t.row === row) ? 'tower' : 'free';
+function tdBuild(G, S, type, col, row, path) {
+  const T = (G.TOWERS || {})[type];
+  if (S.won || S.lost || !T || S.gold < T.cost) return 'blocked';
+  if (col < 0 || col >= TD_COLS || row < 0 || row >= TD_ROWS) return 'blocked';
+  if (tdCell(S, path, col, row) !== 'free') return 'blocked';
+  S.gold -= T.cost;
+  S.towers.push({ type, col, row, cd: 0 });
+  return 'ok';
+}
+function tdSell(G, S, col, row) {
+  const i = S.towers.findIndex(t => t.col === col && t.row === row);
+  if (S.won || S.lost || i === -1) return 'blocked';
+  S.gold += Math.floor(G.TOWERS[S.towers[i].type].cost * ((G.BALANCE || {}).sellRatio || 0));
+  S.towers.splice(i, 1);
+  return 'ok';
+}
+function tdStartWave(G, S) {
+  if (S.won || S.lost || S.waveActive || S.wave >= S.waveIds.length) return 'blocked';
+  const W = G.WAVES[S.waveIds[S.wave]];
+  S.queue = [];
+  for (const sp of (W.spawns || []))
+    for (let k = 0; k < (sp.count || 1); k++)
+      S.queue.push({ spec: sp, at: S.t + k * (sp.gap || 30) });
+  S.waveActive = true;
+  return 'wave';
+}
+function tdTick(G, S, path) {
+  if (S.won || S.lost || !S.waveActive) return 'idle';
+  S.t++;
+  // spawns pendientes cuyo tick llegó
+  for (let i = S.queue.length - 1; i >= 0; i--)
+    if (S.queue[i].at <= S.t) {
+      const sp = S.queue[i].spec;
+      S.enemies.push({ name: sp.enemy, hp: sp.hp, speed: sp.speed, armor: sp.armor, bounty: sp.bounty, prog: 0 });
+      S.spawned++; S.queue.splice(i, 1);
+    }
+  // avance de enemigos; fuga al final del camino
+  for (let i = S.enemies.length - 1; i >= 0; i--) {
+    const e = S.enemies[i];
+    e.prog += e.speed / 30;
+    if (e.prog >= path.length - 1) {
+      S.enemies.splice(i, 1); S.leaked++; S.lives--;
+      if (S.lives <= 0) { S.lost = true; return 'lose'; }
+    }
+  }
+  // torres: dispara cada 30/rate ticks al enemigo mas avanzado dentro de range
+  for (const t of S.towers) {
+    if (--t.cd > 0) continue;
+    const T = G.TOWERS[t.type];
+    let best = null;
+    for (const e of S.enemies) {
+      const p = tdPos(path, e.prog);
+      if (Math.hypot(p.col - t.col, p.row - t.row) <= T.range && (!best || e.prog > best.prog)) best = e;
+    }
+    if (!best) continue;
+    t.cd = Math.round(30 / T.rate);
+    best.hp -= T.damage * (((G.DMG_CHART || {})[T.dmgType] || {})[best.armor] != null ? G.DMG_CHART[T.dmgType][best.armor] : 1);
+    if (best.hp <= 0) {
+      S.enemies.splice(S.enemies.indexOf(best), 1);
+      S.killed++; S.gold += best.bounty || 0;
+    }
+  }
+  // oleada limpia: recompensa + interes; victoria si era la ultima
+  if (S.queue.length === 0 && S.enemies.length === 0) {
+    const W = G.WAVES[S.waveIds[S.wave]];
+    S.gold += W.reward || 0;
+    S.gold += Math.floor(S.gold * ((G.BALANCE || {}).interestRate || 0));
+    S.waveActive = false; S.wave++;
+    if (S.wave >= S.waveIds.length) { S.won = true; return 'win'; }
+    return 'wave-clear';
+  }
+  return 'ok';
+}
+
+// ============================================================================
+// Lógica del perfil `platformer` — PURA, por ticks (30 ~ 1s) y determinista.
+// El balance sale del artefacto: PHYSICS (gravity/jump/runSpeed), ENEMIES
+// (hp/damage), LEVELS (tileset, tipos de enemigos, goal.x), PLAYER.lives.
+// Semántica del motor (SPEC §8): los niveles no declaran geometría, así que el
+// suelo son segmentos con huecos generados por LCG determinista por nivel, con
+// huecos SIEMPRE salvables (≤ 60% del alcance de salto derivado de PHYSICS) y
+// enemigos patrullando repartidos por los segmentos. Pisotón mata (KOOPA
+// aguanta 2), contacto lateral resta vida (con invulnerabilidad breve), caer
+// al hueco resta vida y reaparece al inicio del nivel.
+// ============================================================================
+function pfJumpReach(G) { // alcance horizontal de un salto a nivel llano
+  const P = G.PHYSICS || {};
+  return (P.runSpeed || 5) * 2 * (P.jump || 10) / (P.gravity || 9.8);
+}
+function pfLevelGeom(G, levelId, idx) {
+  const L = (G.LEVELS || {})[levelId] || { enemies: [], goal: { x: 100 } };
+  const rnd = lcg(1000 + idx * 77);
+  const maxGap = pfJumpReach(G) * .6;
+  const segs = []; // [x0, x1] de suelo (y=0)
+  let x = 0, first = true;
+  const end = (L.goal || {}).x || 100;
+  while (x < end + 8) {
+    const len = first ? 12 : 8 + rnd() * 6;
+    segs.push([x, x + len]);
+    x += len + Math.min(maxGap, 2.5 + rnd() * 2.5); // hueco salvable por construcción
+    first = false;
+  }
+  // enemigos: tipos del nivel repartidos por los segmentos interiores
   const enemies = [];
-  if (depth > 0) { const n = Math.floor(rng()*(depth>=2?3:2));
-    for (let i=0;i<n;i++){ const ec=1+Math.floor(rng()*(W-2)), er=1+Math.floor(rng()*(H-2));
-      if (tm[er][ec]!==GEN.floor) continue;
-      const t = G.ENEMY_POOL[Math.floor(rng()*Math.max(1,G.ENEMY_POOL.length))] || {};
-      enemies.push({col:ec,row:er,tile:t.tile||GEN.enemy,pal:t.pal||0,hp:t.hp||1,dir:rng()<.5?1:-1,axis:rng()<.5?'h':'v',alive:true}); } }
-  // items (pociones / armas) del repertorio del spec
+  const types = L.enemies || [];
+  for (let i = 0; i < types.length * 2; i++) {   // 2 instancias por tipo declarado
+    const spec = (G.ENEMIES || {})[types[i % types.length]] || { hp: 1, damage: 1 };
+    const seg = segs[1 + Math.floor(rnd() * Math.max(1, segs.length - 2))];
+    const ex = Math.min(seg[1] - 1, Math.max(seg[0] + 1, seg[0] + 2 + rnd() * (seg[1] - seg[0] - 4)));
+    if (ex < end - 2) enemies.push({ name: types[i % types.length], hp: spec.hp, damage: spec.damage,
+                                     x: ex, y: 0, x0: ex, dir: 1, seg });
+  }
+  return { id: levelId, segs, enemies, goalX: end, tileset: L.tileset };
+}
+const pfGroundAt = (segs, x) => segs.some(s => x >= s[0] && x <= s[1]);
+function pfInit(G) {
+  const ids = Object.keys(G.LEVELS || {}).sort();
+  const startId = (G.PLAYER || {}).spawnLevel || ids[0];
+  const li = Math.max(0, ids.indexOf(startId));
+  return { ids, li, geom: pfLevelGeom(G, ids[li], li),
+           x: 1, y: 0, vx: 0, vy: 0, onGround: true, invul: 0,
+           lives: (G.PLAYER || {}).lives != null ? G.PLAYER.lives : 3,
+           deaths: 0, stomps: 0, t: 0, won: false, lost: false };
+}
+function pfRespawn(S) { S.x = 1; S.y = 0; S.vx = 0; S.vy = 0; S.onGround = true; S.invul = 45; }
+function pfTick(G, S, input) {
+  if (S.won || S.lost) return 'blocked';
+  const P = G.PHYSICS || {}, dt = 1 / 30;
+  S.t++; if (S.invul > 0) S.invul--;
+  let ev = 'ok';
+  // jugador: correr + salto + gravedad
+  S.vx = (input.dir || 0) * (P.runSpeed || 5);
+  if (input.jump && S.onGround) { S.vy = P.jump || 10; S.onGround = false; }
+  if (!S.onGround) S.vy -= (P.gravity || 9.8) * dt;
+  S.x = Math.max(0, S.x + S.vx * dt);
+  S.y += S.vy * dt;
+  if (S.y <= 0 && S.vy <= 0 && pfGroundAt(S.geom.segs, S.x)) { S.y = 0; S.vy = 0; S.onGround = true; }
+  else if (S.y <= 0) S.onGround = false;
+  if (S.y < -8) { // caída al hueco
+    S.deaths++; S.lives--;
+    if (S.lives < 0) { S.lost = true; return 'lose'; }
+    pfRespawn(S); return 'fall';
+  }
+  // enemigos: patrulla ±4 dentro de su segmento
+  for (const e of S.geom.enemies) {
+    if (e.hp <= 0) continue;
+    e.x += e.dir * 1.5 * dt;
+    if (e.x > Math.min(e.x0 + 4, e.seg[1] - .5)) e.dir = -1;
+    if (e.x < Math.max(e.x0 - 4, e.seg[0] + .5)) e.dir = 1;
+    // contacto: pisotón si cae desde arriba; daño lateral si no
+    if (Math.abs(S.x - e.x) < .6 && S.y - e.y < 1 && S.y - e.y > -.5) {
+      if (S.vy < 0 && S.y - e.y > .25) {
+        e.hp--; S.vy = (P.jump || 10) * .6; S.onGround = false;
+        if (e.hp <= 0) { S.stomps++; ev = 'stomp'; }
+      } else if (S.invul === 0) {
+        S.lives -= e.damage || 1; S.invul = 45; S.vy = 3; S.onGround = false;
+        if (S.lives < 0) { S.lost = true; return 'lose'; }
+        ev = 'hit';
+      }
+    }
+  }
+  // meta del nivel
+  if (S.x >= S.geom.goalX) {
+    S.li++;
+    if (S.li >= S.ids.length) { S.won = true; return 'win'; }
+    S.geom = pfLevelGeom(G, S.ids[S.li], S.li);
+    pfRespawn(S); S.invul = 0;
+    return 'level-clear';
+  }
+  return ev;
+}
+
+// ============================================================================
+// Lógica del perfil `crafting` — PURA, por turnos y sin azar. El balance sale
+// del artefacto: MATERIALS (stack), RECIPES (station/inputs/qty/outputValue),
+// ITEMS, STATIONS. Semántica del motor (SPEC §8): la meta es COMPLETAR EL
+// RECETARIO (craftear cada receta ≥1 vez — derivada de los datos, sin números
+// inventados) con un presupuesto de CR_ACTIONS acciones; recolectar, moverse
+// de estación y craftear cuestan 1 acción; derrota al agotarlas.
+// ============================================================================
+const CR_ACTIONS = 30;
+function crInit(G) {
+  const inv = {}; for (const m of Object.keys(G.MATERIALS || {})) inv[m] = 0;
+  const gathered = { ...inv };
+  return { inv, gathered, items: {}, value: 0, at: null,
+           actionsLeft: CR_ACTIONS, crafted: {}, won: false, lost: false };
+}
+function crSpend(S) { // cuesta 1 accion; agotar sin recetario completo = derrota
+  S.actionsLeft--;
+  if (S.actionsLeft <= 0 && !S.won) { S.lost = true; return 'lose'; }
+  return null;
+}
+function crGather(G, S, mat) {
+  const M = (G.MATERIALS || {})[mat];
+  if (S.won || S.lost || !M) return 'blocked';
+  if (S.inv[mat] >= (M.stack || Infinity)) return 'full';
+  S.inv[mat]++; S.gathered[mat]++;
+  return crSpend(S) || 'ok';
+}
+function crMove(G, S, station) {
+  if (S.won || S.lost || !(station in (G.STATIONS || {})) || S.at === station) return 'blocked';
+  S.at = station;
+  return crSpend(S) || 'ok';
+}
+function crCraft(G, S, recipeId) {
+  const R = (G.RECIPES || {})[recipeId];
+  if (S.won || S.lost || !R) return 'blocked';
+  if (R.station && S.at !== R.station) return 'blocked';
+  if ((R.inputs || []).some(i => (S.inv[i.material] || 0) < i.qty)) return 'blocked';
+  for (const i of (R.inputs || [])) S.inv[i.material] -= i.qty;
+  S.items[R.output] = (S.items[R.output] || 0) + (R.qty || 1);
+  S.value += (R.outputValue != null ? R.outputValue : ((G.ITEMS || {})[R.output] || {}).value || 0) * (R.qty || 1);
+  S.crafted[recipeId] = (S.crafted[recipeId] || 0) + 1;
+  if (Object.keys(G.RECIPES || {}).every(r => S.crafted[r])) { S.won = true; return 'win'; }
+  return crSpend(S) || 'crafted';
+}
+
+// ============================================================================
+// Lógica del perfil `roguelike` — PURA y determinista. Es un PORT EXACTO de la
+// generación del visor 2D de referencia (examples/roguelike.html): mismo
+// mulberry32, mismo hash de coordenadas, mismas reglas de puertas/escaleras
+// mutuas y cofre en la primera sala generada a profundidad >= maxDepth. El
+// mismo GAME.md produce EL MISMO mundo procedural en ambos motores. Todo el
+// balance sale del artefacto: GENERATOR, ENEMY_POOL, ITEM_POOL, PLAYER.
+// ============================================================================
+const rgMulberry = a => function () { a |= 0; a = a + 0x6D2B79F5 | 0;
+  let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const RG_DIRS = W => ({ N: { dx: 0, dy: -1, c: W.midC, r: 0 }, S: { dx: 0, dy: 1, c: W.midC, r: W.H - 1 },
+                        W: { dx: -1, dy: 0, c: 0, r: W.midR }, E: { dx: 1, dy: 0, c: W.W - 1, r: W.midR } });
+const RG_STEP = { N: [0, -1], S: [0, 1], W: [-1, 0], E: [1, 0] };
+const RG_OPP = { N: 'S', S: 'N', E: 'W', W: 'E' };
+const rgK = (x, y, z) => x + ',' + y + ',' + z;
+const rgDims = G => { const GEN = G.GENERATOR; return { W: GEN.roomW, H: GEN.roomH, midC: GEN.roomW >> 1, midR: GEN.roomH >> 1 }; };
+function rgGenRoom(G, S, x, y, z) {
+  const GEN = G.GENERATOR, D = rgDims(G), key = rgK(x, y, z), depth = Math.abs(x) + Math.abs(y) + Math.abs(z);
+  const rng = rgMulberry((GEN.seed ^ Math.imul(x, 73856093) ^ Math.imul(y, 19349663) ^ Math.imul(z, 83492791) ^ 0x9e3779b9) >>> 0);
+  const tm = [];
+  for (let r = 0; r < D.H; r++) { const tr = [];
+    for (let c = 0; c < D.W; c++) tr.push((r === 0 || c === 0 || r === D.H - 1 || c === D.W - 1) ? GEN.wall : GEN.floor);
+    tm.push(tr); }
+  const opens = [];
+  for (const [d, info] of Object.entries(RG_DIRS(D))) {
+    const nKey = rgK(x + info.dx, y + info.dy, z);
+    let open;
+    if (S.rooms[nKey]) open = S.rooms[nKey].doors.some(dr => dr.dir === RG_OPP[d]);
+    else open = depth < GEN.maxDepth ? rng() < (GEN.branch / 100) : false;
+    opens.push({ d, info, open });
+  }
+  const belowK = rgK(x, y, z - 1), aboveK = rgK(x, y, z + 1);
+  let hasDown = S.rooms[belowK] ? !!S.rooms[belowK].hasUp : (z > -GEN.maxFloor ? rng() < (GEN.floorChance / 100) : false);
+  let hasUp = S.rooms[aboveK] ? !!S.rooms[aboveK].hasDown : (z < GEN.maxFloor ? rng() < (GEN.floorChance / 100) : false);
+  if (!opens.some(o => o.open) && !hasDown && !hasUp) opens[Math.floor(rng() * 4)].open = true;
+  const doors = [];
+  for (const o of opens) if (o.open) { tm[o.info.r][o.info.c] = GEN.door; doors.push({ col: o.info.c, row: o.info.r, dir: o.d }); }
+  const stairs = [];
+  if (hasDown) { tm[1][1] = GEN.stairsDown; stairs.push({ col: 1, row: 1, go: 'down' }); }
+  if (hasUp) { tm[1][D.W - 2] = GEN.stairsUp; stairs.push({ col: D.W - 2, row: 1, go: 'up' }); }
+  const enemies = [];
+  if (depth > 0) { const n = Math.floor(rng() * (depth >= 2 ? 3 : 2));
+    for (let i = 0; i < n; i++) { const ec = 1 + Math.floor(rng() * (D.W - 2)), er = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[er][ec] !== GEN.floor) continue;
+      const t = G.ENEMY_POOL[Math.floor(rng() * Math.max(1, G.ENEMY_POOL.length))] || {};
+      enemies.push({ col: ec, row: er, tile: t.tile || GEN.enemy, pal: t.pal || 0, hp: t.hp || 1,
+                     dir: rng() < .5 ? 1 : -1, axis: rng() < .5 ? 'h' : 'v', alive: true }); } }
   const items = [];
-  if (depth > 0 && (G.ITEM_POOL||[]).length && rng() < (GEN.itemChance/100)) {
-    for (let tries=0; tries<8; tries++) {
-      const ic=1+Math.floor(rng()*(W-2)), ir=1+Math.floor(rng()*(H-2));
-      if (tm[ir][ic]!==GEN.floor || enemies.some(e=>e.col===ic&&e.row===ir)) continue;
-      items.push(Object.assign({col:ic,row:ir,taken:false}, G.ITEM_POOL[Math.floor(rng()*G.ITEM_POOL.length)])); break;
+  if (depth > 0 && (G.ITEM_POOL || []).length && rng() < (GEN.itemChance / 100)) {
+    for (let tries = 0; tries < 8; tries++) {
+      const ic = 1 + Math.floor(rng() * (D.W - 2)), ir = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[ir][ic] !== GEN.floor || enemies.some(e => e.col === ic && e.row === ir)) continue;
+      items.push(Object.assign({ col: ic, row: ir, taken: false }, G.ITEM_POOL[Math.floor(rng() * G.ITEM_POOL.length)])); break;
     }
   }
   let goal = null;
-  if (depth >= GEN.maxDepth && !goalPlaced) { goal = {col:midC,row:midR,tile:GEN.goal,pal:0}; goalPlaced = true; }
-  rooms[key] = { tilemap:tm, attrs:at, doors, stairs, hasUp, hasDown, enemies, items, goal, depth, x, y, z };
-  return rooms[key];
+  if (depth >= GEN.maxDepth && !S.goalPlaced) { goal = { col: D.midC, row: D.midR, tile: GEN.goal, pal: 0 }; S.goalPlaced = true; }
+  // --- extensiones data-driven (tiradas SIEMPRE al final: no perturban lo anterior) ---
+  // cerraduras: mutuas con el vecino si existe; si no, tirada por lockChance.
+  // Garantia de solvencia: toda sala conserva >=1 salida SIN cerrar (o escalera).
+  for (const d of doors) {
+    const st = RG_STEP[d.dir], nRoom = S.rooms[rgK(x + st[0], y + st[1], z)];
+    if (nRoom) { const nd = nRoom.doors.find(dr => dr.dir === RG_OPP[d.dir]); d.locked = !!(nd && nd.locked); }
+    else d.locked = depth > 0 && GEN.lockChance ? rng() < (GEN.lockChance / 100) : false;
+  }
+  if (doors.length && doors.every(d => d.locked) && !stairs.length) doors[0].locked = false;
+  for (const d of doors) if (d.locked && GEN.lockedDoor != null) tm[d.row][d.col] = GEN.lockedDoor;
+  // llave: como los items, por keyChance
+  if (depth > 0 && GEN.key != null && GEN.keyChance && rng() < (GEN.keyChance / 100)) {
+    for (let tries = 0; tries < 8; tries++) {
+      const kc = 1 + Math.floor(rng() * (D.W - 2)), kr = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[kr][kc] !== GEN.floor || enemies.some(e => e.col === kc && e.row === kr) ||
+          items.some(i => i.col === kc && i.row === kr)) continue;
+      items.push({ col: kc, row: kr, taken: false, kind: 'key', tile: GEN.key, pal: 0, name: 'Llave' }); break;
+    }
+  }
+  // jefe: custodia el cofre (sin tirada; datos de BOSS)
+  const boss = (goal && G.BOSS) ? { col: D.midC, row: D.midR - 1, hp: G.BOSS.hp, alive: true } : null;
+  S.rooms[key] = { tilemap: tm, doors, stairs, hasUp, hasDown, enemies, items, goal, boss, depth, x, y, z };
+  return S.rooms[key];
+}
+function rgEnter(G, S, x, y, z, from) {
+  const D = rgDims(G), key = rgK(x, y, z), isNew = !S.rooms[key];
+  if (isNew) rgGenRoom(G, S, x, y, z);
+  S.cur = key;
+  if (S.deepest != null) S.deepest = Math.max(S.deepest, S.rooms[key].depth);
+  if (from === 'E') S.pos = { col: 1, row: D.midR };
+  else if (from === 'W') S.pos = { col: D.W - 2, row: D.midR };
+  else if (from === 'S') S.pos = { col: D.midC, row: 1 };
+  else if (from === 'N') S.pos = { col: D.midC, row: D.H - 2 };
+  else if (from === 'down') S.pos = { col: 1, row: 1 };
+  else if (from === 'up') S.pos = { col: D.W - 2, row: 1 };
+  else S.pos = { col: D.midC, row: D.midR };
+  return isNew;
+}
+function rgInit(G) {
+  const S = { rooms: {}, goalPlaced: false, cur: null, pos: null,
+              hp: (G.PLAYER || {}).hp || 5, maxHp: (G.PLAYER || {}).hp || 5,
+              atk: (G.PLAYER || {}).atk || 1, weapon: 'puños',
+              keys: 0, atkBonus: 0, deepest: 0,
+              invuln: 0, kills: 0, deaths: 0, won: false, lost: false };
+  rgEnter(G, S, 0, 0, 0, null);
+  return S;
+}
+// Guardado/carga de la run (puros): el estado es solo datos planos.
+function rgSave(S) { return JSON.stringify({ v: 1, S }); }
+function rgLoad(G, json) {
+  try { const d = JSON.parse(json); return d && d.v === 1 && d.S && d.S.rooms && d.S.cur ? d.S : null; }
+  catch (e) { return null; }
+}
+// ataque efectivo = base/arma + bono de experiencia (PROGRESSION)
+const rgAtkEff = S => S.atk + S.atkBonus;
+function rgXP(G, S) { // recalcula el bono tras una baja; true si subio
+  const P = G.PROGRESSION;
+  if (!P || !P.killsPerAtk) return false;
+  const b = Math.min(P.maxBonus != null ? P.maxBonus : Infinity, Math.floor(S.kills / P.killsPerAtk));
+  if (b > S.atkBonus) { S.atkBonus = b; return true; }
+  return false;
+}
+const rgRoom = S => S.rooms[S.cur];
+const rgSolid = (G, room, c, r) => {
+  const tm = room.tilemap;
+  if (c < 0 || r < 0 || r >= tm.length || c >= tm[0].length) return true;
+  return !!((G.TILES || {})[String(tm[r][c])] || {}).solid;
+};
+function rgHurt(G, S, damage) {
+  const D = rgDims(G);
+  if (S.invuln > 0 || S.won || S.lost) return 'ok';
+  S.hp -= (damage || 1); S.invuln = 2;
+  if (S.hp <= 0) {
+    S.deaths++;
+    if ((G.PROGRESSION || {}).permadeath) { S.lost = true; return 'gameover'; }
+    S.hp = S.maxHp; S.invuln = 3; rgEnter(G, S, 0, 0, 0, null); return 'fallen';
+  }
+  S.pos = { col: D.midC, row: D.midR };
+  return 'hurt';
+}
+function rgMove(G, S, dc, dr) {
+  if (S.won || S.lost) return 'blocked';
+  const room = rgRoom(S), nc = S.pos.col + dc, nr = S.pos.row + dr;
+  const door = room.doors.find(d => d.col === nc && d.row === nr);
+  if (door) {
+    const st = RG_STEP[door.dir];
+    if (door.locked) {
+      if (S.keys <= 0) return 'locked';
+      // la llave abre AMBOS lados de la puerta (y sus tiles) de forma permanente
+      S.keys--; door.locked = false;
+      room.tilemap[door.row][door.col] = G.GENERATOR.door;
+      const nRoom = S.rooms[rgK(room.x + st[0], room.y + st[1], room.z)];
+      if (nRoom) { const nd = nRoom.doors.find(d2 => d2.dir === RG_OPP[door.dir]);
+        if (nd) { nd.locked = false; nRoom.tilemap[nd.row][nd.col] = G.GENERATOR.door; } }
+      return 'unlock';
+    }
+    return rgEnter(G, S, room.x + st[0], room.y + st[1], room.z, door.dir) ? 'door-new' : 'door';
+  }
+  const st = room.stairs.find(s => s.col === nc && s.row === nr);
+  if (st) { const nz = room.z + (st.go === 'up' ? 1 : -1);
+    return rgEnter(G, S, room.x, room.y, nz, st.go === 'up' ? 'down' : 'up') ? 'stairs-new' : 'stairs'; }
+  if (rgSolid(G, room, nc, nr)) return 'blocked';
+  // el jefe vivo bloquea su celda y la del cofre (hay que derrotarlo)
+  if (room.boss && room.boss.alive) {
+    if (room.boss.col === nc && room.boss.row === nr) { const h = rgHurt(G, S, (G.BOSS || {}).damage || 1); return h === 'ok' ? 'boss-contact' : h; }
+    if (room.goal && room.goal.col === nc && room.goal.row === nr) return 'boss-blocks';
+  }
+  S.pos = { col: nc, row: nr };
+  let ev = 'ok';
+  const it = room.items.find(i => !i.taken && i.col === nc && i.row === nr);
+  if (it) { it.taken = true; S.lastItem = it;
+    if (it.kind === 'heal') { S.hp = Math.min(S.maxHp, S.hp + it.amount); ev = 'heal'; }
+    else if (it.kind === 'key') { S.keys++; ev = 'key'; }
+    else if ((it.power || 1) > S.atk) { S.atk = it.power; S.weapon = it.name || 'arma'; ev = 'weapon'; }
+    else ev = 'weapon-worse'; }
+  if (room.enemies.some(e => e.alive && e.col === nc && e.row === nr)) {
+    const h = rgHurt(G, S); if (h !== 'ok') return h;
+  }
+  if (room.goal && room.goal.col === nc && room.goal.row === nr) { S.won = true; return 'win'; }
+  return ev;
+}
+function rgAttack(G, S) {
+  if (S.won || S.lost) return 'none';
+  const room = rgRoom(S);
+  if (room.boss && room.boss.alive && Math.abs(room.boss.col - S.pos.col) + Math.abs(room.boss.row - S.pos.row) === 1) {
+    room.boss.hp -= rgAtkEff(S);
+    if (room.boss.hp <= 0) { room.boss.alive = false; S.kills++; rgXP(G, S); return 'boss-kill'; }
+    return 'boss-hit';
+  }
+  for (const e of room.enemies)
+    if (e.alive && Math.abs(e.col - S.pos.col) + Math.abs(e.row - S.pos.row) === 1) {
+      e.hp -= rgAtkEff(S);
+      if (e.hp <= 0) { e.alive = false; S.kills++; return rgXP(G, S) ? 'kill-levelup' : 'kill'; }
+      return 'hit';
+    }
+  return 'none';
+}
+function rgPatrol(G, S) {
+  if (S.won || S.lost) return 'ok';
+  if (S.invuln > 0) S.invuln--;
+  const room = rgRoom(S);
+  for (const e of room.enemies) {
+    if (!e.alive) continue;
+    const dx = e.axis === 'v' ? 0 : e.dir, dy = e.axis === 'v' ? e.dir : 0;
+    let nc = e.col + dx, nr = e.row + dy;
+    if (rgSolid(G, room, nc, nr)) { e.dir *= -1; nc = e.col - dx; nr = e.row - dy; if (rgSolid(G, room, nc, nr)) continue; }
+    e.col = nc; e.row = nr;
+    if (e.col === S.pos.col && e.row === S.pos.row) { const h = rgHurt(G, S); if (h !== 'ok') return h; }
+  }
+  return 'ok';
 }
 
+// ============================================================================
+// Lógica del perfil `advance-wars` — PURA. Este perfil modela SOLO arte
+// extraído (PALETTES + UNITS 4bpp): no hay vocabulario de gameplay (stats,
+// daño, terreno, mapa), así que el runtime es un VISOR — desfile de unidades
+// sobre la rejilla que declara `platform` (mode grid, cols×rows), con
+// inspección y recolocación. Sin combate: inventarlo violaría el principio
+// del protocolo (gameplay as DATA). awDecode valida el 4bpp contra la paleta.
+// ============================================================================
+function awDecode(G, unitName) {
+  const u = (G.UNITS || {})[unitName];
+  if (!u) return { err: 'unidad inexistente: ' + unitName };
+  const pal = (G.PALETTES || [])[u.palette || 0];
+  if (!pal) return { err: 'paleta inexistente: ' + u.palette };
+  const rows = u.tileData || [];
+  if (rows.length !== u.height || rows.some(r => r.length !== u.width)) return { err: 'tileData no es ' + u.height + 'x' + u.width };
+  const colors = [];
+  for (const r of rows) {
+    const cr = [];
+    for (const i of r) { if (i < 0 || i > 15) return { err: 'indice 4bpp fuera de 0..15' }; cr.push(pal[i] || [0, 0, 0]); }
+    colors.push(cr);
+  }
+  return { err: null, name: unitName, w: u.width, h: u.height, pixels: rows, colors };
+}
+function awInit(G) {
+  const P = G.platform || {};
+  const cols = P.cols || 12, rows = P.rows || 10;
+  const names = Object.keys(G.UNITS || {});
+  // desfile inicial: unidades repartidas en la fila central, equiespaciadas
+  const units = names.map((name, i) => ({ name,
+    col: Math.min(cols - 1, Math.floor((i + 1) * cols / (names.length + 1))),
+    row: rows >> 1 }));
+  return { cols, rows, units, cursor: { col: 0, row: rows >> 1 }, picked: -1 };
+}
+function awCursor(S, dc, dr) {
+  S.cursor.col = Math.max(0, Math.min(S.cols - 1, S.cursor.col + dc));
+  S.cursor.row = Math.max(0, Math.min(S.rows - 1, S.cursor.row + dr));
+  return 'ok';
+}
+function awAct(S) {
+  const at = S.units.findIndex(u => u.col === S.cursor.col && u.row === S.cursor.row);
+  if (S.picked === -1) {
+    if (at === -1) return 'blocked';           // no hay unidad que coger
+    S.picked = at; return 'pick';
+  }
+  if (at !== -1 && at !== S.picked) return 'blocked'; // celda ocupada por otra
+  S.units[S.picked].col = S.cursor.col; S.units[S.picked].row = S.cursor.row;
+  S.picked = -1; return 'place';
+}
+
+// LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
+const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
+
+// Visión de entrenadores: misma fila/columna dentro de `sight`, línea de visión sin
+// sólidos (isSolid(c, r) la aporta el runtime). Devuelve el entrenador que ve, o null.
+function trainerInSight(trainers, defeated, pos, isSolid) {
+  for (const t of (trainers || [])) {
+    if (defeated.has(t.name)) continue;
+    const dc = pos.col - t.col, dr = pos.row - t.row, sg = t.sight || 3;
+    if (!((dc === 0 && Math.abs(dr) <= sg) || (dr === 0 && Math.abs(dc) <= sg))) continue;
+    let blocked = false;
+    const n = Math.max(Math.abs(dc), Math.abs(dr));
+    for (let i = 1; i < n; i++)
+      if (isSolid(dr === 0 ? t.col + Math.sign(dc) * i : t.col,
+                  dc === 0 ? t.row + Math.sign(dr) * i : t.row)) { blocked = true; break; }
+    if (!blocked) return t;
+  }
+  return null;
+}
+
+
+const G = window.GAME, GEN = G.GENERATOR, SCALE = 6, TS = 8 * SCALE;
+const W = GEN.roomW, H = GEN.roomH;
+document.getElementById('title').innerHTML = `<b>${EngineCore.esc(G.name || 'Roguelike')}</b> — pisos generados en tiempo real desde el generador del GAME.md`;
+
+const S = rgInit(G);
+window.RL = { S };                     // estado expuesto para harnesses
+const T = G.TEXT || {};
+const room = () => S.rooms[S.cur];
+
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
-function sizeCanvas(){ cv.width = W*TS; cv.height = H*TS; }
-const _R = EngineCore.makeRenderer(ctx, { ART, PAL, SCALE });
-const rgb = _R.rgb, drawTile = _R.drawTile;
-function render(){const tm=curRoom.tilemap,at=curRoom.attrs;
-  for(let r=0;r<H;r++)for(let c=0;c<W;c++)drawTile(tm[r][c],at[r][c],c,r,false);
-  for(const it of curRoom.items)if(!it.taken)drawTile(it.tile,it.pal||0,it.col,it.row,true);
-  for(const e of curRoom.enemies)if(e.alive)drawTile(e.tile,e.pal,e.col,e.row,true);
-  if(curRoom.goal)drawTile(curRoom.goal.tile,curRoom.goal.pal,curRoom.goal.col,curRoom.goal.row,true);
-  if(!(invuln>0&&((frame>>2)&1)))drawTile(G.PLAYER.tile,G.PLAYER.pal,player.col,player.row,true);}
+cv.width = W * TS; cv.height = H * TS;
+const _R = EngineCore.makeRenderer(ctx, { ART: G.TILE_ART, PAL: G.PALETTES, SCALE });
+let frame = 0;
+function render() {
+  const r = room(), tm = r.tilemap;
+  for (let rr = 0; rr < H; rr++) for (let cc = 0; cc < W; cc++) _R.drawTile(tm[rr][cc], 0, cc, rr, false);
+  for (const it of r.items) if (!it.taken) _R.drawTile(it.tile, it.pal || 0, it.col, it.row, true);
+  for (const e of r.enemies) if (e.alive) _R.drawTile(e.tile, e.pal, e.col, e.row, true);
+  if (r.boss && r.boss.alive) _R.drawTile(G.BOSS.tile, G.BOSS.pal || 0, r.boss.col, r.boss.row, true);
+  if (r.goal) _R.drawTile(r.goal.tile, r.goal.pal, r.goal.col, r.goal.row, true);
+  if (!(S.invuln > 0 && ((frame >> 2) & 1))) _R.drawTile(G.PLAYER.tile, G.PLAYER.pal, S.pos.col, S.pos.row, true);
+}
 
-function setMsg(t,win){const m=document.getElementById('msg');m.textContent=t;m.className=win?'win':'';}
-function updHud(){
-  document.getElementById('floor').innerHTML='Piso: <b>'+curRoom.z+'</b>';
-  document.getElementById('depth').textContent='('+curRoom.x+','+curRoom.y+')  Salas: '+Object.keys(rooms).length;
-  document.getElementById('hp').innerHTML='Vida: <b style="color:#ff7b7b">'+'♥'.repeat(Math.max(0,hp))+'</b><span style="color:#553">'+'♡'.repeat(Math.max(0,maxHp-hp))+'</span>';
-  document.getElementById('weapon').innerHTML='Arma: <b>'+EngineCore.esc(weapon)+'</b> (atq '+atk+')';}
+function setMsg(t, cls) { const m = document.getElementById('msg'); m.textContent = t; m.className = cls || ''; }
+function updHud() {
+  const r = room();
+  document.getElementById('floor').innerHTML = 'Piso: <b>' + r.z + '</b>';
+  document.getElementById('depth').textContent = '(' + r.x + ',' + r.y + ')  Salas: ' + Object.keys(S.rooms).length;
+  document.getElementById('hp').innerHTML = 'Vida: <b style="color:#ff7b7b">' + '♥'.repeat(Math.max(0, S.hp)) + '</b><span style="color:#553">' + '♡'.repeat(Math.max(0, S.maxHp - S.hp)) + '</span>';
+  document.getElementById('weapon').innerHTML = 'Arma: <b>' + EngineCore.esc(S.weapon) + '</b> (atq ' + (S.atk + S.atkBonus) + (S.atkBonus ? ' = ' + S.atk + '+' + S.atkBonus + ' XP' : '') + ')';
+  document.getElementById('keys').innerHTML = 'Llaves: <b>' + S.keys + '</b>';
+}
 
-function enterRoom(x,y,z,from){const key=k3(x,y,z);const isNew=!rooms[key];if(isNew)genRoom(x,y,z);
-  cur=key;curRoom=rooms[key];visited.add(key);
-  if(from==='E')player={col:1,row:midR};else if(from==='W')player={col:W-2,row:midR};
-  else if(from==='S')player={col:midC,row:1};else if(from==='N')player={col:midC,row:H-2};
-  else if(from==='down')player={col:DOWN_POS.col,row:DOWN_POS.row};
-  else if(from==='up')player={col:UP_POS.col,row:UP_POS.row};
-  else player={col:midC,row:midR};
-  sizeCanvas();updHud();renderMap();return isNew;}
+function onEvent(r) {
+  if (r === 'door-new' || r === 'stairs-new') setMsg(T.enter || 'Nueva sala generada.');
+  else if (r === 'door') setMsg('Sala (' + room().x + ',' + room().y + ')');
+  else if (r === 'stairs') setMsg('Piso ' + room().z);
+  else if (r === 'locked') setMsg(T.locked || 'Puerta cerrada.');
+  else if (r === 'unlock') setMsg(T.unlock || 'La llave abre la puerta.');
+  else if (r === 'key') setMsg(T.key || 'Llave.');
+  else if (r === 'heal') setMsg((T.heal || 'Curado.') + ' (+' + S.lastItem.amount + ')');
+  else if (r === 'weapon') setMsg((T.equip || 'Equipas') + ': ' + S.weapon);
+  else if (r === 'weapon-worse') setMsg((S.lastItem.name || 'Arma') + ' — ya tienes algo mejor');
+  else if (r === 'boss-blocks' || r === 'boss-contact') setMsg(T.boss || 'El guardian bloquea el cofre.');
+  else if (r === 'hurt') setMsg(T.hit || 'Te golpearon.');
+  else if (r === 'fallen') setMsg(T.fallen || 'Has caido.');
+  else if (r === 'gameover') setMsg('Fin de la partida (permadeath).', 'dead');
+  else if (r === 'win') setMsg((G.WIN && G.WIN.text) || '¡Ganaste!', 'win');
+  updHud(); renderMap();
+}
 
-function solid(c,r){const tm=curRoom.tilemap;if(c<0||r<0||r>=tm.length||c>=tm[0].length)return true;return !!(TILES[String(tm[r][c])]&&TILES[String(tm[r][c])].solid);}
-function move(dc,dr){if(won)return;const nc=player.col+dc,nr=player.row+dr;
-  const door=curRoom.doors.find(d=>d.col===nc&&d.row===nr);
-  if(door){const s=STEP[door.dir];const isNew=enterRoom(curRoom.x+s[0],curRoom.y+s[1],curRoom.z,door.dir);setMsg(isNew?(G.TEXT.enter||'Nueva sala.'):('Sala ('+curRoom.x+','+curRoom.y+')'));return;}
-  const st=curRoom.stairs.find(s=>s.col===nc&&s.row===nr);
-  if(st){const nz=curRoom.z+(st.go==='up'?1:-1);const isNew=enterRoom(curRoom.x,curRoom.y,nz,st.go==='up'?'down':'up');setMsg((st.go==='up'?'Subes al piso ':'Bajas al piso ')+nz+(isNew?' · nueva sala':''));return;}
-  if(solid(nc,nr))return;
-  player={col:nc,row:nr};
-  const it=curRoom.items.find(i=>!i.taken&&i.col===nc&&i.row===nr);
-  if(it){it.taken=true;
-    if(it.kind==='heal'){hp=Math.min(maxHp,hp+it.amount);setMsg((G.TEXT.heal||'Curado')+' (+'+it.amount+')');}
-    else{if((it.power||1)>atk){atk=it.power;weapon=it.name||'arma';setMsg((G.TEXT.equip||'Equipas')+': '+weapon+' (atq '+atk+')');}else setMsg((it.name||'Arma')+' — ya tienes algo mejor');}
-    updHud();}
-  if(curRoom.enemies.some(e=>e.alive&&e.col===nc&&e.row===nr))hurt();
-  if(curRoom.goal&&curRoom.goal.col===nc&&curRoom.goal.row===nr){won=true;setMsg((G.WIN&&G.WIN.text)||'¡Ganaste!',true);}}
-function interact(){if(won)return;for(const e of curRoom.enemies)if(e.alive&&Math.abs(e.col-player.col)+Math.abs(e.row-player.row)===1){e.hp-=atk;if(e.hp<=0){e.alive=false;setMsg((G.TEXT.defeat||'Derrotado.')+' ('+weapon+')');}else setMsg('Golpeas con '+weapon+' · '+e.hp+' HP');return;}}
-function solidForEnemy(c,r){const tm=curRoom.tilemap;if(c<0||r<0||r>=tm.length||c>=tm[0].length)return true;return !!(TILES[String(tm[r][c])]&&TILES[String(tm[r][c])].solid);}
-function patrol(){for(const e of curRoom.enemies){if(!e.alive)continue;const dx=e.axis==='v'?0:e.dir,dy=e.axis==='v'?e.dir:0;let nc=e.col+dx,nr=e.row+dy;if(solidForEnemy(nc,nr)){e.dir*=-1;nc=e.col-dx;nr=e.row-dy;if(solidForEnemy(nc,nr))continue;}e.col=nc;e.row=nr;if(e.col===player.col&&e.row===player.row)hurt();}}
-function hurt(){if(invuln>0||won)return;hp--;invuln=40;updHud();if(hp<=0){hp=G.PLAYER.hp||5;invuln=60;setMsg(G.TEXT.fallen||'Has caido.');enterRoom(0,0,0,null);return;}setMsg(G.TEXT.hit||'Te golpearon.');player={col:midC,row:midR};}
+// --- MINIMAPA: solo el PISO actual; escaleras ▲▼; conexiones cerradas en rojo ---
+const mapCanvas = document.getElementById('map'), mctx = mapCanvas.getContext('2d');
+function renderMap() {
+  document.getElementById('maplabel').textContent = 'MAPA · Piso ' + room().z;
+  const ks = Object.keys(S.rooms).filter(k => S.rooms[k].z === room().z); if (!ks.length) return;
+  let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+  for (const k of ks) { const s = S.rooms[k]; minx = Math.min(minx, s.x); miny = Math.min(miny, s.y); maxx = Math.max(maxx, s.x); maxy = Math.max(maxy, s.y); }
+  const cell = 22, box = 15, pad = 8;
+  mapCanvas.width = (maxx - minx + 1) * cell + pad * 2; mapCanvas.height = (maxy - miny + 1) * cell + pad * 2;
+  const cx = s => pad + (s.x - minx) * cell + cell / 2, cy = s => pad + (s.y - miny) * cell + cell / 2;
+  mctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  mctx.lineWidth = 2;
+  for (const k of ks) { const s = S.rooms[k];
+    for (const d of s.doors) { const st = RG_STEP[d.dir]; const nKey = (s.x + st[0]) + ',' + (s.y + st[1]) + ',' + s.z;
+      const nx = cx(s) + st[0] * cell / 2, ny = cy(s) + st[1] * cell / 2;
+      const col = d.locked ? '#b04040' : (S.rooms[nKey] ? '#54657d' : '#2b333f');
+      mctx.strokeStyle = col; mctx.beginPath(); mctx.moveTo(cx(s), cy(s));
+      if (S.rooms[nKey] && !d.locked) mctx.lineTo(cx(S.rooms[nKey]), cy(S.rooms[nKey])); else mctx.lineTo(nx, ny);
+      mctx.stroke(); } }
+  mctx.font = '8px system-ui'; mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
+  for (const k of ks) { const s = S.rooms[k]; const x = cx(s) - box / 2, y = cy(s) - box / 2;
+    mctx.fillStyle = (s.goal && !S.won) ? '#ffe08a' : (k === S.cur ? '#ffd86b' : '#3f5167'); mctx.fillRect(x, y, box, box);
+    if (k === S.cur) { mctx.strokeStyle = '#fff'; mctx.lineWidth = 2; mctx.strokeRect(x, y, box, box); }
+    if (s.hasUp) { mctx.fillStyle = '#9fffa6'; mctx.fillText('▲', cx(s) + box / 2 - 3, cy(s) - box / 2 + 3); }
+    if (s.hasDown) { mctx.fillStyle = '#8fd6ff'; mctx.fillText('▼', cx(s) - box / 2 + 3, cy(s) + box / 2 - 3); } }
+}
 
-// --- MINIMAPA: solo el PISO actual; muestra escaleras ▲▼; crece al explorar ---
-const mapCanvas=document.getElementById('map'),mctx=mapCanvas.getContext('2d');
-function renderMap(){
-  document.getElementById('maplabel').textContent='MAPA · Piso '+curRoom.z;
-  const ks=Object.keys(rooms).filter(k=>rooms[k].z===curRoom.z);if(!ks.length)return;
-  let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;
-  for(const k of ks){const s=rooms[k];minx=Math.min(minx,s.x);miny=Math.min(miny,s.y);maxx=Math.max(maxx,s.x);maxy=Math.max(maxy,s.y);}
-  const cell=22,box=15,pad=8;
-  mapCanvas.width=(maxx-minx+1)*cell+pad*2;mapCanvas.height=(maxy-miny+1)*cell+pad*2;
-  const cx=s=>pad+(s.x-minx)*cell+cell/2,cy=s=>pad+(s.y-miny)*cell+cell/2;
-  mctx.clearRect(0,0,mapCanvas.width,mapCanvas.height);
-  mctx.lineWidth=2;
-  for(const k of ks){const s=rooms[k];for(const d of s.doors){const st=STEP[d.dir];const nKey=k3(s.x+st[0],s.y+st[1],s.z);const nx=cx(s)+st[0]*cell/2,ny=cy(s)+st[1]*cell/2;
-    if(rooms[nKey]){mctx.strokeStyle='#54657d';mctx.beginPath();mctx.moveTo(cx(s),cy(s));mctx.lineTo(cx(rooms[nKey]),cy(rooms[nKey]));mctx.stroke();}
-    else{mctx.strokeStyle='#2b333f';mctx.beginPath();mctx.moveTo(cx(s),cy(s));mctx.lineTo(nx,ny);mctx.stroke();}}}
-  mctx.font='8px system-ui';mctx.textAlign='center';mctx.textBaseline='middle';
-  for(const k of ks){const s=rooms[k];const x=cx(s)-box/2,y=cy(s)-box/2;
-    mctx.fillStyle=(s.goal&&!won)?'#ffe08a':(k===cur?'#ffd86b':'#3f5167');mctx.fillRect(x,y,box,box);
-    if(k===cur){mctx.strokeStyle='#fff';mctx.lineWidth=2;mctx.strokeRect(x,y,box,box);}
-    if(s.hasUp){mctx.fillStyle='#9fffa6';mctx.fillText('▲',cx(s)+box/2-3,cy(s)-box/2+3);}
-    if(s.hasDown){mctx.fillStyle='#8fd6ff';mctx.fillText('▼',cx(s)-box/2+3,cy(s)+box/2-3);}}}
+addEventListener('keydown', e => { const k = e.key;
+  if (k === 'ArrowLeft') onEvent(rgMove(G, S, -1, 0));
+  else if (k === 'ArrowRight') onEvent(rgMove(G, S, 1, 0));
+  else if (k === 'ArrowUp') onEvent(rgMove(G, S, 0, -1));
+  else if (k === 'ArrowDown') onEvent(rgMove(G, S, 0, 1));
+  else if (k === ' ') { const r = rgAttack(G, S);
+    if (r === 'kill' || r === 'boss-kill') setMsg((r === 'boss-kill' ? (T.bossdown || 'El guardian cae.') : (T.defeat || 'Derrotado.')) + ' (' + S.weapon + ')');
+    else if (r === 'kill-levelup') setMsg((T.levelup || 'Subes de ataque.') + ' (atq ' + (S.atk + S.atkBonus) + ')');
+    else if (r === 'hit' || r === 'boss-hit') setMsg('Golpeas con ' + S.weapon + '.');
+    updHud(); }
+  else return; e.preventDefault(); });
 
-addEventListener('keydown',e=>{const k=e.key;if(k==='ArrowLeft')move(-1,0);else if(k==='ArrowRight')move(1,0);else if(k==='ArrowUp')move(0,-1);else if(k==='ArrowDown')move(0,1);else if(k===' ')interact();else return;e.preventDefault();});
-
-enterRoom(0,0,0,null); setMsg(G.TEXT.intro||'');
-(function loop(){requestAnimationFrame(loop);frame++;if(invuln>0)invuln--;if(frame%24===0)patrol();render();})();
+updHud(); renderMap(); setMsg(T.intro || '');
+(function loop() { requestAnimationFrame(loop); frame++;
+  if (frame % 24 === 0 && !S.won && !S.lost) { const r = rgPatrol(G, S); if (r !== 'ok') onEvent(r); }
+  render(); })();
 </script>

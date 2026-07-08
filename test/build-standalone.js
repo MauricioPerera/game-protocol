@@ -23,13 +23,22 @@ const html = `<!doctype html>
 <html><head>
 <script src="local.js"></script>
 <script src="https://cdn.example.com/lib.js"></script>
+<script type="module">
+import { foo } from './local.mjs';
+foo();
+</script>
 </head><body><p>hi</p></body></html>
 `;
 const localJs = `// marker-local-xyz
 window.MARK = 42;
 `;
+const localMjs = `// marker-module-abc
+export function foo() { return 7; }
+export const bar = 1;
+`;
 fs.writeFileSync(path.join(TMP, 'index.html'), html, 'utf8');
 fs.writeFileSync(path.join(TMP, 'local.js'), localJs, 'utf8');
+fs.writeFileSync(path.join(TMP, 'local.mjs'), localMjs, 'utf8');
 
 // ---- Run ----
 let stdout = '', stderr = '', code = 0;
@@ -41,7 +50,7 @@ try {
   stderr = (e.stderr || '').toString().replace(/\r\n/g, '\n');
 }
 ok(code === 0, 'standalone  exit 0', 'exit=' + code + ' stderr=' + stderr);
-ok(/inlined:\s*1/.test(stdout), 'standalone  reporta "inlined: 1"', JSON.stringify(stdout));
+ok(/inlined:\s*2/.test(stdout), 'standalone  reporta "inlined: 2" (script clasico + modulo)', JSON.stringify(stdout));
 
 // ---- Lee el standalone generado ----
 const out = path.join(TMP, 'index-standalone.html');
@@ -56,6 +65,9 @@ if (fs.existsSync(out)) {
      'standalone  CDN intacto (no se inlinan http(s)://)');
   // El body se preserva.
   ok(/<p>hi<\/p>/.test(s), 'standalone  body preservado');
+  // El import relativo del modulo fue inlinado sin `export ` y sin el import.
+  ok(/marker-module-abc/.test(s) && !/from '\.\/local\.mjs'/.test(s), 'standalone  modulo relativo inlinado (import eliminado)');
+  ok(/function foo\(\)/.test(s) && !/export function foo/.test(s), 'standalone  prefijos `export ` retirados en el inlinado');
 }
 
 // Limpieza

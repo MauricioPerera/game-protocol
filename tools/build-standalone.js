@@ -34,6 +34,18 @@ for (const inFile of htmlInputs) {
     inlined++;
     return '<script>\n' + fs.readFileSync(p, 'utf8').replace(/<\/script>/g, '<\\/script>') + '\n</script>';
   });
+  // Imports RELATIVOS dentro de <script type="module">: se inlinea el modulo local
+  // (sin los prefijos `export `) para que el standalone no dependa de archivos hermanos.
+  html = html.replace(/(<script type="module">)([\s\S]*?)(<\/script>)/g, (m, open, body, close) => {
+    const nb = body.replace(/import\s*\{[^}]*\}\s*from\s*['"](\.[^'"]+)['"];?/g, (im, rel) => {
+      const p = path.join(dir, rel);
+      if (!fs.existsSync(p)) { missing.push(rel); return im; }
+      inlined++;
+      return '// --- modulo inlinado: ' + rel + ' ---\n' +
+        fs.readFileSync(p, 'utf8').replace(/^export /gm, '').replace(/<\/script>/g, '<\\/script>');
+    });
+    return open + nb + close;
+  });
   const out = inFile.replace(/\.html$/, '-standalone.html');
   fs.writeFileSync(out, html);
   console.log('Generado ' + path.relative(process.cwd(), out) + '  (inlined: ' + inlined + (missing.length ? ', externos sin inlinar: ' + missing.join(',') : '') + ')');

@@ -177,6 +177,9 @@ const invalid = [
   { p: 'roguelike', rule: 'player-tile', data: { ...B('roguelike'), tiles: {}, generator: { ...GEN }, player: { tile: 999 } } },
   { p: 'roguelike', rule: 'player-hp', data: { ...B('roguelike'), generator: { ...GEN }, player: { hp: -1 } } },
   { p: 'roguelike', rule: 'text-valid', data: { ...B('roguelike'), text: { x: '  ' } } },
+  { p: 'roguelike', rule: 'generator-chance', data: { ...B('roguelike'), generator: { ...GEN, lockChance: 150 } } },
+  { p: 'roguelike', rule: 'boss-fields', data: { ...B('roguelike'), generator: { ...GEN }, boss: { tile: 999, hp: 0, damage: 0 } } },
+  { p: 'roguelike', rule: 'progression-fields', data: { ...B('roguelike'), generator: { ...GEN }, progression: { killsPerAtk: 0, maxBonus: -1, permadeath: 'si' } } },
 
   // ---- tower-defense ----
   // broken-ref family

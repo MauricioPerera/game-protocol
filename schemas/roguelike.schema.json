@@ -49,6 +49,12 @@
     "player": {
       "type": "object"
     },
+    "boss": {
+      "type": "object"
+    },
+    "progression": {
+      "type": "object"
+    },
     "text": {
       "type": "object"
     },
@@ -74,6 +80,8 @@
     "ENEMY_POOL",
     "ITEM_POOL",
     "PLAYER",
+    "BOSS",
+    "PROGRESSION",
     "TEXT",
     "WIN"
   ],

@@ -651,13 +651,35 @@ export function rgGenRoom(G, S, x, y, z) {
   }
   let goal = null;
   if (depth >= GEN.maxDepth && !S.goalPlaced) { goal = { col: D.midC, row: D.midR, tile: GEN.goal, pal: 0 }; S.goalPlaced = true; }
-  S.rooms[key] = { tilemap: tm, doors, stairs, hasUp, hasDown, enemies, items, goal, depth, x, y, z };
+  // --- extensiones data-driven (tiradas SIEMPRE al final: no perturban lo anterior) ---
+  // cerraduras: mutuas con el vecino si existe; si no, tirada por lockChance.
+  // Garantia de solvencia: toda sala conserva >=1 salida SIN cerrar (o escalera).
+  for (const d of doors) {
+    const st = RG_STEP[d.dir], nRoom = S.rooms[rgK(x + st[0], y + st[1], z)];
+    if (nRoom) { const nd = nRoom.doors.find(dr => dr.dir === RG_OPP[d.dir]); d.locked = !!(nd && nd.locked); }
+    else d.locked = depth > 0 && GEN.lockChance ? rng() < (GEN.lockChance / 100) : false;
+  }
+  if (doors.length && doors.every(d => d.locked) && !stairs.length) doors[0].locked = false;
+  for (const d of doors) if (d.locked && GEN.lockedDoor != null) tm[d.row][d.col] = GEN.lockedDoor;
+  // llave: como los items, por keyChance
+  if (depth > 0 && GEN.key != null && GEN.keyChance && rng() < (GEN.keyChance / 100)) {
+    for (let tries = 0; tries < 8; tries++) {
+      const kc = 1 + Math.floor(rng() * (D.W - 2)), kr = 1 + Math.floor(rng() * (D.H - 2));
+      if (tm[kr][kc] !== GEN.floor || enemies.some(e => e.col === kc && e.row === kr) ||
+          items.some(i => i.col === kc && i.row === kr)) continue;
+      items.push({ col: kc, row: kr, taken: false, kind: 'key', tile: GEN.key, pal: 0, name: 'Llave' }); break;
+    }
+  }
+  // jefe: custodia el cofre (sin tirada; datos de BOSS)
+  const boss = (goal && G.BOSS) ? { col: D.midC, row: D.midR - 1, hp: G.BOSS.hp, alive: true } : null;
+  S.rooms[key] = { tilemap: tm, doors, stairs, hasUp, hasDown, enemies, items, goal, boss, depth, x, y, z };
   return S.rooms[key];
 }
 export function rgEnter(G, S, x, y, z, from) {
   const D = rgDims(G), key = rgK(x, y, z), isNew = !S.rooms[key];
   if (isNew) rgGenRoom(G, S, x, y, z);
   S.cur = key;
+  if (S.deepest != null) S.deepest = Math.max(S.deepest, S.rooms[key].depth);
   if (from === 'E') S.pos = { col: 1, row: D.midR };
   else if (from === 'W') S.pos = { col: D.W - 2, row: D.midR };
   else if (from === 'S') S.pos = { col: D.midC, row: 1 };
@@ -671,9 +693,25 @@ export function rgInit(G) {
   const S = { rooms: {}, goalPlaced: false, cur: null, pos: null,
               hp: (G.PLAYER || {}).hp || 5, maxHp: (G.PLAYER || {}).hp || 5,
               atk: (G.PLAYER || {}).atk || 1, weapon: 'puños',
-              invuln: 0, kills: 0, deaths: 0, won: false };
+              keys: 0, atkBonus: 0, deepest: 0,
+              invuln: 0, kills: 0, deaths: 0, won: false, lost: false };
   rgEnter(G, S, 0, 0, 0, null);
   return S;
+}
+// Guardado/carga de la run (puros): el estado es solo datos planos.
+export function rgSave(S) { return JSON.stringify({ v: 1, S }); }
+export function rgLoad(G, json) {
+  try { const d = JSON.parse(json); return d && d.v === 1 && d.S && d.S.rooms && d.S.cur ? d.S : null; }
+  catch (e) { return null; }
+}
+// ataque efectivo = base/arma + bono de experiencia (PROGRESSION)
+const rgAtkEff = S => S.atk + S.atkBonus;
+function rgXP(G, S) { // recalcula el bono tras una baja; true si subio
+  const P = G.PROGRESSION;
+  if (!P || !P.killsPerAtk) return false;
+  const b = Math.min(P.maxBonus != null ? P.maxBonus : Infinity, Math.floor(S.kills / P.killsPerAtk));
+  if (b > S.atkBonus) { S.atkBonus = b; return true; }
+  return false;
 }
 const rgRoom = S => S.rooms[S.cur];
 const rgSolid = (G, room, c, r) => {
@@ -681,29 +719,51 @@ const rgSolid = (G, room, c, r) => {
   if (c < 0 || r < 0 || r >= tm.length || c >= tm[0].length) return true;
   return !!((G.TILES || {})[String(tm[r][c])] || {}).solid;
 };
-function rgHurt(G, S) {
+function rgHurt(G, S, damage) {
   const D = rgDims(G);
-  if (S.invuln > 0 || S.won) return 'ok';
-  S.hp--; S.invuln = 2;
-  if (S.hp <= 0) { S.hp = S.maxHp; S.invuln = 3; S.deaths++; rgEnter(G, S, 0, 0, 0, null); return 'fallen'; }
+  if (S.invuln > 0 || S.won || S.lost) return 'ok';
+  S.hp -= (damage || 1); S.invuln = 2;
+  if (S.hp <= 0) {
+    S.deaths++;
+    if ((G.PROGRESSION || {}).permadeath) { S.lost = true; return 'gameover'; }
+    S.hp = S.maxHp; S.invuln = 3; rgEnter(G, S, 0, 0, 0, null); return 'fallen';
+  }
   S.pos = { col: D.midC, row: D.midR };
   return 'hurt';
 }
 export function rgMove(G, S, dc, dr) {
-  if (S.won) return 'blocked';
+  if (S.won || S.lost) return 'blocked';
   const room = rgRoom(S), nc = S.pos.col + dc, nr = S.pos.row + dr;
   const door = room.doors.find(d => d.col === nc && d.row === nr);
-  if (door) { const st = RG_STEP[door.dir];
-    return rgEnter(G, S, room.x + st[0], room.y + st[1], room.z, door.dir) ? 'door-new' : 'door'; }
+  if (door) {
+    const st = RG_STEP[door.dir];
+    if (door.locked) {
+      if (S.keys <= 0) return 'locked';
+      // la llave abre AMBOS lados de la puerta (y sus tiles) de forma permanente
+      S.keys--; door.locked = false;
+      room.tilemap[door.row][door.col] = G.GENERATOR.door;
+      const nRoom = S.rooms[rgK(room.x + st[0], room.y + st[1], room.z)];
+      if (nRoom) { const nd = nRoom.doors.find(d2 => d2.dir === RG_OPP[door.dir]);
+        if (nd) { nd.locked = false; nRoom.tilemap[nd.row][nd.col] = G.GENERATOR.door; } }
+      return 'unlock';
+    }
+    return rgEnter(G, S, room.x + st[0], room.y + st[1], room.z, door.dir) ? 'door-new' : 'door';
+  }
   const st = room.stairs.find(s => s.col === nc && s.row === nr);
   if (st) { const nz = room.z + (st.go === 'up' ? 1 : -1);
     return rgEnter(G, S, room.x, room.y, nz, st.go === 'up' ? 'down' : 'up') ? 'stairs-new' : 'stairs'; }
   if (rgSolid(G, room, nc, nr)) return 'blocked';
+  // el jefe vivo bloquea su celda y la del cofre (hay que derrotarlo)
+  if (room.boss && room.boss.alive) {
+    if (room.boss.col === nc && room.boss.row === nr) { const h = rgHurt(G, S, (G.BOSS || {}).damage || 1); return h === 'ok' ? 'boss-contact' : h; }
+    if (room.goal && room.goal.col === nc && room.goal.row === nr) return 'boss-blocks';
+  }
   S.pos = { col: nc, row: nr };
   let ev = 'ok';
   const it = room.items.find(i => !i.taken && i.col === nc && i.row === nr);
   if (it) { it.taken = true; S.lastItem = it;
     if (it.kind === 'heal') { S.hp = Math.min(S.maxHp, S.hp + it.amount); ev = 'heal'; }
+    else if (it.kind === 'key') { S.keys++; ev = 'key'; }
     else if ((it.power || 1) > S.atk) { S.atk = it.power; S.weapon = it.name || 'arma'; ev = 'weapon'; }
     else ev = 'weapon-worse'; }
   if (room.enemies.some(e => e.alive && e.col === nc && e.row === nr)) {
@@ -713,17 +773,23 @@ export function rgMove(G, S, dc, dr) {
   return ev;
 }
 export function rgAttack(G, S) {
-  if (S.won) return 'none';
-  for (const e of rgRoom(S).enemies)
+  if (S.won || S.lost) return 'none';
+  const room = rgRoom(S);
+  if (room.boss && room.boss.alive && Math.abs(room.boss.col - S.pos.col) + Math.abs(room.boss.row - S.pos.row) === 1) {
+    room.boss.hp -= rgAtkEff(S);
+    if (room.boss.hp <= 0) { room.boss.alive = false; S.kills++; rgXP(G, S); return 'boss-kill'; }
+    return 'boss-hit';
+  }
+  for (const e of room.enemies)
     if (e.alive && Math.abs(e.col - S.pos.col) + Math.abs(e.row - S.pos.row) === 1) {
-      e.hp -= S.atk;
-      if (e.hp <= 0) { e.alive = false; S.kills++; return 'kill'; }
+      e.hp -= rgAtkEff(S);
+      if (e.hp <= 0) { e.alive = false; S.kills++; return rgXP(G, S) ? 'kill-levelup' : 'kill'; }
       return 'hit';
     }
   return 'none';
 }
 export function rgPatrol(G, S) {
-  if (S.won) return 'ok';
+  if (S.won || S.lost) return 'ok';
   if (S.invuln > 0) S.invuln--;
   const room = rgRoom(S);
   for (const e of room.enemies) {

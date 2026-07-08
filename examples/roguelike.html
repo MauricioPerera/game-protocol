@@ -1,164 +1,126 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>GAME Protocol · roguelike 3D (pisos procedurales desde la spec)</title>
+<title>GAME Protocol · roguelike 2D (pisos procedurales desde la spec)</title>
 <style>
   html,body{margin:0;height:100%;background:#0b0e13;color:#cdd6e4;font:14px/1.45 system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
   #title{font-weight:600}#title b{color:#8fd6ff}
-  #hud{display:flex;gap:18px;font-size:13px;color:#9fb0c3}#hud b{color:#ffd86b}
+  #hud{display:flex;gap:14px;font-size:13px;color:#9fb0c3}#hud b{color:#ffd86b}
   canvas{image-rendering:pixelated;border:1px solid #2a3340;background:#000}
   #msg{min-height:2.2em;max-width:640px;text-align:center;padding:6px 10px;background:#141a22;border-radius:6px}
-  #msg.win{color:#9fffa6;font-weight:600}
+  #msg.win{color:#9fffa6;font-weight:600}#msg.dead{color:#ff8a8a;font-weight:600}
   #hint{color:#6b7685;font-size:12px}
   #mapwrap{position:fixed;top:14px;right:14px;background:#11161d;border:1px solid #2a3340;border-radius:8px;padding:8px 10px}
   #mapwrap #maplabel{font-size:11px;color:#7b8696;margin-bottom:4px;text-align:center;letter-spacing:.5px}
   #map{display:block;image-rendering:pixelated}
 </style>
 <div id="title"></div>
-<div id="hud"><span id="floor"></span><span id="depth"></span><span id="hp"></span><span id="weapon"></span></div>
+<div id="hud"><span id="floor"></span><span id="depth"></span><span id="hp"></span><span id="weapon"></span><span id="keys"></span></div>
 <canvas id="c"></canvas>
 <div id="mapwrap"><div id="maplabel">MAPA</div><canvas id="map"></canvas></div>
 <div id="msg"></div>
-<div id="hint">← ↑ → ↓ moverse · Espacio: atacar · puertas = mismo piso · escaleras ▲▼ = cambiar de piso</div>
+<div id="hint">← ↑ → ↓ moverse · Espacio: atacar · puertas = mismo piso (🔒 pide llave) · escaleras ▲▼ = cambiar de piso</div>
 
 <script src="roguelike.generated.js"></script>
 <script src="engine-core.js"></script>
-<script>
+<script type="module">
+// VISOR 2D = renderer FINO sobre la MISMA logica pura que usa game3d
+// (game3d-logic.mjs): un solo generador y unas solas reglas -> el mismo
+// GAME.md produce el mismo mundo y las mismas mecanicas en ambos motores
+// por construccion (la logica se verifica en npm test).
+import { rgInit, rgMove, rgAttack, rgPatrol, RG_STEP } from './game3d-logic.mjs';
+
 const G = window.GAME, GEN = G.GENERATOR, SCALE = 6, TS = 8 * SCALE;
-const ART = G.TILE_ART, PAL = G.PALETTES, TILES = G.TILES;
-const W = GEN.roomW, H = GEN.roomH, midC = W >> 1, midR = H >> 1;
-const DOWN_POS = { col: 1, row: 1 }, UP_POS = { col: W - 2, row: 1 };
+const W = GEN.roomW, H = GEN.roomH;
 document.getElementById('title').innerHTML = `<b>${EngineCore.esc(G.name || 'Roguelike')}</b> — pisos generados en tiempo real desde el generador del GAME.md`;
 
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-
-const rooms = {};            // "x,y,z" -> sala (persisten en sesion)
-const visited = new Set();
-const maxHp = G.PLAYER.hp || 5;
-let goalPlaced = false, cur, curRoom, player, hp = maxHp, atk = G.PLAYER.atk || 1, weapon = 'puños', invuln = 0, won = false, frame = 0;
-
-const DIRS = { N:{dx:0,dy:-1,c:midC,r:0}, S:{dx:0,dy:1,c:midC,r:H-1}, W:{dx:-1,dy:0,c:0,r:midR}, E:{dx:1,dy:0,c:W-1,r:midR} };
-const STEP = { N:[0,-1], S:[0,1], W:[-1,0], E:[1,0] };
-const OPP = { N:'S', S:'N', E:'W', W:'E' };
-const k3 = (x,y,z) => x+','+y+','+z;
-
-function genRoom(x, y, z) {
-  const key = k3(x,y,z), depth = Math.abs(x)+Math.abs(y)+Math.abs(z);
-  const rng = mulberry32((GEN.seed ^ Math.imul(x,73856093) ^ Math.imul(y,19349663) ^ Math.imul(z,83492791) ^ 0x9e3779b9) >>> 0);
-  const tm = [], at = [];
-  for (let r=0;r<H;r++){const tr=[],ar=[];for(let c=0;c<W;c++){const wall=(r===0||c===0||r===H-1||c===W-1);tr.push(wall?GEN.wall:GEN.floor);ar.push(0);}tm.push(tr);at.push(ar);}
-  // puertas horizontales (mutuas)
-  const opens = [];
-  for (const [d,info] of Object.entries(DIRS)) {
-    const nKey = k3(x+info.dx, y+info.dy, z);
-    let open;
-    if (rooms[nKey]) open = rooms[nKey].doors.some(dr => dr.dir === OPP[d]);
-    else open = depth < GEN.maxDepth ? rng() < (GEN.branch/100) : false;
-    opens.push({d,info,open});
-  }
-  // escaleras verticales (mutuas): abajo = z-1, arriba = z+1
-  const belowK = k3(x,y,z-1), aboveK = k3(x,y,z+1);
-  let hasDown = rooms[belowK] ? !!rooms[belowK].hasUp : (z > -GEN.maxFloor ? rng() < (GEN.floorChance/100) : false);
-  let hasUp   = rooms[aboveK] ? !!rooms[aboveK].hasDown : (z <  GEN.maxFloor ? rng() < (GEN.floorChance/100) : false);
-  // garantizar al menos una salida (puerta o escalera)
-  if (!opens.some(o=>o.open) && !hasDown && !hasUp) opens[Math.floor(rng()*4)].open = true;
-  const doors = [];
-  for (const o of opens) if (o.open) { tm[o.info.r][o.info.c] = GEN.door; doors.push({col:o.info.c,row:o.info.r,dir:o.d}); }
-  const stairs = [];
-  if (hasDown) { tm[DOWN_POS.row][DOWN_POS.col] = GEN.stairsDown; stairs.push({col:DOWN_POS.col,row:DOWN_POS.row,go:'down'}); }
-  if (hasUp)   { tm[UP_POS.row][UP_POS.col]   = GEN.stairsUp;   stairs.push({col:UP_POS.col,row:UP_POS.row,go:'up'}); }
-  // enemigos
-  const enemies = [];
-  if (depth > 0) { const n = Math.floor(rng()*(depth>=2?3:2));
-    for (let i=0;i<n;i++){ const ec=1+Math.floor(rng()*(W-2)), er=1+Math.floor(rng()*(H-2));
-      if (tm[er][ec]!==GEN.floor) continue;
-      const t = G.ENEMY_POOL[Math.floor(rng()*Math.max(1,G.ENEMY_POOL.length))] || {};
-      enemies.push({col:ec,row:er,tile:t.tile||GEN.enemy,pal:t.pal||0,hp:t.hp||1,dir:rng()<.5?1:-1,axis:rng()<.5?'h':'v',alive:true}); } }
-  // items (pociones / armas) del repertorio del spec
-  const items = [];
-  if (depth > 0 && (G.ITEM_POOL||[]).length && rng() < (GEN.itemChance/100)) {
-    for (let tries=0; tries<8; tries++) {
-      const ic=1+Math.floor(rng()*(W-2)), ir=1+Math.floor(rng()*(H-2));
-      if (tm[ir][ic]!==GEN.floor || enemies.some(e=>e.col===ic&&e.row===ir)) continue;
-      items.push(Object.assign({col:ic,row:ir,taken:false}, G.ITEM_POOL[Math.floor(rng()*G.ITEM_POOL.length)])); break;
-    }
-  }
-  let goal = null;
-  if (depth >= GEN.maxDepth && !goalPlaced) { goal = {col:midC,row:midR,tile:GEN.goal,pal:0}; goalPlaced = true; }
-  rooms[key] = { tilemap:tm, attrs:at, doors, stairs, hasUp, hasDown, enemies, items, goal, depth, x, y, z };
-  return rooms[key];
-}
+const S = rgInit(G);
+window.RL = { S };                     // estado expuesto para harnesses
+const T = G.TEXT || {};
+const room = () => S.rooms[S.cur];
 
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
-function sizeCanvas(){ cv.width = W*TS; cv.height = H*TS; }
-const _R = EngineCore.makeRenderer(ctx, { ART, PAL, SCALE });
-const rgb = _R.rgb, drawTile = _R.drawTile;
-function render(){const tm=curRoom.tilemap,at=curRoom.attrs;
-  for(let r=0;r<H;r++)for(let c=0;c<W;c++)drawTile(tm[r][c],at[r][c],c,r,false);
-  for(const it of curRoom.items)if(!it.taken)drawTile(it.tile,it.pal||0,it.col,it.row,true);
-  for(const e of curRoom.enemies)if(e.alive)drawTile(e.tile,e.pal,e.col,e.row,true);
-  if(curRoom.goal)drawTile(curRoom.goal.tile,curRoom.goal.pal,curRoom.goal.col,curRoom.goal.row,true);
-  if(!(invuln>0&&((frame>>2)&1)))drawTile(G.PLAYER.tile,G.PLAYER.pal,player.col,player.row,true);}
+cv.width = W * TS; cv.height = H * TS;
+const _R = EngineCore.makeRenderer(ctx, { ART: G.TILE_ART, PAL: G.PALETTES, SCALE });
+let frame = 0;
+function render() {
+  const r = room(), tm = r.tilemap;
+  for (let rr = 0; rr < H; rr++) for (let cc = 0; cc < W; cc++) _R.drawTile(tm[rr][cc], 0, cc, rr, false);
+  for (const it of r.items) if (!it.taken) _R.drawTile(it.tile, it.pal || 0, it.col, it.row, true);
+  for (const e of r.enemies) if (e.alive) _R.drawTile(e.tile, e.pal, e.col, e.row, true);
+  if (r.boss && r.boss.alive) _R.drawTile(G.BOSS.tile, G.BOSS.pal || 0, r.boss.col, r.boss.row, true);
+  if (r.goal) _R.drawTile(r.goal.tile, r.goal.pal, r.goal.col, r.goal.row, true);
+  if (!(S.invuln > 0 && ((frame >> 2) & 1))) _R.drawTile(G.PLAYER.tile, G.PLAYER.pal, S.pos.col, S.pos.row, true);
+}
 
-function setMsg(t,win){const m=document.getElementById('msg');m.textContent=t;m.className=win?'win':'';}
-function updHud(){
-  document.getElementById('floor').innerHTML='Piso: <b>'+curRoom.z+'</b>';
-  document.getElementById('depth').textContent='('+curRoom.x+','+curRoom.y+')  Salas: '+Object.keys(rooms).length;
-  document.getElementById('hp').innerHTML='Vida: <b style="color:#ff7b7b">'+'♥'.repeat(Math.max(0,hp))+'</b><span style="color:#553">'+'♡'.repeat(Math.max(0,maxHp-hp))+'</span>';
-  document.getElementById('weapon').innerHTML='Arma: <b>'+EngineCore.esc(weapon)+'</b> (atq '+atk+')';}
+function setMsg(t, cls) { const m = document.getElementById('msg'); m.textContent = t; m.className = cls || ''; }
+function updHud() {
+  const r = room();
+  document.getElementById('floor').innerHTML = 'Piso: <b>' + r.z + '</b>';
+  document.getElementById('depth').textContent = '(' + r.x + ',' + r.y + ')  Salas: ' + Object.keys(S.rooms).length;
+  document.getElementById('hp').innerHTML = 'Vida: <b style="color:#ff7b7b">' + '♥'.repeat(Math.max(0, S.hp)) + '</b><span style="color:#553">' + '♡'.repeat(Math.max(0, S.maxHp - S.hp)) + '</span>';
+  document.getElementById('weapon').innerHTML = 'Arma: <b>' + EngineCore.esc(S.weapon) + '</b> (atq ' + (S.atk + S.atkBonus) + (S.atkBonus ? ' = ' + S.atk + '+' + S.atkBonus + ' XP' : '') + ')';
+  document.getElementById('keys').innerHTML = 'Llaves: <b>' + S.keys + '</b>';
+}
 
-function enterRoom(x,y,z,from){const key=k3(x,y,z);const isNew=!rooms[key];if(isNew)genRoom(x,y,z);
-  cur=key;curRoom=rooms[key];visited.add(key);
-  if(from==='E')player={col:1,row:midR};else if(from==='W')player={col:W-2,row:midR};
-  else if(from==='S')player={col:midC,row:1};else if(from==='N')player={col:midC,row:H-2};
-  else if(from==='down')player={col:DOWN_POS.col,row:DOWN_POS.row};
-  else if(from==='up')player={col:UP_POS.col,row:UP_POS.row};
-  else player={col:midC,row:midR};
-  sizeCanvas();updHud();renderMap();return isNew;}
+function onEvent(r) {
+  if (r === 'door-new' || r === 'stairs-new') setMsg(T.enter || 'Nueva sala generada.');
+  else if (r === 'door') setMsg('Sala (' + room().x + ',' + room().y + ')');
+  else if (r === 'stairs') setMsg('Piso ' + room().z);
+  else if (r === 'locked') setMsg(T.locked || 'Puerta cerrada.');
+  else if (r === 'unlock') setMsg(T.unlock || 'La llave abre la puerta.');
+  else if (r === 'key') setMsg(T.key || 'Llave.');
+  else if (r === 'heal') setMsg((T.heal || 'Curado.') + ' (+' + S.lastItem.amount + ')');
+  else if (r === 'weapon') setMsg((T.equip || 'Equipas') + ': ' + S.weapon);
+  else if (r === 'weapon-worse') setMsg((S.lastItem.name || 'Arma') + ' — ya tienes algo mejor');
+  else if (r === 'boss-blocks' || r === 'boss-contact') setMsg(T.boss || 'El guardian bloquea el cofre.');
+  else if (r === 'hurt') setMsg(T.hit || 'Te golpearon.');
+  else if (r === 'fallen') setMsg(T.fallen || 'Has caido.');
+  else if (r === 'gameover') setMsg('Fin de la partida (permadeath).', 'dead');
+  else if (r === 'win') setMsg((G.WIN && G.WIN.text) || '¡Ganaste!', 'win');
+  updHud(); renderMap();
+}
 
-function solid(c,r){const tm=curRoom.tilemap;if(c<0||r<0||r>=tm.length||c>=tm[0].length)return true;return !!(TILES[String(tm[r][c])]&&TILES[String(tm[r][c])].solid);}
-function move(dc,dr){if(won)return;const nc=player.col+dc,nr=player.row+dr;
-  const door=curRoom.doors.find(d=>d.col===nc&&d.row===nr);
-  if(door){const s=STEP[door.dir];const isNew=enterRoom(curRoom.x+s[0],curRoom.y+s[1],curRoom.z,door.dir);setMsg(isNew?(G.TEXT.enter||'Nueva sala.'):('Sala ('+curRoom.x+','+curRoom.y+')'));return;}
-  const st=curRoom.stairs.find(s=>s.col===nc&&s.row===nr);
-  if(st){const nz=curRoom.z+(st.go==='up'?1:-1);const isNew=enterRoom(curRoom.x,curRoom.y,nz,st.go==='up'?'down':'up');setMsg((st.go==='up'?'Subes al piso ':'Bajas al piso ')+nz+(isNew?' · nueva sala':''));return;}
-  if(solid(nc,nr))return;
-  player={col:nc,row:nr};
-  const it=curRoom.items.find(i=>!i.taken&&i.col===nc&&i.row===nr);
-  if(it){it.taken=true;
-    if(it.kind==='heal'){hp=Math.min(maxHp,hp+it.amount);setMsg((G.TEXT.heal||'Curado')+' (+'+it.amount+')');}
-    else{if((it.power||1)>atk){atk=it.power;weapon=it.name||'arma';setMsg((G.TEXT.equip||'Equipas')+': '+weapon+' (atq '+atk+')');}else setMsg((it.name||'Arma')+' — ya tienes algo mejor');}
-    updHud();}
-  if(curRoom.enemies.some(e=>e.alive&&e.col===nc&&e.row===nr))hurt();
-  if(curRoom.goal&&curRoom.goal.col===nc&&curRoom.goal.row===nr){won=true;setMsg((G.WIN&&G.WIN.text)||'¡Ganaste!',true);}}
-function interact(){if(won)return;for(const e of curRoom.enemies)if(e.alive&&Math.abs(e.col-player.col)+Math.abs(e.row-player.row)===1){e.hp-=atk;if(e.hp<=0){e.alive=false;setMsg((G.TEXT.defeat||'Derrotado.')+' ('+weapon+')');}else setMsg('Golpeas con '+weapon+' · '+e.hp+' HP');return;}}
-function solidForEnemy(c,r){const tm=curRoom.tilemap;if(c<0||r<0||r>=tm.length||c>=tm[0].length)return true;return !!(TILES[String(tm[r][c])]&&TILES[String(tm[r][c])].solid);}
-function patrol(){for(const e of curRoom.enemies){if(!e.alive)continue;const dx=e.axis==='v'?0:e.dir,dy=e.axis==='v'?e.dir:0;let nc=e.col+dx,nr=e.row+dy;if(solidForEnemy(nc,nr)){e.dir*=-1;nc=e.col-dx;nr=e.row-dy;if(solidForEnemy(nc,nr))continue;}e.col=nc;e.row=nr;if(e.col===player.col&&e.row===player.row)hurt();}}
-function hurt(){if(invuln>0||won)return;hp--;invuln=40;updHud();if(hp<=0){hp=G.PLAYER.hp||5;invuln=60;setMsg(G.TEXT.fallen||'Has caido.');enterRoom(0,0,0,null);return;}setMsg(G.TEXT.hit||'Te golpearon.');player={col:midC,row:midR};}
+// --- MINIMAPA: solo el PISO actual; escaleras ▲▼; conexiones cerradas en rojo ---
+const mapCanvas = document.getElementById('map'), mctx = mapCanvas.getContext('2d');
+function renderMap() {
+  document.getElementById('maplabel').textContent = 'MAPA · Piso ' + room().z;
+  const ks = Object.keys(S.rooms).filter(k => S.rooms[k].z === room().z); if (!ks.length) return;
+  let minx = Infinity, miny = Infinity, maxx = -Infinity, maxy = -Infinity;
+  for (const k of ks) { const s = S.rooms[k]; minx = Math.min(minx, s.x); miny = Math.min(miny, s.y); maxx = Math.max(maxx, s.x); maxy = Math.max(maxy, s.y); }
+  const cell = 22, box = 15, pad = 8;
+  mapCanvas.width = (maxx - minx + 1) * cell + pad * 2; mapCanvas.height = (maxy - miny + 1) * cell + pad * 2;
+  const cx = s => pad + (s.x - minx) * cell + cell / 2, cy = s => pad + (s.y - miny) * cell + cell / 2;
+  mctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+  mctx.lineWidth = 2;
+  for (const k of ks) { const s = S.rooms[k];
+    for (const d of s.doors) { const st = RG_STEP[d.dir]; const nKey = (s.x + st[0]) + ',' + (s.y + st[1]) + ',' + s.z;
+      const nx = cx(s) + st[0] * cell / 2, ny = cy(s) + st[1] * cell / 2;
+      const col = d.locked ? '#b04040' : (S.rooms[nKey] ? '#54657d' : '#2b333f');
+      mctx.strokeStyle = col; mctx.beginPath(); mctx.moveTo(cx(s), cy(s));
+      if (S.rooms[nKey] && !d.locked) mctx.lineTo(cx(S.rooms[nKey]), cy(S.rooms[nKey])); else mctx.lineTo(nx, ny);
+      mctx.stroke(); } }
+  mctx.font = '8px system-ui'; mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
+  for (const k of ks) { const s = S.rooms[k]; const x = cx(s) - box / 2, y = cy(s) - box / 2;
+    mctx.fillStyle = (s.goal && !S.won) ? '#ffe08a' : (k === S.cur ? '#ffd86b' : '#3f5167'); mctx.fillRect(x, y, box, box);
+    if (k === S.cur) { mctx.strokeStyle = '#fff'; mctx.lineWidth = 2; mctx.strokeRect(x, y, box, box); }
+    if (s.hasUp) { mctx.fillStyle = '#9fffa6'; mctx.fillText('▲', cx(s) + box / 2 - 3, cy(s) - box / 2 + 3); }
+    if (s.hasDown) { mctx.fillStyle = '#8fd6ff'; mctx.fillText('▼', cx(s) - box / 2 + 3, cy(s) + box / 2 - 3); } }
+}
 
-// --- MINIMAPA: solo el PISO actual; muestra escaleras ▲▼; crece al explorar ---
-const mapCanvas=document.getElementById('map'),mctx=mapCanvas.getContext('2d');
-function renderMap(){
-  document.getElementById('maplabel').textContent='MAPA · Piso '+curRoom.z;
-  const ks=Object.keys(rooms).filter(k=>rooms[k].z===curRoom.z);if(!ks.length)return;
-  let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;
-  for(const k of ks){const s=rooms[k];minx=Math.min(minx,s.x);miny=Math.min(miny,s.y);maxx=Math.max(maxx,s.x);maxy=Math.max(maxy,s.y);}
-  const cell=22,box=15,pad=8;
-  mapCanvas.width=(maxx-minx+1)*cell+pad*2;mapCanvas.height=(maxy-miny+1)*cell+pad*2;
-  const cx=s=>pad+(s.x-minx)*cell+cell/2,cy=s=>pad+(s.y-miny)*cell+cell/2;
-  mctx.clearRect(0,0,mapCanvas.width,mapCanvas.height);
-  mctx.lineWidth=2;
-  for(const k of ks){const s=rooms[k];for(const d of s.doors){const st=STEP[d.dir];const nKey=k3(s.x+st[0],s.y+st[1],s.z);const nx=cx(s)+st[0]*cell/2,ny=cy(s)+st[1]*cell/2;
-    if(rooms[nKey]){mctx.strokeStyle='#54657d';mctx.beginPath();mctx.moveTo(cx(s),cy(s));mctx.lineTo(cx(rooms[nKey]),cy(rooms[nKey]));mctx.stroke();}
-    else{mctx.strokeStyle='#2b333f';mctx.beginPath();mctx.moveTo(cx(s),cy(s));mctx.lineTo(nx,ny);mctx.stroke();}}}
-  mctx.font='8px system-ui';mctx.textAlign='center';mctx.textBaseline='middle';
-  for(const k of ks){const s=rooms[k];const x=cx(s)-box/2,y=cy(s)-box/2;
-    mctx.fillStyle=(s.goal&&!won)?'#ffe08a':(k===cur?'#ffd86b':'#3f5167');mctx.fillRect(x,y,box,box);
-    if(k===cur){mctx.strokeStyle='#fff';mctx.lineWidth=2;mctx.strokeRect(x,y,box,box);}
-    if(s.hasUp){mctx.fillStyle='#9fffa6';mctx.fillText('▲',cx(s)+box/2-3,cy(s)-box/2+3);}
-    if(s.hasDown){mctx.fillStyle='#8fd6ff';mctx.fillText('▼',cx(s)-box/2+3,cy(s)+box/2-3);}}}
+addEventListener('keydown', e => { const k = e.key;
+  if (k === 'ArrowLeft') onEvent(rgMove(G, S, -1, 0));
+  else if (k === 'ArrowRight') onEvent(rgMove(G, S, 1, 0));
+  else if (k === 'ArrowUp') onEvent(rgMove(G, S, 0, -1));
+  else if (k === 'ArrowDown') onEvent(rgMove(G, S, 0, 1));
+  else if (k === ' ') { const r = rgAttack(G, S);
+    if (r === 'kill' || r === 'boss-kill') setMsg((r === 'boss-kill' ? (T.bossdown || 'El guardian cae.') : (T.defeat || 'Derrotado.')) + ' (' + S.weapon + ')');
+    else if (r === 'kill-levelup') setMsg((T.levelup || 'Subes de ataque.') + ' (atq ' + (S.atk + S.atkBonus) + ')');
+    else if (r === 'hit' || r === 'boss-hit') setMsg('Golpeas con ' + S.weapon + '.');
+    updHud(); }
+  else return; e.preventDefault(); });
 
-addEventListener('keydown',e=>{const k=e.key;if(k==='ArrowLeft')move(-1,0);else if(k==='ArrowRight')move(1,0);else if(k==='ArrowUp')move(0,-1);else if(k==='ArrowDown')move(0,1);else if(k===' ')interact();else return;e.preventDefault();});
-
-enterRoom(0,0,0,null); setMsg(G.TEXT.intro||'');
-(function loop(){requestAnimationFrame(loop);frame++;if(invuln>0)invuln--;if(frame%24===0)patrol();render();})();
+updHud(); renderMap(); setMsg(T.intro || '');
+(function loop() { requestAnimationFrame(loop); frame++;
+  if (frame % 24 === 0 && !S.won && !S.lost) { const r = rgPatrol(G, S); if (r !== 'ok') onEvent(r); }
+  render(); })();
 </script>

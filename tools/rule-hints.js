@@ -87,6 +87,10 @@ module.exports = {
   'question-time': '`seconds` es entero en 5..120 (si se declara).',
   'question-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   'round-reward': '`reward` de la ronda debe ser >= 0 (si se declara).',
+  // --- roguelike: extensiones (cerraduras/llaves, jefe, progresion) ---
+  'generator-chance': 'Los porcentajes del generator (branch/floorChance/itemChance/lockChance/keyChance) van en 0..100.',
+  'boss-fields': '`boss` necesita tile existente y hp/damage enteros > 0.',
+  'progression-fields': '`progression`: killsPerAtk entero > 0, maxBonus entero >= 0, permadeath boolean.',
   // --- peg-solitaire (perfil puro-datos) ---
   'board-goal': '`goal` obligatorio: clear (dejar 1 peg) | center (dejar 1 peg en el centro).',
   'board-difficulty': '`difficulty` obligatorio: easy | normal | hard.',

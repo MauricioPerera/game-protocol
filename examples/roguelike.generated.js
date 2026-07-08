@@ -136,6 +136,18 @@ window.GAME = {
     "59": {
       "name": "axe",
       "solid": false
+    },
+    "60": {
+      "name": "key",
+      "solid": false
+    },
+    "61": {
+      "name": "locked_door",
+      "solid": false
+    },
+    "62": {
+      "name": "boss",
+      "solid": false
     }
   },
   "TILE_ART": {
@@ -1040,6 +1052,252 @@ window.GAME = {
         0,
         0
       ]
+    ],
+    "60": [
+      [
+        0,
+        0,
+        9,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        8,
+        0,
+        8,
+        9,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        8,
+        0,
+        8,
+        9,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        9,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        9,
+        9,
+        0,
+        0,
+        0
+      ]
+    ],
+    "61": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        7,
+        7,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        9,
+        9,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        9,
+        9,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        7,
+        8,
+        8,
+        7,
+        6,
+        0
+      ],
+      [
+        0,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "62": [
+      [
+        12,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        12
+      ],
+      [
+        12,
+        12,
+        0,
+        0,
+        0,
+        0,
+        12,
+        12
+      ],
+      [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        0
+      ],
+      [
+        12,
+        12,
+        15,
+        12,
+        12,
+        15,
+        12,
+        12
+      ],
+      [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      [
+        12,
+        13,
+        13,
+        12,
+        12,
+        13,
+        13,
+        12
+      ],
+      [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        0
+      ],
+      [
+        12,
+        0,
+        12,
+        0,
+        0,
+        12,
+        0,
+        12
+      ]
     ]
   },
   "GENERATOR": {
@@ -1051,13 +1309,17 @@ window.GAME = {
     "floorChance": 45,
     "maxFloor": 3,
     "itemChance": 42,
+    "lockChance": 25,
+    "keyChance": 30,
     "floor": 48,
     "wall": 17,
     "door": 19,
     "enemy": 54,
     "goal": 53,
     "stairsUp": 55,
-    "stairsDown": 56
+    "stairsDown": 56,
+    "key": 60,
+    "lockedDoor": 61
   },
   "ENEMY_POOL": [
     {
@@ -1100,6 +1362,17 @@ window.GAME = {
     "hp": 5,
     "atk": 1
   },
+  "BOSS": {
+    "tile": 62,
+    "pal": 0,
+    "hp": 8,
+    "damage": 2
+  },
+  "PROGRESSION": {
+    "killsPerAtk": 3,
+    "maxBonus": 2,
+    "permadeath": false
+  },
   "TEXT": {
     "intro": "Roguelike 3D — flechas para mover, Espacio para atacar. Cruza puertas (mismo piso) y pisa escaleras ▲▼ para cambiar de piso. Las salas se generan y se fijan en el mapa.",
     "enter": "Nueva sala generada.",
@@ -1107,7 +1380,13 @@ window.GAME = {
     "defeat": "Enemigo derrotado.",
     "fallen": "Has caido. Vuelves al inicio.",
     "heal": "Bebes una pocion. Vida recuperada.",
-    "equip": "Equipas un arma mejor."
+    "equip": "Equipas un arma mejor.",
+    "key": "Encuentras una llave.",
+    "locked": "Puerta cerrada. Necesitas una llave.",
+    "unlock": "La llave abre la puerta.",
+    "boss": "El guardian bloquea el cofre. Derrotalo.",
+    "bossdown": "El guardian cae. El cofre es tuyo.",
+    "levelup": "Tu ataque crece con la experiencia."
   },
   "WIN": {
     "text": "Cofre encontrado. Mazmorra procedural completada."

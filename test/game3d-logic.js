@@ -522,6 +522,12 @@ const ok = (cond, label, extra) => {
     const rooms = Object.values(S_EXP.rooms);
     ok(rooms.length >= 50, 'rg  BFS genero ' + rooms.length + ' salas');
     ok(rooms.every(r => r.doors.length + r.stairs.length > 0), 'rg  toda sala tiene al menos una salida (puerta o escalera)');
+    ok(rooms.every(r => r.doors.some(d => !d.locked) || r.stairs.length > 0),
+       'rg  SOLVENCIA: toda sala conserva al menos una salida SIN cerrar');
+    ok(rooms.some(r => r.doors.some(d => d.locked)), 'rg  el lockChance genera puertas cerradas (' +
+       rooms.reduce((a, r) => a + r.doors.filter(d => d.locked).length, 0) + ' en el grafo)');
+    ok(rooms.some(r => r.items.some(i => i.kind === 'key')), 'rg  el keyChance genera llaves (' +
+       rooms.reduce((a, r) => a + r.items.filter(i => i.kind === 'key').length, 0) + ' en el grafo)');
     let mutuas = true;
     for (const r of rooms) for (const d of r.doors) {
       const s = L.RG_STEP[d.dir], nk = (r.x + s[0]) + ',' + (r.y + s[1]) + ',' + r.z;
@@ -579,32 +585,16 @@ const ok = (cond, label, extra) => {
     ok(r === 'fallen' && S.cur === '0,0,0' && S.hp === S.maxHp && S.deaths === 1,
        'rg  DERROTA por contacto: respawn en (0,0,0) con vida restaurada');
   }
-  // (e) VICTORIA jugando: caminar hasta el cofre movimiento a movimiento (matando lo adyacente)
+  // (e) VICTORIA jugando con bot explorador ONLINE: el cofre aparece donde exploras
+  //     (generacion perezosa), asi que nunca queda tras una puerta cerrada; el bot
+  //     rutea por el grafo CONOCIDO (solo puertas sin cerrar), toma salidas
+  //     inexploradas, y en la sala del cofre derrota al jefe antes de ganar.
   {
     const S = L.rgInit(GR);
-    const [gx, gy, gz] = goalKey.split(',').map(Number);
-    // ruta a nivel de salas: reusa el grafo ya explorado (S_EXP) con BFS de salas
-    const path = (function bfsPath() {
-      const prev = new Map([['0,0,0', null]]); const queue = ['0,0,0'];
-      while (queue.length) {
-        const k = queue.shift(); if (k === goalKey) break;
-        const r = S_EXP.rooms[k]; if (!r) continue;
-        const nexts = r.doors.map(d => { const s = L.RG_STEP[d.dir]; return (r.x + s[0]) + ',' + (r.y + s[1]) + ',' + r.z; });
-        if (r.hasDown) nexts.push(r.x + ',' + r.y + ',' + (r.z - 1));
-        if (r.hasUp) nexts.push(r.x + ',' + r.y + ',' + (r.z + 1));
-        for (const n of nexts) if (!prev.has(n)) { prev.set(n, k); queue.push(n); }
-      }
-      const out = []; let k = goalKey;
-      while (k) { out.unshift(k); k = prev.get(k); }
-      return out;
-    })();
-    ok(path[0] === '0,0,0' && path[path.length - 1] === goalKey, 'rg  BFS de salas: ruta al cofre en ' + (path.length - 1) + ' transiciones');
-    // caminar la ruta con rgMove: hacia la puerta/escalera de cada transicion, matando enemigos adyacentes
     const D = { W: GR.GENERATOR.roomW, H: GR.GENERATOR.roomH };
     let r = '', guard = 0;
     const stepToward = (tc, tr) => {
-      // las puertas O/E viven en la columna-muro: alli hay que alinear la FILA primero
-      // (y la columna al final); para el resto, columna primero. El interior es abierto.
+      // puertas O/E viven en la columna-muro: alli se alinea la FILA primero
       let mc = 0, mr = 0;
       if (tc === 0 || tc === D.W - 1) {
         if (S.pos.row !== tr) mr = Math.sign(tr - S.pos.row); else mc = Math.sign(tc - S.pos.col);
@@ -612,29 +602,59 @@ const ok = (cond, label, extra) => {
         if (S.pos.col !== tc) mc = Math.sign(tc - S.pos.col); else mr = Math.sign(tr - S.pos.row);
       }
       const room = S.rooms[S.cur];
-      const adj = room.enemies.find(e => e.alive && e.col === S.pos.col + mc && e.row === S.pos.row + mr);
-      if (adj) { L.rgAttack(GR, S); return 'atk'; }
+      const nc = S.pos.col + mc, nr2 = S.pos.row + mr;
+      if (room.enemies.some(e => e.alive && e.col === nc && e.row === nr2) ||
+          (room.boss && room.boss.alive && room.boss.col === nc && room.boss.row === nr2)) { L.rgAttack(GR, S); return 'atk'; }
       return L.rgMove(GR, S, mc, mr);
     };
-    for (let i = 1; i < path.length && guard < 5000; i++) {
-      const [nx, ny, nz] = path[i].split(',').map(Number);
-      const cur = () => S.rooms[S.cur];
-      // objetivo dentro de la sala actual: puerta o escalera que lleva a path[i]
-      while (S.cur !== path[i] && guard++ < 5000) {
-        const room = cur();
-        let target;
-        if (nz !== room.z) { const st = room.stairs.find(s => s.go === (nz > room.z ? 'up' : 'down')); target = st; }
-        else { const dir = Object.entries(L.RG_STEP).find(([d, s]) => room.x + s[0] === nx && room.y + s[1] === ny);
-               target = room.doors.find(d => d.dir === dir[0]); }
-        if (!target) break; // la ruta se rompio (no deberia: puertas mutuas)
-        r = stepToward(target.col, target.row);
-        if (r === 'fallen') { i = 0; break; } // vuelta al origen: reintenta la ruta entera
+    const unexplored = room => {
+      const outs = [];
+      for (const d of room.doors) if (!d.locked) { const s = L.RG_STEP[d.dir];
+        if (!S.rooms[(room.x + s[0]) + ',' + (room.y + s[1]) + ',' + room.z]) outs.push(d); }
+      for (const st of room.stairs) { const nz = room.z + (st.go === 'up' ? 1 : -1);
+        if (!S.rooms[room.x + ',' + room.y + ',' + nz]) outs.push(st); }
+      return outs;
+    };
+    const routeToFrontier = () => { // BFS por lo conocido hasta una sala con salida inexplorada
+      const prev = new Map([[S.cur, null]]), q = [S.cur];
+      while (q.length) {
+        const k = q.shift(), room = S.rooms[k];
+        if (unexplored(room).length) { const p = []; let c = k; while (c) { p.unshift(c); c = prev.get(c); } return p; }
+        for (const d of room.doors) if (!d.locked) { const s = L.RG_STEP[d.dir];
+          const nk = (room.x + s[0]) + ',' + (room.y + s[1]) + ',' + room.z;
+          if (S.rooms[nk] && !prev.has(nk)) { prev.set(nk, k); q.push(nk); } }
+        for (const st of room.stairs) { const nz = room.z + (st.go === 'up' ? 1 : -1);
+          const nk = room.x + ',' + room.y + ',' + nz;
+          if (S.rooms[nk] && !prev.has(nk)) { prev.set(nk, k); q.push(nk); } }
       }
+      return null;
+    };
+    while (!S.won && !S.lost && guard++ < 8000) {
+      const room = S.rooms[S.cur];
+      if (room.goal) {
+        if (room.boss && room.boss.alive) {
+          const b = room.boss;
+          if (Math.abs(b.col - S.pos.col) + Math.abs(b.row - S.pos.row) === 1) r = L.rgAttack(GR, S);
+          else r = stepToward(b.col + 1, b.row);   // al FLANCO del jefe (bajo el esta el cofre, que bloquea)
+        } else r = stepToward(room.goal.col, room.goal.row);
+        continue;
+      }
+      const path = routeToFrontier();
+      if (!path) break;
+      let target;
+      if (path.length === 1) target = unexplored(room)[0];
+      else {
+        const [nx, ny, nz] = path[1].split(',').map(Number);
+        if (nz !== room.z) target = room.stairs.find(s => s.go === (nz > room.z ? 'up' : 'down'));
+        else { const dir = Object.entries(L.RG_STEP).find(([d, s]) => room.x + s[0] === nx && room.y + s[1] === ny);
+               target = dir && room.doors.find(d => d.dir === dir[0] && !d.locked); }
+      }
+      if (!target) break;
+      r = stepToward(target.col, target.row);
     }
-    // dentro de la sala del cofre: caminar al centro
-    const room = S.rooms[S.cur];
-    while (!S.won && guard++ < 5000 && room === S.rooms[S.cur]) r = stepToward(room.goal.col, room.goal.row);
-    ok(r === 'win' && S.won, 'rg  VICTORIA: cofre alcanzado JUGANDO (' + guard + ' acciones, ' + S.kills + ' bajas, ' + S.deaths + ' caidas)');
+    ok(r === 'win' && S.won, 'rg  VICTORIA del explorador: cofre JUGANDO (' + guard + ' acciones, ' +
+       Object.keys(S.rooms).length + ' salas, ' + S.kills + ' bajas, ' + S.deaths + ' caidas, prof. max ' + S.deepest + ')');
+    ok(!S.rooms[S.cur].boss || !S.rooms[S.cur].boss.alive, 'rg  el jefe cayo antes del cofre');
   }
   // (f) items: pocion cura con tope y el arma mejor sustituye (datos de ITEM_POOL)
   {
@@ -694,6 +714,79 @@ const ok = (cond, label, extra) => {
     S.cursor = { col: 0, row: 0 };
     ok(L.awAct(S) === 'place' && S.units[0].col === 0 && S.units[0].row === 0 && S.picked === -1,
        'aw  soltar en celda libre recoloca la unidad');
+  }
+
+  // (g) mecanicas nuevas: llaves/puertas, jefe, XP, permadeath, save/load
+  {
+    // llave y puerta: sin llave -> locked; con llave -> unlock que abre AMBOS lados
+    const S = L.rgInit(GR);
+    const room = S.rooms[S.cur];
+    const d0 = room.doors[0];
+    d0.locked = true; room.tilemap[d0.row][d0.col] = GR.GENERATOR.lockedDoor;
+    S.pos = { col: d0.col - (d0.col === 0 ? -1 : d0.col === S.rooms[S.cur].tilemap[0].length - 1 ? 1 : 0),
+              row: d0.row - (d0.row === 0 ? -1 : d0.row === S.rooms[S.cur].tilemap.length - 1 ? 1 : 0) };
+    const dc = Math.sign(d0.col - S.pos.col), dr = Math.sign(d0.row - S.pos.row);
+    ok(L.rgMove(GR, S, dc, dr) === 'locked' && S.cur === '0,0,0', 'rg  puerta cerrada sin llave -> locked (no cruzas)');
+    S.keys = 1;
+    ok(L.rgMove(GR, S, dc, dr) === 'unlock' && S.keys === 0 && d0.locked === false &&
+       room.tilemap[d0.row][d0.col] === GR.GENERATOR.door, 'rg  con llave -> unlock: la puerta queda abierta y pintada');
+    const rNext = L.rgMove(GR, S, dc, dr);
+    ok(rNext === 'door-new' || rNext === 'door', 'rg  tras abrir, la puerta cruza con normalidad');
+    const vecino = S.rooms[S.cur];
+    const nd = vecino.doors.find(d2 => L.RG_STEP[d2.dir][0] === -dc && L.RG_STEP[d2.dir][1] === -dr);
+    ok(nd && nd.locked === false && vecino.tilemap[nd.row][nd.col] === GR.GENERATOR.door,
+       'rg  el lado del vecino tambien quedo abierto (mutua)');
+  }
+  {
+    // jefe: bloquea el cofre, hace su damage por contacto y cae a golpes
+    const S = L.rgInit(GR);
+    const room = S.rooms[S.cur];
+    room.goal = { col: 5, row: 4, tile: GR.GENERATOR.goal, pal: 0 };
+    room.boss = { col: 5, row: 3, hp: GR.BOSS.hp, alive: true };
+    S.pos = { col: 5, row: 5 };
+    ok(L.rgMove(GR, S, 0, -1) === 'boss-blocks' && S.pos.row === 5, 'rg  el jefe vivo bloquea el cofre');
+    S.pos = { col: 5, row: 2 }; S.invuln = 0;
+    const hp0 = S.hp;
+    ok(L.rgMove(GR, S, 0, 1) === 'hurt' && S.hp === hp0 - GR.BOSS.damage, 'rg  contacto con el jefe: -' + GR.BOSS.damage + ' vidas (BOSS.damage)');
+    S.pos = { col: 5, row: 2 };
+    const golpes = Math.ceil(GR.BOSS.hp / (S.atk + S.atkBonus));
+    let r2 = '';
+    for (let k = 0; k < golpes; k++) r2 = L.rgAttack(GR, S);
+    ok(r2 === 'boss-kill' && !room.boss.alive, 'rg  el jefe (hp ' + GR.BOSS.hp + ') cae en ' + golpes + ' golpes');
+    ok(L.rgMove(GR, S, 0, 1) === 'ok' && L.rgMove(GR, S, 0, 1) === 'win' && S.won, 'rg  con el jefe muerto, el cofre da la VICTORIA');
+  }
+  {
+    // XP: cada killsPerAtk bajas sube el ataque hasta maxBonus
+    const S = L.rgInit(GR);
+    const P = GR.PROGRESSION;
+    S.kills = P.killsPerAtk - 1;
+    const room = S.rooms[S.cur];
+    room.enemies.push({ col: S.pos.col + 1, row: S.pos.row, tile: 54, pal: 0, hp: 1, dir: 0, axis: 'h', alive: true });
+    ok(L.rgAttack(GR, S) === 'kill-levelup' && S.atkBonus === 1, 'rg  XP: baja n.' + P.killsPerAtk + ' -> ataque +1 (kill-levelup)');
+    S.kills = 999;
+    room.enemies.push({ col: S.pos.col + 1, row: S.pos.row, tile: 54, pal: 0, hp: 1, dir: 0, axis: 'h', alive: true });
+    L.rgAttack(GR, S);
+    ok(S.atkBonus === P.maxBonus, 'rg  XP: el bono se detiene en maxBonus (' + P.maxBonus + ')');
+  }
+  {
+    // permadeath declarativo: con progression.permadeath=true la caida es fin de partida
+    const G2 = Object.assign({}, GR, { PROGRESSION: Object.assign({}, GR.PROGRESSION, { permadeath: true }) });
+    const S = L.rgInit(G2);
+    const room = S.rooms[S.cur];
+    room.enemies.push({ col: S.pos.col + 1, row: S.pos.row, tile: 54, pal: 0, hp: 99, dir: 0, axis: 'h', alive: true });
+    let r3 = '', guard = 0;
+    while (r3 !== 'gameover' && guard++ < 50) { S.invuln = 0; S.pos = { col: room.enemies[room.enemies.length - 1].col - 1, row: room.enemies[room.enemies.length - 1].row }; r3 = L.rgMove(GR === G2 ? GR : G2, S, 1, 0); }
+    ok(r3 === 'gameover' && S.lost === true, 'rg  permadeath=true: la caida es gameover (S.lost)');
+    ok(L.rgMove(G2, S, 1, 0) === 'blocked' && L.rgAttack(G2, S) === 'none', 'rg  run terminada -> blocked');
+  }
+  {
+    // save/load puros: ida y vuelta identica; basura -> null
+    const S = L.rgInit(GR);
+    L.rgMove(GR, S, 1, 0); L.rgMove(GR, S, 0, 1);
+    const json = L.rgSave(S);
+    const S2 = L.rgLoad(GR, json);
+    ok(S2 && JSON.stringify(S2) === JSON.stringify(JSON.parse(JSON.stringify(S))), 'rg  save/load: ida y vuelta identica');
+    ok(L.rgLoad(GR, '{basura') === null && L.rgLoad(GR, '{"v":9}') === null, 'rg  load de basura o version desconocida -> null');
   }
 
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));

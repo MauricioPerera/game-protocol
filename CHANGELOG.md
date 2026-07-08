@@ -2,7 +2,44 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — roguelike a lo grande: mecánicas por datos, un solo generador, mundo continuo
+- **Mecánicas nuevas 100% data-driven** en el perfil `roguelike` y su ejemplo:
+  **llaves y puertas cerradas** (`generator.lockChance`/`keyChance` + tiles `key`/
+  `lockedDoor`; cerraduras mutuas entre salas; la llave abre AMBOS lados de forma
+  permanente), **jefe custodiando el cofre** (`boss`: tile/hp/damage — bloquea la
+  victoria hasta caer), **progresión por experiencia** (`progression.killsPerAtk`/
+  `maxBonus`: el ataque sube con las bajas) y **permadeath declarativo**
+  (`progression.permadeath`). 3 reglas nuevas de perfil (`generator-chance`,
+  `boss-fields`, `progression-fields`) → 136 reglas.
+- **Solvencia por construcción**: toda sala conserva ≥1 salida SIN cerrar, y como el
+  cofre aparece donde exploras (generación perezosa), nunca queda tras una puerta
+  cerrada — las llaves abren atajos y zonas extra. Verificado como invariante por BFS
+  en `npm test`.
+- **Un solo generador, dos motores POR CONSTRUCCIÓN**: el visor 2D
+  (`examples/roguelike.html`) deja de duplicar la generación y pasa a **importar la
+  misma lógica pura** (`game3d-logic.mjs`) que usa game3d — renderer fino sobre
+  funciones testeadas. `build-standalone` aprende a inlinear imports relativos de
+  módulos ESM (+2 chequeos) y el standalone sigue autocontenido.
+- **game3d, mazmorra en mundo continuo**: las salas se añaden contiguas a la escena
+  al explorar (comparten muro fronterizo, sin celdas duplicadas) y **los pisos se
+  apilan físicamente en vertical** — la cámara viaja con el jugador. **Minimapa 3D**
+  del grafo explorado (cubos por sala, pisos apilados, conexiones cerradas en rojo,
+  escaleras en azul) renderizado en una segunda pasada. **Guardado automático** de la
+  run en localStorage (`rgSave`/`rgLoad` puros y testeados; N = nueva partida; el
+  guardado se limpia al ganar o caer en permadeath) y **estadísticas de run** en los
+  overlays (salas, bajas, caídas, profundidad máxima).
+- **+17 chequeos en `npm test` y CI** (171 de lógica): solvencia por BFS, cerraduras
+  y llaves generadas, unlock que abre ambos lados, jefe que bloquea/daña/cae,
+  levelup con tope, permadeath → gameover, save/load ida y vuelta, y el **bot
+  explorador ONLINE que gana jugando** (rutea por el grafo conocido, toma salidas
+  inexploradas y derrota al jefe antes del cofre).
+- **Verificado en navegador en ambos motores**: el 2D con la lógica compartida
+  (puerta cerrada/llave con los textos del GAME.md) y game3d con guardado +
+  restauración tras recargar, nueva partida con N y victoria del explorador por
+  eventos de teclado reales — misma firma de run que el test de Node (6 salas,
+  1 baja, prof. 5): mismo mundo otra vez.
+- Nota: añadir tiradas al generador cambia los mundos respecto a v2.16.0 — la
+  paridad garantizada es entre motores, no con releases anteriores.
 
 ## [2.16.0] — 2026-07-08
 

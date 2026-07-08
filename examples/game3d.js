@@ -21,7 +21,7 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS,
          pfInit, pfTick,
          crInit, crGather, crMove, crCraft, CR_ACTIONS,
-         rgInit, rgMove, rgAttack, rgPatrol,
+         rgInit, rgMove, rgAttack, rgPatrol, rgSave, rgLoad,
          awInit, awCursor, awAct, awDecode } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
@@ -565,90 +565,198 @@ register('advance-wars', G => {
 });
 
 // ============================================================================
-// RUNTIME roguelike — mazmorra procedural 3D; la generación es el PORT EXACTO
-// del visor 2D (misma semilla → mismo mundo en ambos motores) y vive en
-// game3d-logic, donde npm test la verifica por BFS y GANA el cofre jugando.
-// Teclas: flechas mueven (puertas = misma planta, escaleras ▲▼ = otro piso),
-// Espacio ataca.
+// RUNTIME roguelike — mazmorra procedural 3D en MUNDO CONTINUO: las salas se
+// añaden contiguas a la escena al explorar (los pisos se apilan físicamente en
+// vertical) y la cámara viaja con el jugador. La lógica pura vive en
+// game3d-logic y es LA MISMA que consume el visor 2D (roguelike.html la
+// importa): un solo generador → mismo mundo en ambos motores por construcción.
+// Extras: minimapa 3D del grafo explorado (esquina superior derecha), guardado
+// automático de la run en localStorage (N = nueva partida) y estadísticas al
+// ganar. Teclas: flechas mueven, Espacio ataca, N reinicia.
 // ============================================================================
 register('roguelike', G => {
   const { scene, cam, ren } = makeStage();
   const SOLIDT = new Set(Object.entries(G.TILES || {}).filter(([, t]) => t.solid).map(([id]) => Number(id)));
-  const S = rgInit(G);
+  const D = { W: G.GENERATOR.roomW, H: G.GENERATOR.roomH };
+  const FLOOR_H = 4;                                       // separación vertical entre pisos
+  const SAVE_KEY = 'game3d-rg-' + (G.name || 'roguelike');
+  let S = null;
+  try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = rgLoad(G, raw); } catch (e) {}
+  const restored = !!S;
+  if (!S) S = rgInit(G);
+  const save = () => { try {
+    if (S.won || S.lost) localStorage.removeItem(SAVE_KEY); else localStorage.setItem(SAVE_KEY, rgSave(S));
+  } catch (e) {} };
+  const room = () => S.rooms[S.cur];
+  // posición de una celda de una sala en el MUNDO (las salas comparten muro fronterizo)
+  const wx = (r, col) => r.x * (D.W - 1) + col;
+  const wy = r => r.z * FLOOR_H;
+  const wz = (r, row) => r.y * (D.H - 1) + row;
   const sprite = (tile, pal, scale) => billboard(gridCanvas(G.TILE_ART[tile] || [[0]], G.PALETTES[pal || 0], true), scale || .9);
   const playerSpr = sprite(G.PLAYER.tile, G.PLAYER.pal, 1); scene.add(playerSpr);
-  let world = null; const dyn = new THREE.Group(); scene.add(dyn);
-  const enemySprs = new Map();
-  const room = () => S.rooms[S.cur];
-  function build() {
-    if (world) scene.remove(world);
-    world = tilemapGroup(G, room().tilemap, [], SOLIDT, { [G.GENERATOR.wall]: 1.0 });
-    scene.add(world);
-    dyn.clear(); enemySprs.clear();
-    for (const it of room().items) if (!it.taken) { const b = sprite(it.tile, it.pal, .8); b.position.set(it.col, .5, it.row); b.userData.it = it; dyn.add(b); }
-    if (room().goal) { const b = sprite(room().goal.tile, room().goal.pal, .95); b.position.set(room().goal.col, .55, room().goal.row); dyn.add(b); }
-    refresh();
-  }
-  function refresh() {
-    for (const [e, m] of enemySprs) if (!e.alive) { dyn.remove(m); enemySprs.delete(e); }
-    for (const e of room().enemies) {
-      if (!e.alive) continue;
-      if (!enemySprs.has(e)) { const b = sprite(e.tile, e.pal, .9); dyn.add(b); enemySprs.set(e, b); }
-      enemySprs.get(e).position.set(e.col, .55, e.row);
+  // --- mundo continuo: un grupo por sala, con dueño por celda para no duplicar muros compartidos ---
+  const texCache = {};
+  const tex = id => texCache[id] || (texCache[id] = canvasTex(gridCanvas(G.TILE_ART[id] || [[0]], G.PALETTES[0], false)));
+  const roomGroups = new Map(), roomDyns = new Map(), cellOwner = new Map();
+  function buildRoom(key) {
+    const r = S.rooms[key], g = new THREE.Group();
+    for (let row = 0; row < D.H; row++) for (let col = 0; col < D.W; col++) {
+      const ck = wx(r, col) + '|' + r.z + '|' + wz(r, row);
+      if (cellOwner.has(ck) && cellOwner.get(ck) !== key) continue;   // celda compartida ya dibujada
+      cellOwner.set(ck, key);
+      const id = r.tilemap[row][col], mat = new THREE.MeshLambertMaterial({ map: tex(id) });
+      const f = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
+      f.rotation.x = -Math.PI / 2; f.position.set(wx(r, col), wy(r), wz(r, row)); g.add(f);
+      if (SOLIDT.has(id)) { const b = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
+        b.position.set(wx(r, col), wy(r) + .5, wz(r, row)); g.add(b); }
     }
-    for (const b of dyn.children) if (b.userData.it && b.userData.it.taken) dyn.remove(b);
+    scene.add(g); roomGroups.set(key, g);
   }
+  function rebuildRoom(key) { // repinta las celdas PROPIAS (p. ej. una puerta abierta)
+    if (roomGroups.has(key)) { scene.remove(roomGroups.get(key)); roomGroups.delete(key); }
+    if (S.rooms[key]) buildRoom(key);
+  }
+  function buildDyn(key) {
+    const r = S.rooms[key], g = new THREE.Group(), enemySprs = new Map();
+    for (const it of r.items) if (!it.taken) { const b = sprite(it.tile, it.pal, .8);
+      b.position.set(wx(r, it.col), wy(r) + .5, wz(r, it.row)); b.userData.it = it; g.add(b); }
+    if (r.goal) { const b = sprite(r.goal.tile, r.goal.pal, .95); b.position.set(wx(r, r.goal.col), wy(r) + .55, wz(r, r.goal.row)); g.add(b); }
+    let bossSpr = null;
+    if (r.boss) { bossSpr = sprite(G.BOSS.tile, G.BOSS.pal || 0, 1.25); bossSpr.position.set(wx(r, r.boss.col), wy(r) + .7, wz(r, r.boss.row)); g.add(bossSpr); }
+    scene.add(g); roomDyns.set(key, { g, enemySprs, bossSpr });
+  }
+  function refreshDyn(key) {
+    const r = S.rooms[key], d = roomDyns.get(key); if (!r || !d) return;
+    for (const [e, m] of d.enemySprs) if (!e.alive) { d.g.remove(m); d.enemySprs.delete(e); }
+    for (const e of r.enemies) { if (!e.alive) continue;
+      if (!d.enemySprs.has(e)) { const b = sprite(e.tile, e.pal, .9); d.g.add(b); d.enemySprs.set(e, b); }
+      d.enemySprs.get(e).position.set(wx(r, e.col), wy(r) + .55, wz(r, e.row)); }
+    if (d.bossSpr && r.boss && !r.boss.alive) { d.g.remove(d.bossSpr); d.bossSpr = null; }
+    for (const b of d.g.children.slice()) if (b.userData.it && b.userData.it.taken) d.g.remove(b);
+  }
+  function ensureWorld() { for (const key of Object.keys(S.rooms)) {
+    if (!roomGroups.has(key)) buildRoom(key);
+    if (!roomDyns.has(key)) buildDyn(key); } }
+  function resetWorld() {
+    for (const [, g] of roomGroups) scene.remove(g);
+    for (const [, d] of roomDyns) scene.remove(d.g);
+    roomGroups.clear(); roomDyns.clear(); cellOwner.clear();
+    ensureWorld(); miniDirty = true;
+  }
+  // --- minimapa 3D: cubo por sala explorada (pisos apilados), líneas por puertas ---
+  const miniScene = new THREE.Scene();
+  miniScene.add(new THREE.AmbientLight(0xffffff, 2.2));
+  const miniCam = new THREE.PerspectiveCamera(45, 1, .1, 200);
+  let miniGroup = null, miniDirty = true;
+  function buildMini() {
+    if (miniGroup) miniScene.remove(miniGroup);
+    miniGroup = new THREE.Group();
+    const rooms = Object.values(S.rooms);
+    for (const r of rooms) {
+      const cur = (r.x + ',' + r.y + ',' + r.z) === S.cur;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(.55, .3, .55),
+        new THREE.MeshStandardMaterial({ color: r.goal && !S.won ? 0xffe08a : cur ? 0xffd86b : 0x3f5167 }));
+      m.position.set(r.x, r.z * 1.4, r.y); miniGroup.add(m);
+      for (const d of r.doors) { const st = RG_STEP_MINI[d.dir];
+        const pts = [new THREE.Vector3(r.x, r.z * 1.4, r.y), new THREE.Vector3(r.x + st[0] * .5, r.z * 1.4, r.y + st[1] * .5)];
+        miniGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({ color: d.locked ? 0xb04040 : 0x54657d }))); }
+      if (r.hasUp || r.hasDown) { const pts = [new THREE.Vector3(r.x, r.z * 1.4 + (r.hasUp ? .7 : 0), r.y),
+        new THREE.Vector3(r.x, r.z * 1.4 - (r.hasDown ? .7 : 0), r.y)];
+        miniGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineBasicMaterial({ color: 0x8fd6ff }))); }
+    }
+    miniScene.add(miniGroup);
+    // encuadre: centroide + radio del grafo
+    let cx = 0, cy = 0, cz = 0, radio = 3;
+    for (const r of rooms) { cx += r.x; cy += r.z * 1.4; cz += r.y; }
+    cx /= rooms.length; cy /= rooms.length; cz /= rooms.length;
+    for (const r of rooms) radio = Math.max(radio, Math.hypot(r.x - cx, r.z * 1.4 - cy, r.y - cz));
+    miniCam.position.set(cx + radio * 1.2, cy + radio * 1.1, cz + radio * 1.2);
+    miniCam.lookAt(cx, cy, cz);
+  }
+  const RG_STEP_MINI = { N: [0, -1], S: [0, 1], W: [-1, 0], E: [1, 0] };
   const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
     const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
     g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
   function hud() {
     const r = room();
-    ui.top('<b>' + (G.name || 'roguelike') + '</b> · Piso ' + r.z + ' · sala (' + r.x + ',' + r.y + ')');
+    ui.top('<b>' + (G.name || 'roguelike') + '</b> · Piso ' + r.z + ' · sala (' + r.x + ',' + r.y + ') · [N] nueva partida');
     ui.side('<div class="chip">Vida: <b style="color:#ff7b7b">' + '♥'.repeat(Math.max(0, S.hp)) + '</b>' +
             '<span style="color:#553">' + '♡'.repeat(Math.max(0, S.maxHp - S.hp)) + '</span></div>' +
-            '<div class="chip">Arma: ' + S.weapon + ' (atq ' + S.atk + ')</div>' +
-            '<div class="chip">Salas: ' + Object.keys(S.rooms).length + ' · Bajas: ' + S.kills + '</div>');
+            '<div class="chip">Arma: ' + S.weapon + ' (atq ' + (S.atk + S.atkBonus) + (S.atkBonus ? ' = ' + S.atk + '+' + S.atkBonus + ' XP' : '') + ')</div>' +
+            '<div class="chip">Llaves: ' + S.keys + '</div>' +
+            '<div class="chip">Salas: ' + Object.keys(S.rooms).length + ' · Bajas: ' + S.kills + ' · Prof. ' + S.deepest + '</div>');
   }
   const T = G.TEXT || {};
+  const stats = () => 'salas: ' + Object.keys(S.rooms).length + ' · bajas: ' + S.kills + ' · caídas: ' + S.deaths +
+    ' · prof. máx: ' + S.deepest + ' · perfil roguelike · game3d (misma lógica que el visor 2D)';
   function onEvent(r) {
-    if (r === 'door-new' || r === 'stairs-new') { beep(660); ui.msg(T.enter || 'Nueva sala generada.'); build(); }
-    else if (r === 'door') { beep(620); ui.msg('Sala (' + room().x + ',' + room().y + ')'); build(); }
-    else if (r === 'stairs') { beep(620); ui.msg('Piso ' + room().z); build(); }
-    else if (r === 'heal') { beep(740); ui.msg((T.heal || 'Curado.') + ' (+' + S.lastItem.amount + ')'); refresh(); }
-    else if (r === 'weapon') { beep(780); ui.msg((T.equip || 'Equipas') + ': ' + S.weapon + ' (atq ' + S.atk + ')'); refresh(); }
-    else if (r === 'weapon-worse') { ui.msg((S.lastItem.name || 'Arma') + ' — ya tienes algo mejor'); refresh(); }
+    if (r === 'door-new' || r === 'stairs-new') { beep(660); ui.msg(T.enter || 'Nueva sala generada.'); ensureWorld(); miniDirty = true; }
+    else if (r === 'door') { beep(620); ui.msg('Sala (' + room().x + ',' + room().y + ')'); miniDirty = true; }
+    else if (r === 'stairs') { beep(620); ui.msg('Piso ' + room().z); miniDirty = true; }
+    else if (r === 'locked') { beep(196, .12); ui.msg(T.locked || 'Puerta cerrada. Necesitas una llave.'); }
+    else if (r === 'unlock') { beep(780, .2); ui.msg(T.unlock || 'La llave abre la puerta.');
+      rebuildRoom(S.cur); for (const st of Object.values(RG_STEP_MINI)) { const rr = room();
+        rebuildRoom((rr.x + st[0]) + ',' + (rr.y + st[1]) + ',' + rr.z); } miniDirty = true; }
+    else if (r === 'key') { beep(840); ui.msg(T.key || 'Encuentras una llave.'); refreshDyn(S.cur); }
+    else if (r === 'heal') { beep(740); ui.msg((T.heal || 'Curado.') + ' (+' + S.lastItem.amount + ')'); refreshDyn(S.cur); }
+    else if (r === 'weapon') { beep(780); ui.msg((T.equip || 'Equipas') + ': ' + S.weapon); refreshDyn(S.cur); }
+    else if (r === 'weapon-worse') { ui.msg((S.lastItem.name || 'Arma') + ' — ya tienes algo mejor'); refreshDyn(S.cur); }
+    else if (r === 'boss-blocks' || r === 'boss-contact') { beep(180, .2); ui.msg(T.boss || 'El guardián bloquea el cofre.'); }
     else if (r === 'hurt') { beep(196, .15); ui.msg(T.hit || 'Te golpearon.'); }
-    else if (r === 'fallen') { beep(147, .3); ui.msg(T.fallen || 'Has caido.'); build(); }
+    else if (r === 'fallen') { beep(147, .3); ui.msg(T.fallen || 'Has caído.'); miniDirty = true; }
+    else if (r === 'gameover') { beep(110, .5); ui.overlay('<div style="color:#ff7b7b">💀 Fin de la partida (permadeath).' +
+      '<br><span style="font-size:13px;color:#7b8696">' + stats() + '</span></div>'); }
     else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.WIN || {}).text || 'Victoria') +
-      '<br><span style="font-size:13px;color:#7b8696">salas: ' + Object.keys(S.rooms).length + ' · bajas: ' + S.kills +
-      ' · caídas: ' + S.deaths + ' · perfil roguelike · game3d (mismo mundo que el visor 2D)</span></div>'); }
-    hud();
+      '<br><span style="font-size:13px;color:#7b8696">' + stats() + '</span></div>'); }
+    hud(); save();
+  }
+  function newRun() {
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    S = rgInit(G); ui.overlay(''); resetWorld(); hud(); ui.msg('Nueva partida.');
   }
   addEventListener('keydown', e => {
-    if (S.won) return;
     const k = e.key;
+    if (k === 'n' || k === 'N') { newRun(); e.preventDefault(); return; }
+    if (S.won || S.lost) return;
     if (k === 'ArrowLeft') onEvent(rgMove(G, S, -1, 0));
     else if (k === 'ArrowRight') onEvent(rgMove(G, S, 1, 0));
     else if (k === 'ArrowUp') onEvent(rgMove(G, S, 0, -1));
     else if (k === 'ArrowDown') onEvent(rgMove(G, S, 0, 1));
     else if (k === ' ') { const r = rgAttack(G, S);
-      if (r === 'kill') { beep(880, .15); ui.msg((T.defeat || 'Enemigo derrotado.') + ' (' + S.weapon + ')'); refresh(); hud(); }
-      else if (r === 'hit') { beep(520); ui.msg('Golpeas con ' + S.weapon + '.'); } }
+      if (r === 'kill' || r === 'boss-kill') { beep(880, .15);
+        ui.msg((r === 'boss-kill' ? (T.bossdown || 'El guardián cae.') : (T.defeat || 'Enemigo derrotado.')) + ' (' + S.weapon + ')');
+        refreshDyn(S.cur); hud(); save(); }
+      else if (r === 'kill-levelup') { beep(990, .2); ui.msg((T.levelup || 'Subes de ataque.') + ' (atq ' + (S.atk + S.atkBonus) + ')'); refreshDyn(S.cur); hud(); save(); }
+      else if (r === 'hit' || r === 'boss-hit') { beep(520); ui.msg('Golpeas con ' + S.weapon + '.'); } }
     else return;
     e.preventDefault();
   });
-  build(); hud(); ui.msg(T.intro || '');
+  ensureWorld(); hud();
+  ui.msg(restored ? 'Partida restaurada (guardado automático). [N] para empezar de cero.' : (T.intro || ''));
   let frame = 0;
   (function loop() { requestAnimationFrame(loop); frame++;
-    if (frame % 24 === 0 && !S.won) { const r = rgPatrol(G, S);
-      if (r === 'hurt' || r === 'fallen') onEvent(r); else refresh(); }
+    if (frame % 24 === 0 && !S.won && !S.lost) { const r = rgPatrol(G, S);
+      if (r !== 'ok') onEvent(r); else refreshDyn(S.cur); }
+    if (miniDirty) { buildMini(); miniDirty = false; }
+    const r = room();
     playerSpr.material.opacity = S.invuln > 0 && ((frame >> 2) & 1) ? .3 : 1;
     playerSpr.material.transparent = true;
-    playerSpr.position.lerp(new THREE.Vector3(S.pos.col, .6, S.pos.row), .25);
-    cam.position.lerp(new THREE.Vector3(S.pos.col, 7.5, S.pos.row + 7), .12);
-    cam.lookAt(S.pos.col, .5, S.pos.row);
-    ren.render(scene, cam); })();
-  return { S };
+    playerSpr.position.lerp(new THREE.Vector3(wx(r, S.pos.col), wy(r) + .6, wz(r, S.pos.row)), .25);
+    cam.position.lerp(new THREE.Vector3(wx(r, S.pos.col), wy(r) + 7.5, wz(r, S.pos.row) + 7), .12);
+    cam.lookAt(playerSpr.position.x, wy(r) + .5, playerSpr.position.z);
+    ren.render(scene, cam);
+    // minimapa 3D en la esquina superior derecha (segunda pasada con scissor)
+    const mw = Math.floor(innerWidth * .24), mh = Math.floor(innerHeight * .3);
+    ren.clearDepth(); ren.setScissorTest(true);
+    ren.setScissor(innerWidth - mw - 10, innerHeight - mh - 10, mw, mh);
+    ren.setViewport(innerWidth - mw - 10, innerHeight - mh - 10, mw, mh);
+    miniCam.aspect = mw / mh; miniCam.updateProjectionMatrix();
+    ren.render(miniScene, miniCam);
+    ren.setScissorTest(false); ren.setViewport(0, 0, innerWidth, innerHeight);
+  })();
+  return { get S() { return S; }, newRun };
 });
 
 // ============================================================================
