@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `advance-wars` en game3d (visor): los 14 perfiles con runtime
+- **Runtime `advance-wars`** (14º y último perfil con runtime): **visor 3D del arte
+  extraído** — desfile de las unidades 4bpp sobre la rejilla que declara `platform`
+  (12×10), cámara orbital, cursor con flechas, Enter coge/suelta (recolocación con
+  bloqueo por ocupación) e inspección en el HUD (nombre, dimensiones, paleta).
+- **Honestidad por diseño**: este perfil modela **solo arte** (PALETTES + UNITS; sus
+  reglas son unit-dims/unit-palette-ref/unit-tiledata-range) — no hay vocabulario de
+  gameplay (stats, daño, terreno, mapa), así que el runtime **no inventa combate**:
+  *gameplay as data* significa que sin datos no hay gameplay (SPEC §8). El propio HUD
+  lo dice. Si se quisiera batalla real, el camino es extender perfil+ejemplo con
+  tokens de gameplay.
+- **Lógica pura en `game3d-logic.mjs`** (`awDecode`/`awInit`/`awCursor`/`awAct`,
+  +16 chequeos en `npm test` y CI): decode 4bpp de las 4 unidades reales validado
+  contra su paleta (color a color), errores en unidad inexistente/tileData roto,
+  desfile dentro de la rejilla sin solapes, topes de cursor, coger/soltar con bloqueo.
+- **Verificado en navegador**: boot, coger en vacío bloqueado, inspección de
+  INFANTRY, soltar sobre TANK bloqueado y recolocación a (0,0) — todo con eventos de
+  teclado reales.
+- Con esto, **los 14 perfiles del repo tienen runtime en game3d**.
 
 ## [2.15.0] — 2026-07-08
 

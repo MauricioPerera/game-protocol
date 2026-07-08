@@ -737,6 +737,55 @@ export function rgPatrol(G, S) {
   return 'ok';
 }
 
+// ============================================================================
+// Lógica del perfil `advance-wars` — PURA. Este perfil modela SOLO arte
+// extraído (PALETTES + UNITS 4bpp): no hay vocabulario de gameplay (stats,
+// daño, terreno, mapa), así que el runtime es un VISOR — desfile de unidades
+// sobre la rejilla que declara `platform` (mode grid, cols×rows), con
+// inspección y recolocación. Sin combate: inventarlo violaría el principio
+// del protocolo (gameplay as DATA). awDecode valida el 4bpp contra la paleta.
+// ============================================================================
+export function awDecode(G, unitName) {
+  const u = (G.UNITS || {})[unitName];
+  if (!u) return { err: 'unidad inexistente: ' + unitName };
+  const pal = (G.PALETTES || [])[u.palette || 0];
+  if (!pal) return { err: 'paleta inexistente: ' + u.palette };
+  const rows = u.tileData || [];
+  if (rows.length !== u.height || rows.some(r => r.length !== u.width)) return { err: 'tileData no es ' + u.height + 'x' + u.width };
+  const colors = [];
+  for (const r of rows) {
+    const cr = [];
+    for (const i of r) { if (i < 0 || i > 15) return { err: 'indice 4bpp fuera de 0..15' }; cr.push(pal[i] || [0, 0, 0]); }
+    colors.push(cr);
+  }
+  return { err: null, name: unitName, w: u.width, h: u.height, pixels: rows, colors };
+}
+export function awInit(G) {
+  const P = G.platform || {};
+  const cols = P.cols || 12, rows = P.rows || 10;
+  const names = Object.keys(G.UNITS || {});
+  // desfile inicial: unidades repartidas en la fila central, equiespaciadas
+  const units = names.map((name, i) => ({ name,
+    col: Math.min(cols - 1, Math.floor((i + 1) * cols / (names.length + 1))),
+    row: rows >> 1 }));
+  return { cols, rows, units, cursor: { col: 0, row: rows >> 1 }, picked: -1 };
+}
+export function awCursor(S, dc, dr) {
+  S.cursor.col = Math.max(0, Math.min(S.cols - 1, S.cursor.col + dc));
+  S.cursor.row = Math.max(0, Math.min(S.rows - 1, S.cursor.row + dr));
+  return 'ok';
+}
+export function awAct(S) {
+  const at = S.units.findIndex(u => u.col === S.cursor.col && u.row === S.cursor.row);
+  if (S.picked === -1) {
+    if (at === -1) return 'blocked';           // no hay unidad que coger
+    S.picked = at; return 'pick';
+  }
+  if (at !== -1 && at !== S.picked) return 'blocked'; // celda ocupada por otra
+  S.units[S.picked].col = S.cursor.col; S.units[S.picked].row = S.cursor.row;
+  S.picked = -1; return 'place';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

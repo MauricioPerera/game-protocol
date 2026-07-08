@@ -21,7 +21,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS,
          pfInit, pfTick,
          crInit, crGather, crMove, crCraft, CR_ACTIONS,
-         rgInit, rgMove, rgAttack, rgPatrol } from './game3d-logic.mjs';
+         rgInit, rgMove, rgAttack, rgPatrol,
+         awInit, awCursor, awAct, awDecode } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -493,6 +494,74 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME advance-wars — VISOR 3D del arte extraído. Este perfil modela SOLO
+// arte (PALETTES + UNITS 4bpp): no hay vocabulario de gameplay, así que aquí
+// no se inventa combate (gameplay as DATA) — es un desfile sobre la rejilla
+// declarada por `platform`, con inspección y recolocación de unidades.
+// Teclas: flechas mueven el cursor, Enter/Espacio coge y suelta.
+// ============================================================================
+register('advance-wars', G => {
+  const { scene, cam, ren } = makeStage();
+  const S = awInit(G);
+  // suelo: tablero cols×rows
+  for (let r = 0; r < S.rows; r++) for (let c = 0; c < S.cols; c++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(.96, .08, .96),
+      new THREE.MeshStandardMaterial({ color: (c + r) % 2 ? 0x37543a : 0x2f4a33 }));
+    m.position.set(c, 0, r); scene.add(m);
+  }
+  const cursor = new THREE.Mesh(new THREE.BoxGeometry(1, .5, 1),
+    new THREE.MeshBasicMaterial({ color: 0x8fd6ff, wireframe: true }));
+  scene.add(cursor);
+  // unidades: billboards del tileData 4bpp contra su paleta (validado por awDecode)
+  const sprs = new Map();
+  for (const u of S.units) {
+    const d = awDecode(G, u.name);
+    if (d.err) { ui.msg('Unidad invalida (' + u.name + '): ' + d.err); continue; }
+    const b = billboard(gridCanvas(d.pixels, G.PALETTES[(G.UNITS[u.name] || {}).palette || 0], true), 1.1);
+    scene.add(b); sprs.set(u.name, b);
+  }
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    const at = S.units.find(u => u.col === S.cursor.col && u.row === S.cursor.row);
+    ui.top('<b>' + (G.name || 'advance-wars') + '</b> · visor del arte extraído (' + S.cols + '×' + S.rows + ')');
+    ui.side('<div class="chip">Unidades: ' + S.units.length + '</div>' +
+            (at ? '<div class="chip">Celda: <b>' + at.name + '</b> · ' + G.UNITS[at.name].width + '×' + G.UNITS[at.name].height +
+                  ' · paleta ' + (G.UNITS[at.name].palette || 0) + '</div>'
+                : '<div class="chip">Celda: (' + S.cursor.col + ',' + S.cursor.row + ') libre</div>') +
+            (S.picked !== -1 ? '<div class="chip">Llevas: <b>' + S.units[S.picked].name + '</b></div>' : '') +
+            '<div class="chip" style="color:#7b8696">Este perfil modela SOLO arte — sin datos de combate no hay combate (SPEC §8)</div>');
+  }
+  addEventListener('keydown', e => {
+    const k = e.key;
+    if (k === 'ArrowLeft') awCursor(S, -1, 0);
+    else if (k === 'ArrowRight') awCursor(S, 1, 0);
+    else if (k === 'ArrowUp') awCursor(S, 0, -1);
+    else if (k === 'ArrowDown') awCursor(S, 0, 1);
+    else if (k === 'Enter' || k === ' ') {
+      const r = awAct(S);
+      if (r === 'pick') { beep(740); ui.msg('Coges ' + S.units[S.picked].name + '.'); }
+      else if (r === 'place') { beep(880); ui.msg('Unidad recolocada.'); }
+      else { beep(196, .12); ui.msg(S.picked === -1 ? 'Ahí no hay unidad.' : 'Celda ocupada.'); } }
+    else return;
+    hud(); e.preventDefault();
+  });
+  hud(); ui.msg('Desfile del arte 4bpp extraído: flechas + Enter para inspeccionar y recolocar.');
+  let t = 0;
+  (function loop() { requestAnimationFrame(loop); t += .005;
+    cursor.position.set(S.cursor.col, .3, S.cursor.row);
+    S.units.forEach((u, i) => { const b = sprs.get(u.name); if (!b) return;
+      const alza = S.picked === i ? 1.6 + Math.sin(t * 8) * .1 : .75;
+      b.position.lerp(new THREE.Vector3(u.col, alza, u.row), .2); });
+    const cx = S.cols / 2 - .5, cz = S.rows / 2 - .5;
+    cam.position.set(cx + Math.sin(t) * 7, 6.5, cz + 5 + Math.cos(t) * 2);
+    cam.lookAt(cx, .5, cz);
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ============================================================================

@@ -649,6 +649,53 @@ const ok = (cond, label, extra) => {
     ok(L.rgMove(GR, S, 1, 0) === 'weapon-worse' && S.atk === 3, 'rg  arma peor NO sustituye');
   }
 
+  // ============================================================
+  // Advance Wars (visor): el perfil modela SOLO arte — decode
+  // 4bpp validado contra los datos y desfile con recolocacion
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/advance-wars-extracted.generated.js'));
+  const GA = global.window.GAME; delete global.window;
+  ok(GA.profile === 'advance-wars', 'aw  artefacto con meta profile=advance-wars');
+  // (a) decode 4bpp de TODAS las unidades reales contra su paleta
+  for (const name of Object.keys(GA.UNITS)) {
+    const d = L.awDecode(GA, name);
+    ok(d.err === null && d.w === 8 && d.h === 8 && d.colors.length === 8 && d.colors[0].length === 8,
+       'aw  ' + name + ': tileData 8x8 decodificado sin error');
+  }
+  {
+    const d = L.awDecode(GA, 'INFANTRY');
+    const i0 = GA.UNITS.INFANTRY.tileData[0][0];
+    ok(JSON.stringify(d.colors[0][0]) === JSON.stringify(GA.PALETTES[0][i0]),
+       'aw  el color decodificado corresponde a PALETTES[pal][indice]');
+    ok(L.awDecode(GA, 'NOPE').err !== null, 'aw  unidad inexistente -> err');
+    const roto = { UNITS: { X: { palette: 0, width: 8, height: 8, tileData: [[99]] } }, PALETTES: GA.PALETTES };
+    ok(L.awDecode(roto, 'X').err !== null, 'aw  tileData roto -> err');
+  }
+  // (b) desfile: unidades dentro de la rejilla declarada por platform, sin solapes
+  {
+    const S = L.awInit(GA);
+    ok(S.cols === GA.platform.cols && S.rows === GA.platform.rows, 'aw  rejilla desde platform (' + S.cols + 'x' + S.rows + ')');
+    ok(S.units.length === Object.keys(GA.UNITS).length &&
+       S.units.every(u => u.col >= 0 && u.col < S.cols && u.row >= 0 && u.row < S.rows),
+       'aw  todas las unidades dentro de la rejilla');
+    ok(new Set(S.units.map(u => u.col + ',' + u.row)).size === S.units.length, 'aw  sin solapes iniciales');
+  }
+  // (c) cursor con topes y coger/soltar con bloqueo por ocupacion
+  {
+    const S = L.awInit(GA);
+    for (let i = 0; i < 99; i++) L.awCursor(S, -1, 0);
+    ok(S.cursor.col === 0, 'aw  cursor con tope en la columna 0');
+    ok(L.awAct(S) === 'blocked', 'aw  coger en celda vacia -> blocked');
+    S.cursor = { col: S.units[0].col, row: S.units[0].row };
+    ok(L.awAct(S) === 'pick', 'aw  coger unidad -> pick');
+    S.cursor = { col: S.units[1].col, row: S.units[1].row };
+    ok(L.awAct(S) === 'blocked', 'aw  soltar sobre otra unidad -> blocked');
+    S.cursor = { col: 0, row: 0 };
+    ok(L.awAct(S) === 'place' && S.units[0].col === 0 && S.units[0].row === 0 && S.picked === -1,
+       'aw  soltar en celda libre recoloca la unidad');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();
