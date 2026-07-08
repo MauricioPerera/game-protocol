@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.7.1`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.8.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,13 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.7.1`** — patch: runtime monster-rpg 3D **unificado** en `game3d.js`
+**Release `v2.8.0`** — aditivo: tres mejoras de `game3d` — **runtime `quiz`** (el
+perfil puro-datos gana demo jugable; partida perfecta verificada: 450 pts exactos),
+**lógica pura testeada** (`game3d-logic.mjs` + 25 chequeos en `npm test`/CI: daño
+determinista, fórmula de captura, XP/evoluciones, visión, colisión) y **tween de
+movimiento + orientación** del sprite. 13 suites; 5 perfiles en el player.
+
+`v2.7.1` — patch: runtime monster-rpg 3D **unificado** en `game3d.js`
 (`kaiju-island-3d.html` delega por redirect; retirada la copia duplicada).
 
 `v2.7.0` — aditivo: **game3d**

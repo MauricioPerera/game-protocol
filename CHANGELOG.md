@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.8.0] — 2026-07-07
+
+Release **aditivo** sobre `2.7.1` (bump minor, [SPEC §7.0](./SPEC.md)): tres mejoras
+del runtime `game3d` — quinto perfil jugable (quiz, el puro-datos), lógica pura
+verificada en `npm test`/CI, y tween de movimiento. La versión del protocolo sigue
+en `0.1`.
+
 ### Added — mejoras del runtime game3d
 - **Runtime `quiz`**: el perfil puro-datos gana su primera demo jugable — rondas,
   timer por pregunta (`seconds`), puntuación (`points` + `reward` por ronda), teclas
@@ -547,6 +556,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.8.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.8.0
 [2.7.1]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.1
 [2.7.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.7.0
 [2.6.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.6.0
