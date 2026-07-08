@@ -341,6 +341,115 @@ export function ppDecide(G, S, choice) {
   return okDec ? 'correct' : 'wrong';
 }
 
+// ============================================================================
+// Lógica del perfil `tower-defense` — PURA, por ticks y SIN azar (spawns por
+// count/gap, targeting al enemigo más avanzado en rango). Todo el balance sale
+// del artefacto: TOWERS, DMG_CHART, ENEMIES (via spawns expandidos), WAVES,
+// ECONOMY, BALANCE. Semántica del motor (SPEC §8): el ejemplo no declara MAPS,
+// así que el camino es una ruta en S fija sobre rejilla 12x8 (TD_COLS/TD_ROWS);
+// 30 ticks ~ 1s nominal: speed = celdas/s, rate = disparos/s, gap en ticks.
+// Recompensa de oleada y luego interés (floor(gold*interestRate)) al limpiarla.
+// ============================================================================
+export const TD_COLS = 12, TD_ROWS = 8;
+export function tdPath() {
+  const pts = [[0, 1], [9, 1], [9, 4], [2, 4], [2, 6], [11, 6]];
+  const path = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    let [c, r] = pts[i]; const [c2, r2] = pts[i + 1];
+    while (c !== c2 || r !== r2) { path.push({ col: c, row: r }); c += Math.sign(c2 - c); r += Math.sign(r2 - r); }
+  }
+  path.push({ col: pts[pts.length - 1][0], row: pts[pts.length - 1][1] });
+  return path;
+}
+// Posición interpolada de un enemigo por su progreso (en celdas) sobre el camino.
+export function tdPos(path, prog) {
+  const i = Math.min(path.length - 1, Math.floor(prog));
+  const a = path[i], b = path[Math.min(path.length - 1, i + 1)], f = prog - i;
+  return { col: a.col + (b.col - a.col) * f, row: a.row + (b.row - a.row) * f };
+}
+export function tdInit(G) {
+  return { gold: (G.ECONOMY || {}).startGold || 0, lives: (G.ECONOMY || {}).startLives || 1,
+           waveIds: Object.keys(G.WAVES || {}).sort((a, b) => +a - +b),
+           wave: 0, waveActive: false, t: 0, queue: [], towers: [], enemies: [],
+           spawned: 0, killed: 0, leaked: 0, won: false, lost: false };
+}
+const tdCell = (S, path, col, row) =>
+  path.some(p => p.col === col && p.row === row) ? 'path' :
+  S.towers.some(t => t.col === col && t.row === row) ? 'tower' : 'free';
+export function tdBuild(G, S, type, col, row, path) {
+  const T = (G.TOWERS || {})[type];
+  if (S.won || S.lost || !T || S.gold < T.cost) return 'blocked';
+  if (col < 0 || col >= TD_COLS || row < 0 || row >= TD_ROWS) return 'blocked';
+  if (tdCell(S, path, col, row) !== 'free') return 'blocked';
+  S.gold -= T.cost;
+  S.towers.push({ type, col, row, cd: 0 });
+  return 'ok';
+}
+export function tdSell(G, S, col, row) {
+  const i = S.towers.findIndex(t => t.col === col && t.row === row);
+  if (S.won || S.lost || i === -1) return 'blocked';
+  S.gold += Math.floor(G.TOWERS[S.towers[i].type].cost * ((G.BALANCE || {}).sellRatio || 0));
+  S.towers.splice(i, 1);
+  return 'ok';
+}
+export function tdStartWave(G, S) {
+  if (S.won || S.lost || S.waveActive || S.wave >= S.waveIds.length) return 'blocked';
+  const W = G.WAVES[S.waveIds[S.wave]];
+  S.queue = [];
+  for (const sp of (W.spawns || []))
+    for (let k = 0; k < (sp.count || 1); k++)
+      S.queue.push({ spec: sp, at: S.t + k * (sp.gap || 30) });
+  S.waveActive = true;
+  return 'wave';
+}
+export function tdTick(G, S, path) {
+  if (S.won || S.lost || !S.waveActive) return 'idle';
+  S.t++;
+  // spawns pendientes cuyo tick llegó
+  for (let i = S.queue.length - 1; i >= 0; i--)
+    if (S.queue[i].at <= S.t) {
+      const sp = S.queue[i].spec;
+      S.enemies.push({ name: sp.enemy, hp: sp.hp, speed: sp.speed, armor: sp.armor, bounty: sp.bounty, prog: 0 });
+      S.spawned++; S.queue.splice(i, 1);
+    }
+  // avance de enemigos; fuga al final del camino
+  for (let i = S.enemies.length - 1; i >= 0; i--) {
+    const e = S.enemies[i];
+    e.prog += e.speed / 30;
+    if (e.prog >= path.length - 1) {
+      S.enemies.splice(i, 1); S.leaked++; S.lives--;
+      if (S.lives <= 0) { S.lost = true; return 'lose'; }
+    }
+  }
+  // torres: dispara cada 30/rate ticks al enemigo mas avanzado dentro de range
+  for (const t of S.towers) {
+    if (--t.cd > 0) continue;
+    const T = G.TOWERS[t.type];
+    let best = null;
+    for (const e of S.enemies) {
+      const p = tdPos(path, e.prog);
+      if (Math.hypot(p.col - t.col, p.row - t.row) <= T.range && (!best || e.prog > best.prog)) best = e;
+    }
+    if (!best) continue;
+    t.cd = Math.round(30 / T.rate);
+    best.hp -= T.damage * (((G.DMG_CHART || {})[T.dmgType] || {})[best.armor] != null ? G.DMG_CHART[T.dmgType][best.armor] : 1);
+    if (best.hp <= 0) {
+      S.enemies.splice(S.enemies.indexOf(best), 1);
+      S.killed++; S.gold += best.bounty || 0;
+    }
+  }
+  // oleada limpia: recompensa + interes; victoria si era la ultima
+  if (S.queue.length === 0 && S.enemies.length === 0) {
+    const W = G.WAVES[S.waveIds[S.wave]];
+    S.gold += W.reward || 0;
+    S.gold += Math.floor(S.gold * ((G.BALANCE || {}).interestRate || 0));
+    S.waveActive = false; S.wave++;
+    if (S.wave >= S.waveIds.length) { S.won = true; return 'win'; }
+    return 'wave-clear';
+  }
+  return 'ok';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

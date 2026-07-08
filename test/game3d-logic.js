@@ -304,6 +304,56 @@ const ok = (cond, label, extra) => {
     ok(L.ppDecide(GB, S, 'approve') === 'blocked', 'papers  partida terminada -> blocked');
   }
 
+  // ============================================================
+  // Tower Defense: partida completa ganada y perdida en Node,
+  // determinista (sin azar), con el balance del artefacto
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/tower-defense.generated.js'));
+  const GT = global.window.GAME; delete global.window;
+  ok(GT.profile === 'tower-defense', 'td  artefacto con meta profile=tower-defense');
+  const tdP = L.tdPath();
+  ok(tdP.length > 20 && tdP[0].col === 0 && tdP[tdP.length - 1].col === 11, 'td  camino en S de ' + tdP.length + ' celdas (entrada col 0, salida col 11)');
+  // (a) construccion: en camino -> blocked; sin oro -> blocked; venta = floor(cost*sellRatio)
+  {
+    const S = L.tdInit(GT);
+    ok(S.gold === GT.ECONOMY.startGold && S.lives === GT.ECONOMY.startLives, 'td  init con ECONOMY (oro ' + S.gold + ', vidas ' + S.lives + ')');
+    ok(L.tdBuild(GT, S, 'rifle', tdP[3].col, tdP[3].row, tdP) === 'blocked', 'td  construir SOBRE el camino -> blocked');
+    ok(L.tdBuild(GT, S, 'laser', 1, 0, tdP) === 'ok' && L.tdBuild(GT, S, 'laser', 3, 0, tdP) === 'blocked',
+       'td  sin oro para el 2o laser -> blocked');
+    const g0 = S.gold;
+    ok(L.tdSell(GT, S, 1, 0) === 'ok' && S.gold === g0 + Math.floor(GT.TOWERS.laser.cost * GT.BALANCE.sellRatio),
+       'td  venta devuelve floor(cost*sellRatio) = ' + Math.floor(GT.TOWERS.laser.cost * GT.BALANCE.sellRatio));
+  }
+  // (b) VICTORIA con estrategia fija: 4 rifles centrales (cubren las 3 pasadas) + refuerzo tras la oleada 1
+  {
+    const S = L.tdInit(GT);
+    for (const [c, r] of [[2, 2], [4, 2], [6, 2], [8, 2]]) L.tdBuild(GT, S, 'rifle', c, r, tdP);
+    let r = '', conserva = true, guard = 0;
+    while (!S.won && !S.lost && guard++ < 100000) {
+      if (!S.waveActive) {
+        if (S.gold >= GT.TOWERS.rifle.cost) L.tdBuild(GT, S, 'rifle', 5, 5, tdP);
+        L.tdStartWave(GT, S);
+      }
+      r = L.tdTick(GT, S, tdP);
+      if (S.spawned !== S.killed + S.leaked + S.enemies.length) conserva = false;
+    }
+    ok(r === 'win' && S.won && S.lives > 0, 'td  VICTORIA: ' + S.waveIds.length + ' oleadas superadas (vidas ' + S.lives + '/' + GT.ECONOMY.startLives + ', ' + S.t + ' ticks)');
+    ok(conserva, 'td  conservacion en cada tick: aparecidos = muertos + fugados + vivos');
+    ok(S.killed + S.leaked === S.spawned && S.enemies.length === 0, 'td  al final: ' + S.killed + ' muertos + ' + S.leaked + ' fugados = ' + S.spawned + ' aparecidos');
+  }
+  // (c) DERROTA sin defensas (vidas recortadas a 3 para forzarla: el ejemplo trae 20 y solo 15 enemigos)
+  {
+    const S = L.tdInit(GT); S.lives = 3;
+    let r = '', guard = 0;
+    while (!S.won && !S.lost && guard++ < 100000) {
+      if (!S.waveActive) L.tdStartWave(GT, S);
+      r = L.tdTick(GT, S, tdP);
+    }
+    ok(r === 'lose' && S.lost && S.leaked >= 3, 'td  DERROTA sin torres: ' + S.leaked + ' fugas agotan las vidas');
+    ok(L.tdStartWave(GT, S) === 'blocked' && L.tdBuild(GT, S, 'rifle', 1, 0, tdP) === 'blocked', 'td  partida terminada -> blocked');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

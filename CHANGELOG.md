@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `tower-defense` en game3d
+- **Runtime `tower-defense`** (10º perfil jugable): el artefacto ya generado corre en
+  game3d sin tocar core ni datos — tablero 3D completo (rejilla 12×8, camino, torres
+  como cilindros por tipo, enemigos como esferas por blindaje), cursor con flechas,
+  construir con 1..N, vender con S (a `sellRatio`), oleadas con Espacio, overlays de
+  victoria/derrota. El runtime expone `step()` para pilotar ticks desde harnesses.
+- **Lógica pura en `game3d-logic.mjs`** (`tdPath`/`tdPos`/`tdInit`/`tdBuild`/`tdSell`/
+  `tdStartWave`/`tdTick`, +11 chequeos en `npm test` y CI): simulación por ticks **sin
+  azar** (spawns por count/gap, targeting al enemigo más avanzado en rango, daño por
+  `DMG_CHART[dmgType][armor]`). Partida **ganada y perdida en Node**: 4 rifles
+  centrales superan las 2 oleadas (15/15 abatidos, 0 fugas) y sin torres se pierde;
+  conservación verificada en cada tick (aparecidos = muertos + fugados + vivos);
+  venta a `floor(cost·sellRatio)`; construir sobre el camino o sin oro → `blocked`.
+- Semántica del motor documentada (SPEC §8): el ejemplo no declara `MAPS`, así que el
+  camino es una ruta en S fija sobre 12×8; 30 ticks ≈ 1 s (speed = celdas/s, rate =
+  disparos/s, gap en ticks); recompensa y luego interés al limpiar la oleada.
+- **Verificado jugando en navegador**: torres construidas con teclado real, intento
+  ilegal sobre el camino rechazado, 2 oleadas pilotando `step()` hasta el overlay de
+  victoria (oro final 186, vidas 20/20).
 
 ## [2.11.0] — 2026-07-08
 

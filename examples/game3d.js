@@ -17,7 +17,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          shooterInit, shooterTick,
          sudokuInit, sudokuSet, sudokuHint,
          pegInit, pegMove, pegMoves,
-         ppInit, ppDecide, ppEntrant } from './game3d-logic.mjs';
+         ppInit, ppDecide, ppEntrant,
+         tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -489,6 +490,94 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME tower-defense — tablero 3D completo; lógica pura por ticks en
+// game3d-logic (partida ganada y perdida en Node en npm test; sin azar).
+// Teclas: flechas mueven el cursor, 1..N construye la torre N, S vende,
+// Espacio lanza la oleada.
+// ============================================================================
+register('tower-defense', G => {
+  const { scene, cam, ren } = makeStage();
+  const path = tdPath();
+  const S = tdInit(G);
+  const types = Object.keys(G.TOWERS || {});
+  const onPath = (c, r) => path.some(p => p.col === c && p.row === r);
+  // suelo: una caja por celda (camino oscuro, resto verde)
+  const cx = c => c - TD_COLS / 2 + .5, cz = r => r - TD_ROWS / 2 - 2;
+  for (let r = 0; r < TD_ROWS; r++) for (let c = 0; c < TD_COLS; c++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(.95, .1, .95),
+      new THREE.MeshStandardMaterial({ color: onPath(c, r) ? 0x5a4632 : (c + r) % 2 ? 0x2c4a2e : 0x27422a }));
+    m.position.set(cx(c), 0, cz(r)); scene.add(m);
+  }
+  cam.position.set(0, 9, 7); cam.lookAt(0, 0, -2);
+  const cursor = new THREE.Mesh(new THREE.BoxGeometry(1, .5, 1),
+    new THREE.MeshBasicMaterial({ color: 0x8fd6ff, wireframe: true }));
+  scene.add(cursor);
+  let cc = 1, cr = 0; // celda del cursor
+  const towerMeshes = new Map(), enemyMeshes = new Map();
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    ui.top('<b>' + (G.name || 'tower defense') + '</b> · oleada ' + Math.min(S.wave + 1, S.waveIds.length) + '/' + S.waveIds.length +
+           (S.waveActive ? ' (en curso)' : ' — [Espacio] lanzar'));
+    ui.side('<div class="chip">Oro: <b>' + S.gold + '</b> · Vidas: <b>' + S.lives + '</b></div>' +
+            types.map((t, i) => '<div class="chip">[' + (i + 1) + '] ' + t + ' — ' + G.TOWERS[t].cost + ' oro</div>').join('') +
+            '<div class="chip">[S] vender (' + Math.round(((G.BALANCE || {}).sellRatio || 0) * 100) + '%)</div>');
+  }
+  function sync() {
+    cursor.position.set(cx(cc), .3, cz(cr));
+    for (const [t, m] of towerMeshes) if (!S.towers.includes(t)) { scene.remove(m); towerMeshes.delete(t); }
+    for (const t of S.towers) if (!towerMeshes.has(t)) {
+      const i = types.indexOf(t.type);
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(.28, .38, .9, 10),
+        new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / Math.max(1, types.length), .65, .55) }));
+      m.position.set(cx(t.col), .55, cz(t.row)); scene.add(m); towerMeshes.set(t, m);
+    }
+    for (const [e, m] of enemyMeshes) if (!S.enemies.includes(e)) { scene.remove(m); enemyMeshes.delete(e); }
+    for (const e of S.enemies) {
+      if (!enemyMeshes.has(e)) {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(e.armor === 'HEAVY' ? .34 : .22, 12, 10),
+          new THREE.MeshStandardMaterial({ color: e.armor === 'HEAVY' ? 0xb03030 : 0xd08030 }));
+        scene.add(m); enemyMeshes.set(e, m);
+      }
+      const p = tdPos(path, e.prog);
+      enemyMeshes.get(e).position.set(cx(p.col), .35, cz(p.row));
+    }
+    hud();
+  }
+  function step() {
+    if (!S.waveActive) return;
+    const r = tdTick(G, S, path);
+    if (r === 'wave-clear') { beep(660, .2); ui.msg('Oleada superada: recompensa e interés cobrados.'); }
+    else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 Base defendida.<br><span style="font-size:13px;color:#7b8696">' +
+      S.killed + ' abatidos · ' + S.leaked + ' fugas · vidas ' + S.lives + '/' + (G.ECONOMY || {}).startLives +
+      ' · oro final ' + S.gold + ' · perfil tower-defense · game3d</span></div>'); }
+    else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 Base arrasada en la oleada ' + (S.wave + 1) +
+      '.<br><span style="font-size:13px;color:#7b8696">fugas: ' + S.leaked + '</span></div>'); }
+    sync();
+  }
+  addEventListener('keydown', e => {
+    if (S.won || S.lost) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') cc = Math.max(0, cc - 1);
+    else if (k === 'ArrowRight') cc = Math.min(TD_COLS - 1, cc + 1);
+    else if (k === 'ArrowUp') cr = Math.max(0, cr - 1);
+    else if (k === 'ArrowDown') cr = Math.min(TD_ROWS - 1, cr + 1);
+    else if (k === ' ') { if (tdStartWave(G, S) === 'wave') { beep(740); ui.msg('¡Oleada en camino!'); } }
+    else if (k === 's' || k === 'S') { if (tdSell(G, S, cc, cr) === 'ok') { beep(520); ui.msg('Torre vendida.'); } else ui.msg('Ahí no hay torre.'); }
+    else if (/^[1-9]$/.test(k) && types[+k - 1]) {
+      const r = tdBuild(G, S, types[+k - 1], cc, cr, path);
+      if (r === 'ok') { beep(880); ui.msg(types[+k - 1] + ' construida.'); }
+      else { beep(196, .12); ui.msg('No se puede construir (oro/celda).'); } }
+    else return;
+    sync(); e.preventDefault();
+  });
+  sync(); ui.msg('Coloca torres (1..' + types.length + ') junto al camino y lanza la oleada con Espacio.');
+  (function loop() { requestAnimationFrame(loop); step(); ren.render(scene, cam); })();
+  return { S, step };
 });
 
 // ============================================================================
