@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — perfil `sudoku` (puro-datos) + Senku
+- **`profiles/sudoku.json`** (13º perfil, tercer puro-datos): puzzles como strings de
+  81 caracteres (`grid` con `.` + `solution`), `difficulty` por enum, `player.start`
+  por broken-ref y `balance` (lives/hints). Límite documentado: longitud/patrón de los
+  strings y la consistencia grid↔solution **no caben en las familias declarativas** —
+  las valida `sudokuCheck` en la simulación de referencia y en `npm test` (segundo caso
+  concreto para SPEC §11: validadores de patrón/longitud de string).
+- **`examples/senku.GAME.md`** (+ generated): 3 puzzles **generados por script con
+  verificación de unicidad** (backtracking + conteo de soluciones; easy 40 / normal 32
+  / hard 27 pistas) — ni un dígito escrito a mano. Lint 0/0 a la primera.
+- **Lógica pura en `game3d-logic.mjs`** (`sudokuCheck`/`sudokuInit`/`sudokuSet`/
+  `sudokuHint`, +14 chequeos en `npm test` y CI): los 3 puzzles reales validados
+  (consistencia + validez por filas/columnas/cajas), victoria rellenando la solución,
+  derrota al agotar vidas, pistas dadas inmutables, hint con descuento.
+- **Runtime `sudoku` en game3d** (7º perfil jugable): tablero DOM 9×9 sobre fondo 3D,
+  flechas + dígitos + H para pista, overlays de victoria/derrota. **Verificado jugando
+  en navegador**: pista inmutable, fallo que descuenta vida, hint, y tablero resuelto
+  hasta el overlay de victoria.
+- README: 128 → **131 reglas** (reconteo; mi sed inicial puso 130 — el número a mano
+  falló otra vez y lo cazó el reconteo en el acto).
 
 ## [2.9.0] — 2026-07-08
 

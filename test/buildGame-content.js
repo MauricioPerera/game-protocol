@@ -117,7 +117,7 @@ const examples = [
   ['papers-please.GAME.md', 'papers-please'], ['voxel.GAME.md', 'voxel'], ['adventure.GAME.md', 'adventure'],
   ['dungeon.GAME.md', 'dungeon'], ['roguelike.GAME.md', 'roguelike'], ['tower-defense.GAME.md', 'tower-defense'],
   ['advance-wars-extracted.GAME.md', 'advance-wars'], ['quiz.GAME.md', 'quiz'],
-  ['neon-swarm.GAME.md', 'shooter'],
+  ['neon-swarm.GAME.md', 'shooter'], ['senku.GAME.md', 'sudoku'],
 ];
 const META_KEYS = new Set(['generatedFrom', 'name', 'description', 'platform', 'palettesCount']);
 for (const [mdFile, pid] of examples) {

@@ -141,6 +141,52 @@ const ok = (cond, label, extra) => {
     ok(S.hp === S.maxhp, 'shooter  heal cura con tope en maxhp');
   }
 
+  // ============================================================
+  // Sudoku (Senku): valida los puzzles REALES + juega en Node
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/senku.generated.js'));
+  const GS = global.window.GAME; delete global.window;
+  ok(GS.profile === 'sudoku', 'sudoku  artefacto con meta profile=sudoku');
+  for (const [id, p] of Object.entries(GS.PUZZLES))
+    ok(L.sudokuCheck(p.grid, p.solution) === null, 'sudoku  puzzle ' + id + ' (' + p.difficulty + ') valido y consistente');
+  // el validador rechaza formas rotas
+  const P1 = GS.PUZZLES.P1;
+  ok(L.sudokuCheck(P1.grid.slice(0, 80), P1.solution) !== null, 'sudoku  grid de 80 chars -> rechazado');
+  ok(L.sudokuCheck(P1.grid, P1.solution.slice(0, 80) + 'x') !== null, 'sudoku  solution corrupta -> rechazada');
+  const badGiven = '9' + P1.grid.slice(1);
+  ok(/no coincide/.test(L.sudokuCheck(badGiven, P1.solution) || ''), 'sudoku  pista que contradice solution -> rechazada');
+  const badSol = P1.solution.slice(0, 79) + P1.solution[79] === P1.solution ? P1.solution : P1.solution; // noop guard
+  const swapped = P1.solution.slice(0, 79) + P1.solution[80] + P1.solution[79];
+  ok(L.sudokuCheck('.'.repeat(81), swapped) !== null, 'sudoku  solution con celdas intercambiadas -> invalida');
+  // (a) VICTORIA: rellenar cada vacio con la solucion
+  {
+    const S = L.sudokuInit(GS);
+    ok(S.err === null && S.id === 'P1', 'sudoku  init en player.start (P1) sin error');
+    for (let i = 0; i < 81; i++) if (!S.given[i]) L.sudokuSet(S, i, +S.solution[i]);
+    ok(S.won === true && S.mistakes === 0 && S.lost === false, 'sudoku  VICTORIA rellenando la solucion (0 fallos)');
+  }
+  // (b) DERROTA: errar hasta agotar vidas; y las pistas dadas son inmutables
+  {
+    const S = L.sudokuInit(GS);
+    const empty = S.grid.findIndex((v, j) => v === 0);
+    const wrongVal = (+S.solution[empty] % 9) + 1;
+    const intentos = S.lives + 1;   // cota fija: lives decrementa dentro del bucle
+    let r = '';
+    for (let k = 0; k < intentos && r !== 'lose'; k++) r = L.sudokuSet(S, empty, wrongVal);
+    ok(S.lost === true && S.grid[empty] === 0, 'sudoku  DERROTA al agotar vidas (la celda sigue vacia)');
+    const S2 = L.sudokuInit(GS);
+    const givenIdx = S2.given.findIndex(g => g);
+    ok(L.sudokuSet(S2, givenIdx, 5) === 'blocked', 'sudoku  las pistas dadas son inmutables');
+  }
+  // (c) pista: rellena una celda correcta y descuenta
+  {
+    const S = L.sudokuInit(GS);
+    const h0 = S.hints, r = L.sudokuHint(S);
+    ok(r === 'hint' && S.hints === h0 - 1, 'sudoku  hint rellena y descuenta');
+    ok(S.grid.filter((v, j) => v !== 0 && !S.given[j]).length === 1, 'sudoku  hint escribio exactamente una celda');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

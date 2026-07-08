@@ -87,6 +87,10 @@ module.exports = {
   'question-time': '`seconds` es entero en 5..120 (si se declara).',
   'question-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   'round-reward': '`reward` de la ronda debe ser >= 0 (si se declara).',
+  // --- sudoku (perfil puro-datos) ---
+  'player-start-ref': '`player.start` debe existir en la coleccion inicial del perfil (p.ej. `puzzles`).',
+  'puzzle-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
+  'sudoku-balance': '`lives` y `hints` enteros >= 0 (si se declaran).',
   // --- shooter (perfil puro-datos) ---
   'ship-weapon-ref': 'El `weapon` de la nave debe existir en `weapons`.',
   'enemy-weapon-ref': 'El `weapon` del enemigo (opcional) debe existir en `weapons`.',

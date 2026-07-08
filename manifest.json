@@ -1015,6 +1015,80 @@
       ],
       "deprecatedRules": []
     },
+    "sudoku": {
+      "specVersion": "0.1",
+      "sections": [
+        "Overview",
+        "Puzzles",
+        "Text",
+        "Do's and Don'ts"
+      ],
+      "required": [
+        "version",
+        "name",
+        "profile"
+      ],
+      "references": [
+        {
+          "rule": "player-start-ref",
+          "level": "error",
+          "from": "player.start",
+          "to": "puzzles",
+          "optional": false
+        }
+      ],
+      "rules": [],
+      "bounds": [
+        {
+          "rule": "sudoku-balance",
+          "level": "error",
+          "target": "balance.lives",
+          "min": 0,
+          "integer": true
+        },
+        {
+          "rule": "sudoku-balance",
+          "level": "error",
+          "target": "balance.hints",
+          "min": 0,
+          "integer": true
+        }
+      ],
+      "dims": [],
+      "enums": [
+        {
+          "rule": "puzzle-difficulty",
+          "level": "error",
+          "target": "puzzles.*.difficulty",
+          "values": [
+            "easy",
+            "normal",
+            "hard"
+          ],
+          "required": true
+        }
+      ],
+      "dataOnly": true,
+      "output": [
+        {
+          "key": "PUZZLES",
+          "source": "token:puzzles"
+        },
+        {
+          "key": "PLAYER",
+          "source": "token:player"
+        },
+        {
+          "key": "BALANCE",
+          "source": "token:balance"
+        },
+        {
+          "key": "TEXT",
+          "source": "token:text"
+        }
+      ],
+      "deprecatedRules": []
+    },
     "tower-defense": {
       "specVersion": "0.1",
       "sections": [

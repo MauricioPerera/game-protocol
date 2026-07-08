@@ -171,6 +171,62 @@ export function shooterTick(G, S, input, rnd) {
   });
   return ev;
 }
+// ============================================================================
+// Lógica del perfil `sudoku` — PURA y sin azar. Incluye el VALIDADOR de datos
+// (sudokuCheck) que cubre lo que las familias declarativas no alcanzan:
+// longitud/dígitos de los strings, consistencia grid↔solution y validez del
+// sudoku (filas/columnas/cajas). Los tests de Node validan los puzzles reales.
+// ============================================================================
+export function sudokuCheck(gridStr, solStr) {
+  if (typeof gridStr !== 'string' || gridStr.length !== 81) return 'grid debe tener 81 caracteres';
+  if (/[^1-9.]/.test(gridStr)) return 'grid: solo digitos 1-9 y "." para vacios';
+  if (typeof solStr !== 'string' || solStr.length !== 81 || /[^1-9]/.test(solStr)) return 'solution: 81 digitos 1-9';
+  for (let i = 0; i < 81; i++)
+    if (gridStr[i] !== '.' && gridStr[i] !== solStr[i]) return 'la pista de la celda ' + i + ' no coincide con solution';
+  for (let u = 0; u < 9; u++) {
+    const row = new Set(), col = new Set(), box = new Set();
+    for (let k = 0; k < 9; k++) {
+      row.add(solStr[u * 9 + k]);
+      col.add(solStr[k * 9 + u]);
+      box.add(solStr[(((u / 3) | 0) * 3 + ((k / 3) | 0)) * 9 + ((u % 3) * 3 + (k % 3))]);
+    }
+    if (row.size !== 9 || col.size !== 9 || box.size !== 9) return 'solution invalida (unidad ' + u + ')';
+  }
+  return null;
+}
+export function sudokuInit(G, puzzleId) {
+  const id = puzzleId || (G.PLAYER || {}).start || Object.keys(G.PUZZLES || {})[0];
+  const P = (G.PUZZLES || {})[id] || { grid: '.'.repeat(81), solution: '123456789'.repeat(9) };
+  const err = sudokuCheck(P.grid, P.solution);
+  const firstEmpty = P.grid.indexOf('.');
+  return { id, err,
+           grid: P.grid.split('').map(c => c === '.' ? 0 : +c),
+           given: P.grid.split('').map(c => c !== '.'),
+           solution: P.solution,
+           lives: (G.BALANCE || {}).lives != null ? G.BALANCE.lives : 3,
+           hints: (G.BALANCE || {}).hints != null ? G.BALANCE.hints : 3,
+           sel: firstEmpty === -1 ? 0 : firstEmpty,
+           mistakes: 0, won: false, lost: false };
+}
+export function sudokuSet(S, idx, val) {
+  if (S.won || S.lost || S.given[idx] || S.grid[idx] !== 0) return 'blocked';
+  if (String(val) !== S.solution[idx]) {
+    S.mistakes++; S.lives--; if (S.lives < 0) { S.lost = true; return 'lose'; }
+    return 'wrong';
+  }
+  S.grid[idx] = val;
+  if (S.grid.every((v, i) => String(v) === S.solution[i])) { S.won = true; return 'win'; }
+  return 'ok';
+}
+export function sudokuHint(S) {
+  if (S.won || S.lost || S.hints <= 0) return 'blocked';
+  const i = S.grid.findIndex((v, j) => v === 0 && !S.given[j]);
+  if (i === -1) return 'blocked';
+  S.hints--; S.grid[i] = +S.solution[i];
+  if (S.grid.every((v, j) => String(v) === S.solution[j])) { S.won = true; return 'win'; }
+  return 'hint';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

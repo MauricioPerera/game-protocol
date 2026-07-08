@@ -14,7 +14,8 @@ import * as THREE from 'three';
 // verificado en Node por test/game3d-logic.js dentro de `npm test`.
 import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          gainXP as gainXPPure, canStep, trainerInSight,
-         shooterInit, shooterTick } from './game3d-logic.mjs';
+         shooterInit, shooterTick,
+         sudokuInit, sudokuSet, sudokuHint } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -486,6 +487,71 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME sudoku — tablero DOM sobre fondo 3D; lógica pura en game3d-logic
+// (los puzzles reales se validan con sudokuCheck en npm test).
+// ============================================================================
+register('sudoku', G => {
+  const { scene, cam, ren } = makeStage();
+  for (let i = 0; i < 9; i++) {   // fondo: anillo de cubos girando
+    const m = new THREE.Mesh(new THREE.BoxGeometry(.9, .9, .9),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / 9, .5, .45) }));
+    const a = i / 9 * Math.PI * 2; m.position.set(Math.cos(a) * 6, 1 + Math.sin(a), Math.sin(a) * 6 - 6);
+    m.userData.spin = .003 + i * .0015; scene.add(m);
+  }
+  cam.position.set(0, 3, 6); cam.lookAt(0, .8, -4);
+  const S = sudokuInit(G);
+  if (S.err) { ui.msg('Puzzle invalido (' + S.id + '): ' + S.err); return { S }; }
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    const P = G.PUZZLES[S.id];
+    ui.top('<b>' + (G.name || 'sudoku') + '</b> · ' + S.id + ' (' + P.difficulty + ')');
+    ui.side('<div class="chip">Vidas: <b>' + '♥'.repeat(Math.max(0, S.lives)) + '</b></div>' +
+            '<div class="chip">Pistas: ' + S.hints + ' (H)</div>' +
+            '<div class="chip">Faltan: ' + S.grid.filter(v => v === 0).length + '</div>');
+  }
+  function paint() {
+    let html = '<table style="border-collapse:collapse;margin:0 auto">';
+    for (let r = 0; r < 9; r++) { html += '<tr>';
+      for (let c = 0; c < 9; c++) { const i = r * 9 + c, v = S.grid[i];
+        const bt = (r % 3 === 0 ? '2px' : '1px') + ' solid #3a4656', bl = (c % 3 === 0 ? '2px' : '1px') + ' solid #3a4656';
+        const bb = (r === 8 ? '2px solid #3a4656' : ''), br = (c === 8 ? '2px solid #3a4656' : '');
+        html += '<td style="width:30px;height:30px;text-align:center;font-size:15px;border-top:' + bt + ';border-left:' + bl +
+          (bb ? ';border-bottom:' + bb : '') + (br ? ';border-right:' + br : '') +
+          ';background:' + (i === S.sel ? '#2a3d55' : 'transparent') +
+          ';color:' + (S.given[i] ? '#8fd6ff' : '#e6edf5') + (S.given[i] ? ';font-weight:700' : '') + '">' +
+          (v || '') + '</td>'; }
+      html += '</tr>'; }
+    ui.panel(html + '</table>', true); hud();
+  }
+  addEventListener('keydown', e => {
+    if (S.won || S.lost) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') S.sel = Math.max(0, S.sel - 1);
+    else if (k === 'ArrowRight') S.sel = Math.min(80, S.sel + 1);
+    else if (k === 'ArrowUp') S.sel = Math.max(0, S.sel - 9);
+    else if (k === 'ArrowDown') S.sel = Math.min(80, S.sel + 9);
+    else if (k === 'h' || k === 'H') { const r = sudokuHint(S);
+      if (r === 'hint') { beep(740); ui.msg('Pista usada.'); }
+      else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.TEXT || {}).win || 'Resuelto') + '</div>'); }
+      else ui.msg('Sin pistas disponibles.'); }
+    else if (/^[1-9]$/.test(k)) { const r = sudokuSet(S, S.sel, +k);
+      if (r === 'ok') { beep(880); ui.msg((G.TEXT || {}).correct || 'Bien.'); }
+      else if (r === 'wrong') { beep(196, .15); ui.msg(((G.TEXT || {}).wrong || 'No.') + ' (fallos: ' + S.mistakes + ')'); }
+      else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.TEXT || {}).win || 'Resuelto') + '<br><span style="font-size:13px;color:#7b8696">fallos: ' + S.mistakes + ' · pistas usadas: ' + (((G.BALANCE || {}).hints || 3) - S.hints) + ' · perfil sudoku (puro-datos) · game3d</span></div>'); }
+      else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 ' + ((G.TEXT || {}).lose || 'Derrota.') + '</div>'); } }
+    else return;
+    paint(); e.preventDefault();
+  });
+  paint(); ui.msg((G.TEXT || {}).intro || '');
+  (function loop() { requestAnimationFrame(loop);
+    scene.traverse(o => { if (o.userData && o.userData.spin) { o.rotation.y += o.userData.spin; o.rotation.x += o.userData.spin * .7; } });
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ---------------- arranque: despacho por la meta `profile` del artefacto ----------------
