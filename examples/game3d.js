@@ -16,7 +16,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          gainXP as gainXPPure, canStep, trainerInSight,
          shooterInit, shooterTick,
          sudokuInit, sudokuSet, sudokuHint,
-         pegInit, pegMove, pegMoves } from './game3d-logic.mjs';
+         pegInit, pegMove, pegMoves,
+         ppInit, ppDecide, ppEntrant } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -488,6 +489,76 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME papers-please — ventanilla DOM sobre fondo 3D; lógica pura en
+// game3d-logic (el oráculo de autoría — decision declarada == evaluación por
+// RULES — y la partida completa se verifican en npm test).
+// Teclas: A aprueba, D deniega.
+// ============================================================================
+register('papers-please', G => {
+  const { scene, cam, ren } = makeStage();
+  // fondo: muro del puesto fronterizo + barrera que se alza al aprobar
+  for (let i = -4; i <= 4; i++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.2, .6),
+      new THREE.MeshStandardMaterial({ color: i % 2 ? 0x4a4a52 : 0x3d3d44 }));
+    m.position.set(i * 1.6, 1.1, -8); scene.add(m);
+  }
+  const barrier = new THREE.Mesh(new THREE.BoxGeometry(5, .25, .25),
+    new THREE.MeshStandardMaterial({ color: 0xcc3333 }));
+  barrier.position.set(0, 1.2, -5); scene.add(barrier);
+  cam.position.set(0, 3, 6); cam.lookAt(0, 1, -6);
+  let barrierUp = 0; // ticks restantes de barrera alzada
+  const S = ppInit(G);
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    const dayId = S.dayIds[S.day], D = G.DAYS[dayId];
+    const libro = (G.TEXT || {})['rulebook_d' + dayId];
+    ui.top('<b>' + (G.name || 'checkpoint') + '</b> · día ' + dayId + ' (' + (S.idx + 1) + '/' + D.entrants.length + ')');
+    ui.side('<div class="chip">Dinero: <b>' + S.money + '</b></div>' +
+            '<div class="chip">Aciertos: ' + S.correct + ' · Errores: ' + S.wrong + '/' + S.maxWrong + '</div>' +
+            (libro ? '<div class="chip">📖 ' + libro + '</div>' : '') +
+            '<div class="chip">Reglas: ' + D.rules.map(r => r.id).join(', ') + '</div>');
+  }
+  function paint() {
+    const E = ppEntrant(G, S);
+    if (!E) return;
+    const docs = Object.entries(E.docs || {});
+    let html = '<div style="text-align:center;color:#7b8696;margin-bottom:6px">Solicitante <b style="color:#e6edf5">' + E.id + '</b> — [A] aprobar · [D] denegar</div>';
+    html += docs.length === 0 ? '<div style="text-align:center;color:#ff9b7b">No presenta documentos.</div>' :
+      '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' + docs.map(([name, d]) =>
+        '<div style="border:1px solid #3a4656;background:#161d27;padding:8px 12px;min-width:150px">' +
+        '<div style="color:#8fd6ff;font-weight:700;margin-bottom:4px">' + name + '</div>' +
+        Object.entries(d).map(([k, v]) => '<div style="font-size:13px"><span style="color:#7b8696">' + k + ':</span> ' + v + '</div>').join('') +
+        '</div>').join('') + '</div>';
+    ui.panel(html, true); hud();
+  }
+  addEventListener('keydown', e => {
+    if (S.won || S.lost) return;
+    const k = e.key.toLowerCase();
+    if (k !== 'a' && k !== 'd') return;
+    const last = S.log.length; // para leer el veredicto tras decidir
+    const r = ppDecide(G, S, k === 'a' ? 'approve' : 'deny');
+    const v = S.log[last];
+    const cite = v.reasons.length ? ' — ' + v.reasons.join(', ') : '';
+    if (v.choice === v.truth) { beep(880); ui.msg('Correcto: ' + v.truth + cite);
+      if (v.truth === 'approve') barrierUp = 60; }
+    else { beep(196, .15); ui.msg('ERROR: era ' + v.truth + cite + ' (multa)'); }
+    if (r === 'day') { beep(660, .2); ui.msg('Fin del día: renta pagada (-' + ((G.ECONOMY || {}).rent || 0) + ').'); }
+    else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 Turno completado.<br><span style="font-size:13px;color:#7b8696">aciertos: ' +
+      S.correct + '/' + (S.correct + S.wrong) + ' · dinero final: ' + S.money + ' · perfil papers-please · game3d</span></div>'); }
+    else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 Despedido: ' + S.maxWrong + ' errores.' +
+      '<br><span style="font-size:13px;color:#7b8696">dinero: ' + S.money + '</span></div>'); }
+    paint(); e.preventDefault();
+  });
+  paint(); ui.msg('Decide con los documentos y las reglas del día. [A] aprobar · [D] denegar');
+  (function loop() { requestAnimationFrame(loop);
+    barrier.position.y += ((barrierUp-- > 0 ? 2.6 : 1.2) - barrier.position.y) * .1;
+    ren.render(scene, cam); })();
+  return { S };
 });
 
 // ============================================================================

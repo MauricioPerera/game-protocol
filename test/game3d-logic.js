@@ -247,6 +247,63 @@ const ok = (cond, label, extra) => {
     ok(L.pegMove(S, 0, 2) === 'lose' && S.lost === true && S.pegs === 1, 'senku  goal center: 1 peg fuera del centro -> derrota');
   }
 
+  // ============================================================
+  // Papers Please: la verdad computada desde las RULES debe
+  // coincidir con la `decision` declarada de cada solicitante,
+  // y la partida se gana/pierde en Node
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/papers-please.generated.js'));
+  const GB = global.window.GAME; delete global.window;
+  ok(GB.profile === 'papers-please', 'papers  artefacto con meta profile=papers-please');
+  // (a) oraculo de autoria: ppEval reproduce la decision declarada de TODOS los solicitantes
+  for (const [dayId, D] of Object.entries(GB.DAYS))
+    for (const E of D.entrants) {
+      const truth = L.ppEval(GB, E, D.rules, L.PP_TODAY);
+      ok(truth.decision === E.decision, 'papers  dia ' + dayId + ' ' + E.id + ': eval=' + truth.decision + ' == declarada=' + E.decision +
+         (E.reason ? ' (' + E.reason + ')' : ''));
+    }
+  // (b) los motivos senalan la regla violada
+  ok(L.ppEval(GB, GB.ENTRANTS.E2, GB.DAYS['1'].rules, L.PP_TODAY).reasons.includes('NEED_PASSPORT'),
+     'papers  E2 sin docs -> viola NEED_PASSPORT');
+  ok(L.ppEval(GB, GB.ENTRANTS.E3, GB.DAYS['2'].rules, L.PP_TODAY).reasons.includes('BAN_KOLECHIA'),
+     'papers  E3 (Kolechia) -> viola BAN_KOLECHIA');
+  ok(L.ppEval(GB, GB.ENTRANTS.E4, GB.DAYS['2'].rules, L.PP_TODAY).reasons.includes('PASSPORT_VALID'),
+     'papers  E4 (1982.01) -> viola PASSPORT_VALID (caducado)');
+  // require-field-match dispara cuando dos docs presentes discrepan
+  {
+    const fake = { docs: { PASSPORT: { name: 'A', country: 'ARSTOTZKA', expiration: '1983.06' }, ID_CARD: { name: 'B' } } };
+    ok(L.ppEval(GB, fake, GB.DAYS['2'].rules, L.PP_TODAY).reasons.includes('NAME_MATCH'),
+       'papers  nombres discrepantes entre docs -> viola NAME_MATCH');
+  }
+  // (c) VICTORIA jugando perfecto: money = aciertos*salary - dias*rent (numeros desde ECONOMY)
+  {
+    const S = L.ppInit(GB);
+    let r = '', total = 0;
+    while (!S.won && !S.lost) {
+      const D = GB.DAYS[S.dayIds[S.day]];
+      r = L.ppDecide(GB, S, L.ppEval(GB, L.ppEntrant(GB, S), D.rules, S.today).decision);
+      total++;
+    }
+    const eco = GB.ECONOMY, dias = Object.keys(GB.DAYS).length;
+    ok(r === 'win' && S.won && S.wrong === 0, 'papers  VICTORIA jugando perfecto (' + total + ' decisiones, 0 errores)');
+    ok(S.money === S.correct * eco.salary - dias * eco.rent,
+       'papers  money = ' + S.correct + '*salary - ' + dias + '*rent = ' + S.money);
+    ok(S.correct + S.wrong === total, 'papers  conservacion: procesados = aciertos + fallos');
+  }
+  // (d) DERROTA al 3er error: decidir siempre lo contrario
+  {
+    const S = L.ppInit(GB);
+    let r = '';
+    while (!S.won && !S.lost) {
+      const D = GB.DAYS[S.dayIds[S.day]];
+      const truth = L.ppEval(GB, L.ppEntrant(GB, S), D.rules, S.today).decision;
+      r = L.ppDecide(GB, S, truth === 'approve' ? 'deny' : 'approve');
+    }
+    ok(r === 'lose' && S.lost && S.wrong === S.maxWrong, 'papers  DERROTA al ' + S.maxWrong + 'o error decidiendo al reves');
+    ok(L.ppDecide(GB, S, 'approve') === 'blocked', 'papers  partida terminada -> blocked');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

@@ -280,6 +280,67 @@ export function pegMove(S, from, to) {
   return 'ok';
 }
 
+// ============================================================================
+// Lógica del perfil `papers-please` — PURA y sin azar. La "verdad" de cada
+// solicitante se COMPUTA desde las RULES del día (require-document,
+// ban-country, require-field-match, not-expired); la `decision` declarada en
+// el GAME.md es el oráculo de autoría y los tests exigen que ambas coincidan.
+// Semántica del motor (SPEC §8): fecha de corte PP_TODAY para not-expired,
+// derrota al 3er error, money = aciertos*salary − fallos*penaltyFee − rent
+// al cerrar cada día (puede ser negativo: es el marcador).
+// ============================================================================
+export const PP_TODAY = '1983.01';
+// `rules` acepta la forma EXPANDIDA del artefacto (DAYS.*.rules: objetos con id)
+// o ids sueltos que se resuelven contra G.RULES.
+export function ppEval(G, entrant, rules, today) {
+  const docs = (entrant || {}).docs || {};
+  const bad = [];
+  for (const x of (rules || [])) {
+    const r = typeof x === 'string' ? Object.assign({ id: x }, (G.RULES || {})[x]) : x;
+    if (r.type === 'require-document') { if (!docs[r.document]) bad.push(r.id); }
+    else if (r.type === 'ban-country') {
+      if (Object.values(docs).some(d => d.country === r.country)) bad.push(r.id);
+    } else if (r.type === 'require-field-match') {
+      const present = (r.documents || []).filter(n => docs[n]);
+      if (present.length >= 2 && new Set(present.map(n => String(docs[n][r.field]))).size > 1) bad.push(r.id);
+    } else if (r.type === 'not-expired') {
+      const d = docs[r.document];
+      if (d && String(d[r.field]) < (today || PP_TODAY)) bad.push(r.id);
+    }
+  }
+  return { decision: bad.length ? 'deny' : 'approve', reasons: bad };
+}
+export function ppInit(G, today) {
+  return { today: today || PP_TODAY,
+           dayIds: Object.keys(G.DAYS || {}).sort((a, b) => +a - +b),
+           day: 0, idx: 0, money: 0, correct: 0, wrong: 0, maxWrong: 3,
+           log: [], won: false, lost: false };
+}
+// Solicitante en ventanilla (objeto expandido del día, o null si terminó).
+export function ppEntrant(G, S) {
+  const D = (G.DAYS || {})[S.dayIds[S.day]];
+  return (D && D.entrants[S.idx]) || null;
+}
+export function ppDecide(G, S, choice) {
+  if (S.won || S.lost) return 'blocked';
+  const D = G.DAYS[S.dayIds[S.day]];
+  const E = D.entrants[S.idx];
+  const truth = ppEval(G, E, D.rules, S.today);
+  const okDec = choice === truth.decision;
+  const eco = G.ECONOMY || {};
+  if (okDec) { S.correct++; S.money += eco.salary || 0; }
+  else { S.wrong++; S.money -= eco.penaltyFee || 0; }
+  S.log.push({ entrant: E.id, choice, truth: truth.decision, reasons: truth.reasons });
+  if (!okDec && S.wrong >= S.maxWrong) { S.lost = true; return 'lose'; }
+  S.idx++;
+  if (S.idx >= D.entrants.length) {
+    S.money -= eco.rent || 0; S.day++; S.idx = 0;
+    if (S.day >= S.dayIds.length) { S.won = true; return 'win'; }
+    return 'day';
+  }
+  return okDec ? 'correct' : 'wrong';
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 

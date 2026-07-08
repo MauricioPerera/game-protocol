@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `papers-please` en game3d
+- **Runtime `papers-please`** (9º perfil jugable): el artefacto ya generado
+  (`examples/papers-please.generated.js`) corre en game3d sin tocar core ni datos —
+  ventanilla DOM (documentos del solicitante como fichas) sobre fondo 3D (muro
+  fronterizo y barrera que se alza al aprobar), teclas A/D, cita de la regla violada
+  en cada veredicto, renta al cierre del día y overlays de victoria/despido.
+- **Lógica pura en `game3d-logic.mjs`** (`ppEval`/`ppInit`/`ppEntrant`/`ppDecide`,
+  +14 chequeos en `npm test` y CI): los 4 tipos de regla (require-document,
+  ban-country, require-field-match, not-expired) evaluados desde datos. **Oráculo de
+  autoría**: la evaluación por RULES reproduce la `decision` declarada de los 4
+  solicitantes. Partida completa **ganada y perdida en Node** con contabilidad
+  verificada (money = aciertos×salary − fallos×penaltyFee − días×rent).
+- Semántica del motor documentada (SPEC §8): fecha de corte `PP_TODAY = 1983.01`
+  para `not-expired`, derrota al 3er error, `money` como marcador (puede ser negativo).
+- **Verificado jugando en navegador**: turno completo con error deliberado (multa),
+  cita de regla, renta por día y overlay de victoria con la contabilidad exacta.
 
 ## [2.10.0] — 2026-07-08
 
