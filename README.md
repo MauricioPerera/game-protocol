@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.11.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.12.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.11.0`** — aditivo: **runtime `papers-please` en game3d** (9º perfil
+**Release `v2.12.0`** — aditivo: **runtime `tower-defense` en game3d** (10º perfil
+jugable). El artefacto ya generado corre en el player sin tocar core ni datos: tablero
+3D completo (rejilla 12×8, camino en S — el ejemplo no declara `MAPS` —, torres por
+tipo, enemigos por blindaje), construir/vender/lanzar con teclado y `step()` expuesto
+para harnesses. Simulación por ticks **sin azar** con partida **ganada y perdida en
+Node dentro de `npm test`** (conservación verificada en cada tick; daño por
+`DMG_CHART[dmgType][armor]`; venta a `sellRatio`; recompensa + interés por oleada).
+
+`v2.11.0` — aditivo: **runtime `papers-please` en game3d** (9º perfil
 jugable). El artefacto ya generado corre en el player sin tocar core ni datos:
 ventanilla DOM con los documentos como fichas, fondo 3D con barrera fronteriza,
 teclas A/D y cita de la regla violada. Lógica pura con **oráculo de autoría** — la
