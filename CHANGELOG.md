@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — runtime `platformer` en game3d
+- **Runtime `platformer`** (11º perfil jugable): el artefacto ya generado corre en
+  game3d sin tocar core ni datos — vista lateral 3D con cámara que sigue al jugador,
+  suelo coloreado por `tileset`, enemigos por hp, bandera en `goal.x`, parpadeo de
+  invulnerabilidad; ←/→ corre y Espacio/↑ salta (teclas mantenidas). Expone
+  `step()`/`held` para pilotar desde harnesses.
+- **Lógica pura en `game3d-logic.mjs`** (`pfJumpReach`/`pfLevelGeom`/`pfInit`/`pfTick`,
+  +16 chequeos en `npm test` y CI): física por ticks desde PHYSICS (gravity/jump/
+  runSpeed), pisotón (KOOPA aguanta 2, hp desde ENEMIES), daño lateral con
+  invulnerabilidad, caída al hueco con respawn, niveles encadenados hasta la victoria.
+  **Partida ganada por bot en Node** (2 niveles) y perdida por contacto repetido.
+- Semántica del motor documentada (SPEC §8): los niveles no declaran geometría, así
+  que el suelo son segmentos con huecos por LCG determinista **salvables por
+  construcción** — y el test lo verifica contra PHYSICS: hueco máximo ≤ 60% del
+  alcance de salto derivado (12.2 unidades con los datos del ejemplo).
+- **Verificado jugando en navegador**: partida completa pilotando las teclas
+  mantenidas del propio runtime hasta el overlay con el `TEXT.win` del GAME.md.
 
 ## [2.12.0] — 2026-07-08
 

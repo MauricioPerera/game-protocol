@@ -354,6 +354,76 @@ const ok = (cond, label, extra) => {
     ok(L.tdStartWave(GT, S) === 'blocked' && L.tdBuild(GT, S, 'rifle', 1, 0, tdP) === 'blocked', 'td  partida terminada -> blocked');
   }
 
+  // ============================================================
+  // Platformer: geometria salvable POR CONSTRUCCION (verificada
+  // contra PHYSICS) y partida ganada/perdida por bot en Node
+  // ============================================================
+  global.window = {};
+  require(path.resolve(__dirname, '../examples/platformer.generated.js'));
+  const GF = global.window.GAME; delete global.window;
+  ok(GF.profile === 'platformer', 'pf  artefacto con meta profile=platformer');
+  // (a) geometria determinista y salvable: huecos <= 60% del alcance de salto (derivado de PHYSICS)
+  {
+    const reach = L.pfJumpReach(GF);
+    ok(reach > 0, 'pf  alcance de salto desde PHYSICS = ' + reach.toFixed(1) + ' unidades');
+    const ids = Object.keys(GF.LEVELS).sort();
+    for (let i = 0; i < ids.length; i++) {
+      const g = L.pfLevelGeom(GF, ids[i], i);
+      let maxGap = 0;
+      for (let k = 1; k < g.segs.length; k++) maxGap = Math.max(maxGap, g.segs[k][0] - g.segs[k - 1][1]);
+      ok(maxGap <= reach * .6 + 1e-9, 'pf  nivel ' + ids[i] + ': hueco maximo ' + maxGap.toFixed(1) + ' <= 60% del salto');
+      ok(g.segs[g.segs.length - 1][1] >= g.goalX, 'pf  nivel ' + ids[i] + ': la meta (x=' + g.goalX + ') cae sobre suelo');
+      const g2 = L.pfLevelGeom(GF, ids[i], i);
+      ok(JSON.stringify(g.segs) === JSON.stringify(g2.segs), 'pf  nivel ' + ids[i] + ': geometria determinista');
+    }
+  }
+  // (b) VICTORIA con bot: correr a la meta saltando huecos y enemigos
+  {
+    const S = L.pfInit(GF);
+    ok(S.ids[S.li] === GF.PLAYER.spawnLevel, 'pf  init en PLAYER.spawnLevel (' + S.ids[S.li] + ')');
+    let r = '', guard = 0, events = { stomp: 0, hit: 0, fall: 0, 'level-clear': 0 };
+    while (!S.won && !S.lost && guard++ < 60000) {
+      const gapAhead = S.onGround &&
+                       ![1, 1.6].every(d => S.geom.segs.some(s => S.x + d >= s[0] && S.x + d <= s[1]));
+      const enemyAhead = S.onGround && S.geom.enemies.some(e => e.hp > 0 && e.x > S.x && e.x - S.x < 2.2 && Math.abs(e.y - S.y) < 1);
+      r = L.pfTick(GF, S, { dir: 1, jump: gapAhead || enemyAhead });
+      if (events[r] != null) events[r]++;
+    }
+    ok(r === 'win' && S.won, 'pf  VICTORIA del bot: ' + S.ids.length + ' niveles (' + S.t + ' ticks, ' +
+       events.stomp + ' pisotones, ' + events.hit + ' golpes, ' + events.fall + ' caidas, vidas ' + S.lives + ')');
+    ok(events['level-clear'] === S.ids.length - 1, 'pf  paso por ' + (S.ids.length - 1) + ' cambios de nivel');
+  }
+  // (c) piso a un GOOMBA (hp 1) y un KOOPA aguanta 2 (hp desde ENEMIES)
+  {
+    const S = L.pfInit(GF);
+    const e = S.geom.enemies.find(x => x.name === 'GOOMBA');
+    S.x = e.x; S.y = .5; S.vy = -2; S.onGround = false; e.dir = 0;
+    const r = L.pfTick(GF, S, { dir: 0, jump: false });
+    ok(r === 'stomp' && e.hp === 0 && S.vy > 0, 'pf  pisoton mata al GOOMBA (hp 1) y rebota');
+    const k = S.geom.enemies.find(x => x.name === 'KOOPA');
+    S.x = k.x; S.y = .5; S.vy = -2; S.onGround = false; k.dir = 0;
+    const r2 = L.pfTick(GF, S, { dir: 0, jump: false });
+    ok(r2 !== 'stomp' && k.hp === 1, 'pf  el KOOPA aguanta el primer pisoton (hp 2 -> 1)');
+  }
+  // (d) contacto lateral resta vida (con invulnerabilidad) y DERROTA al agotar vidas
+  {
+    const S = L.pfInit(GF);
+    const e = S.geom.enemies[0]; e.dir = 0;
+    let r = '', guard = 0;
+    while (!S.lost && guard++ < 20000) { S.x = e.x; S.y = 0; S.vy = 0; S.onGround = true; r = L.pfTick(GF, S, { dir: 0, jump: false }); }
+    ok(r === 'lose' && S.lost, 'pf  DERROTA por contacto repetido (vidas ' + GF.PLAYER.lives + ' agotadas)');
+    ok(L.pfTick(GF, S, { dir: 1, jump: false }) === 'blocked', 'pf  partida terminada -> blocked');
+  }
+  // (e) caer a un hueco: muerte + respawn al inicio del nivel
+  {
+    const S = L.pfInit(GF);
+    const gapX = S.geom.segs[0][1] + .5; // primer hueco
+    S.x = gapX; S.y = -9; S.vy = -5; S.onGround = false;
+    const r = L.pfTick(GF, S, { dir: 0, jump: false });
+    ok(r === 'fall' && S.deaths === 1 && S.x === 1 && S.lives === GF.PLAYER.lives - 1,
+       'pf  caida al hueco: muerte, respawn en x=1 y una vida menos');
+  }
+
   console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests de logica game3d pasan') : (fail + ' FALLOS de ' + (pass + fail))));
   process.exit(fail === 0 ? 0 : 1);
 })();

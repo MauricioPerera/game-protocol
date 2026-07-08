@@ -18,7 +18,8 @@ import { typeMult, expandMoves, makeMon as makeMonPure, damage, catchProb,
          sudokuInit, sudokuSet, sudokuHint,
          pegInit, pegMove, pegMoves,
          ppInit, ppDecide, ppEntrant,
-         tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS } from './game3d-logic.mjs';
+         tdInit, tdBuild, tdSell, tdStartWave, tdTick, tdPath, tdPos, TD_COLS, TD_ROWS,
+         pfInit, pfTick } from './game3d-logic.mjs';
 
 // ---------------- registro de runtimes ----------------
 export const runtimes = {};
@@ -490,6 +491,93 @@ register('shooter', G => {
     ship.position.set(S.x, .55, -S.y);
     ren.render(scene, cam); })();
   return { S, input };
+});
+
+// ============================================================================
+// RUNTIME platformer — vista lateral 3D con cámara que sigue al jugador;
+// lógica pura por ticks en game3d-logic (geometría salvable por construcción,
+// partida ganada por bot en npm test). Teclas: ←/→ correr, Espacio/↑ saltar.
+// ============================================================================
+register('platformer', G => {
+  const { scene, cam, ren } = makeStage();
+  const S = pfInit(G);
+  const input = { dir: 0, jump: false };
+  const held = new Set();
+  const tilesetColor = ts => ts === 'brick' ? 0x8a4a3a : 0x3f7a3f;
+  let levelGroup = null;
+  const enemyMeshes = new Map();
+  function buildLevel() {
+    if (levelGroup) scene.remove(levelGroup);
+    for (const [, m] of enemyMeshes) scene.remove(m);
+    enemyMeshes.clear();
+    levelGroup = new THREE.Group();
+    for (const [x0, x1] of S.geom.segs) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 1.2, 3),
+        new THREE.MeshStandardMaterial({ color: tilesetColor(S.geom.tileset) }));
+      m.position.set((x0 + x1) / 2, -.6, 0); levelGroup.add(m);
+    }
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 4, 8),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }));
+    pole.position.set(S.geom.goalX, 2, 0); levelGroup.add(pole);
+    const flag = new THREE.Mesh(new THREE.BoxGeometry(1, .6, .05),
+      new THREE.MeshStandardMaterial({ color: 0xffd27b }));
+    flag.position.set(S.geom.goalX + .5, 3.6, 0); levelGroup.add(flag);
+    scene.add(levelGroup);
+  }
+  const player = new THREE.Mesh(new THREE.CapsuleGeometry(.3, .5, 4, 10),
+    new THREE.MeshStandardMaterial({ color: 0x8fd6ff }));
+  scene.add(player);
+  const beep = (f, d) => { try { const A = beep.ctx || (beep.ctx = new AudioContext());
+    const o = A.createOscillator(), g = A.createGain(); o.type = 'square'; o.frequency.value = f;
+    g.gain.value = .035; o.connect(g); g.connect(A.destination); o.start(); o.stop(A.currentTime + (d || .08)); } catch (e) {} };
+  function hud() {
+    ui.top('<b>' + (G.name || 'platformer') + '</b> · nivel ' + S.ids[Math.min(S.li, S.ids.length - 1)] +
+           ' (' + Math.min(S.li + 1, S.ids.length) + '/' + S.ids.length + ')');
+    ui.side('<div class="chip">Vidas: <b>' + '♥'.repeat(Math.max(0, S.lives)) + '</b></div>' +
+            '<div class="chip">Pisotones: ' + S.stomps + ' · Caídas: ' + S.deaths + '</div>' +
+            '<div class="chip">Meta: x=' + S.geom.goalX + ' (vas por ' + Math.floor(S.x) + ')</div>');
+  }
+  function sync() {
+    player.position.set(S.x, S.y + .7, 0);
+    player.material.transparent = true;
+    player.material.opacity = S.invul > 0 && (S.invul >> 2) % 2 ? .3 : 1;
+    for (const e of S.geom.enemies) {
+      if (e.hp <= 0) { if (enemyMeshes.has(e)) { scene.remove(enemyMeshes.get(e)); enemyMeshes.delete(e); } continue; }
+      if (!enemyMeshes.has(e)) {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(e.hp > 1 ? .38 : .3, 12, 10),
+          new THREE.MeshStandardMaterial({ color: e.hp > 1 ? 0x30a060 : 0xb06030 }));
+        scene.add(m); enemyMeshes.set(e, m);
+      }
+      enemyMeshes.get(e).position.set(e.x, e.y + .35, 0);
+    }
+    cam.position.set(S.x + 2, 3.2, 9);
+    cam.lookAt(S.x + 2, 1.2, 0);
+    hud();
+  }
+  function step() {
+    if (S.won || S.lost) return;
+    input.dir = (held.has('ArrowRight') ? 1 : 0) - (held.has('ArrowLeft') ? 1 : 0);
+    input.jump = held.has(' ') || held.has('ArrowUp');
+    const li0 = S.li;
+    const r = pfTick(G, S, input);
+    if (r === 'stomp') { beep(880); ui.msg('¡Pisotón!'); }
+    else if (r === 'hit') { beep(196, .12); ui.msg('Golpe: una vida menos.'); }
+    else if (r === 'fall') { beep(147, .2); ui.msg('Al hueco: una vida menos.'); }
+    else if (r === 'level-clear') { beep(660, .25); ui.msg('Nivel superado.'); buildLevel(); }
+    else if (r === 'win') { beep(1046, .3); ui.overlay('<div>🏆 ' + ((G.TEXT || {}).win || 'Victoria') +
+      '<br><span style="font-size:13px;color:#7b8696">' + S.ids.length + ' niveles · pisotones: ' + S.stomps +
+      ' · caídas: ' + S.deaths + ' · vidas ' + S.lives + ' · perfil platformer · game3d</span></div>'); }
+    else if (r === 'lose') { beep(147, .4); ui.overlay('<div style="color:#ff7b7b">💥 Sin vidas.' +
+      '<br><span style="font-size:13px;color:#7b8696">nivel ' + S.ids[S.li] + ' · x=' + Math.floor(S.x) + '</span></div>'); }
+    if (S.li !== li0 && r !== 'level-clear' && r !== 'win') buildLevel();
+    sync();
+  }
+  addEventListener('keydown', e => { held.add(e.key); if (['ArrowLeft', 'ArrowRight', 'ArrowUp', ' '].includes(e.key)) e.preventDefault(); });
+  addEventListener('keyup', e => held.delete(e.key));
+  buildLevel(); sync();
+  ui.msg('Corre con ←/→ y salta con Espacio: huecos y enemigos hasta la bandera.');
+  (function loop() { requestAnimationFrame(loop); step(); ren.render(scene, cam); })();
+  return { S, step, input, held };
 });
 
 // ============================================================================

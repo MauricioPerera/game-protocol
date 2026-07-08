@@ -450,6 +450,104 @@ export function tdTick(G, S, path) {
   return 'ok';
 }
 
+// ============================================================================
+// Lógica del perfil `platformer` — PURA, por ticks (30 ~ 1s) y determinista.
+// El balance sale del artefacto: PHYSICS (gravity/jump/runSpeed), ENEMIES
+// (hp/damage), LEVELS (tileset, tipos de enemigos, goal.x), PLAYER.lives.
+// Semántica del motor (SPEC §8): los niveles no declaran geometría, así que el
+// suelo son segmentos con huecos generados por LCG determinista por nivel, con
+// huecos SIEMPRE salvables (≤ 60% del alcance de salto derivado de PHYSICS) y
+// enemigos patrullando repartidos por los segmentos. Pisotón mata (KOOPA
+// aguanta 2), contacto lateral resta vida (con invulnerabilidad breve), caer
+// al hueco resta vida y reaparece al inicio del nivel.
+// ============================================================================
+export function pfJumpReach(G) { // alcance horizontal de un salto a nivel llano
+  const P = G.PHYSICS || {};
+  return (P.runSpeed || 5) * 2 * (P.jump || 10) / (P.gravity || 9.8);
+}
+export function pfLevelGeom(G, levelId, idx) {
+  const L = (G.LEVELS || {})[levelId] || { enemies: [], goal: { x: 100 } };
+  const rnd = lcg(1000 + idx * 77);
+  const maxGap = pfJumpReach(G) * .6;
+  const segs = []; // [x0, x1] de suelo (y=0)
+  let x = 0, first = true;
+  const end = (L.goal || {}).x || 100;
+  while (x < end + 8) {
+    const len = first ? 12 : 8 + rnd() * 6;
+    segs.push([x, x + len]);
+    x += len + Math.min(maxGap, 2.5 + rnd() * 2.5); // hueco salvable por construcción
+    first = false;
+  }
+  // enemigos: tipos del nivel repartidos por los segmentos interiores
+  const enemies = [];
+  const types = L.enemies || [];
+  for (let i = 0; i < types.length * 2; i++) {   // 2 instancias por tipo declarado
+    const spec = (G.ENEMIES || {})[types[i % types.length]] || { hp: 1, damage: 1 };
+    const seg = segs[1 + Math.floor(rnd() * Math.max(1, segs.length - 2))];
+    const ex = Math.min(seg[1] - 1, Math.max(seg[0] + 1, seg[0] + 2 + rnd() * (seg[1] - seg[0] - 4)));
+    if (ex < end - 2) enemies.push({ name: types[i % types.length], hp: spec.hp, damage: spec.damage,
+                                     x: ex, y: 0, x0: ex, dir: 1, seg });
+  }
+  return { id: levelId, segs, enemies, goalX: end, tileset: L.tileset };
+}
+const pfGroundAt = (segs, x) => segs.some(s => x >= s[0] && x <= s[1]);
+export function pfInit(G) {
+  const ids = Object.keys(G.LEVELS || {}).sort();
+  const startId = (G.PLAYER || {}).spawnLevel || ids[0];
+  const li = Math.max(0, ids.indexOf(startId));
+  return { ids, li, geom: pfLevelGeom(G, ids[li], li),
+           x: 1, y: 0, vx: 0, vy: 0, onGround: true, invul: 0,
+           lives: (G.PLAYER || {}).lives != null ? G.PLAYER.lives : 3,
+           deaths: 0, stomps: 0, t: 0, won: false, lost: false };
+}
+function pfRespawn(S) { S.x = 1; S.y = 0; S.vx = 0; S.vy = 0; S.onGround = true; S.invul = 45; }
+export function pfTick(G, S, input) {
+  if (S.won || S.lost) return 'blocked';
+  const P = G.PHYSICS || {}, dt = 1 / 30;
+  S.t++; if (S.invul > 0) S.invul--;
+  let ev = 'ok';
+  // jugador: correr + salto + gravedad
+  S.vx = (input.dir || 0) * (P.runSpeed || 5);
+  if (input.jump && S.onGround) { S.vy = P.jump || 10; S.onGround = false; }
+  if (!S.onGround) S.vy -= (P.gravity || 9.8) * dt;
+  S.x = Math.max(0, S.x + S.vx * dt);
+  S.y += S.vy * dt;
+  if (S.y <= 0 && S.vy <= 0 && pfGroundAt(S.geom.segs, S.x)) { S.y = 0; S.vy = 0; S.onGround = true; }
+  else if (S.y <= 0) S.onGround = false;
+  if (S.y < -8) { // caída al hueco
+    S.deaths++; S.lives--;
+    if (S.lives < 0) { S.lost = true; return 'lose'; }
+    pfRespawn(S); return 'fall';
+  }
+  // enemigos: patrulla ±4 dentro de su segmento
+  for (const e of S.geom.enemies) {
+    if (e.hp <= 0) continue;
+    e.x += e.dir * 1.5 * dt;
+    if (e.x > Math.min(e.x0 + 4, e.seg[1] - .5)) e.dir = -1;
+    if (e.x < Math.max(e.x0 - 4, e.seg[0] + .5)) e.dir = 1;
+    // contacto: pisotón si cae desde arriba; daño lateral si no
+    if (Math.abs(S.x - e.x) < .6 && S.y - e.y < 1 && S.y - e.y > -.5) {
+      if (S.vy < 0 && S.y - e.y > .25) {
+        e.hp--; S.vy = (P.jump || 10) * .6; S.onGround = false;
+        if (e.hp <= 0) { S.stomps++; ev = 'stomp'; }
+      } else if (S.invul === 0) {
+        S.lives -= e.damage || 1; S.invul = 45; S.vy = 3; S.onGround = false;
+        if (S.lives < 0) { S.lost = true; return 'lose'; }
+        ev = 'hit';
+      }
+    }
+  }
+  // meta del nivel
+  if (S.x >= S.geom.goalX) {
+    S.li++;
+    if (S.li >= S.ids.length) { S.won = true; return 'win'; }
+    S.geom = pfLevelGeom(G, S.ids[S.li], S.li);
+    pfRespawn(S); S.invul = 0;
+    return 'level-clear';
+  }
+  return ev;
+}
+
 // LCG determinista para tests/replays (semilla entera -> rnd() en [0,1)).
 export const lcg = seed => { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); };
 
