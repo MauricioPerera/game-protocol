@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — página del protocolo (GitHub Pages) + soporte ES/EN/PT
+- **`index.html` pasa de "listado de demos" a landing explicativa**: el problema (datos
+  mezclados con lógica), la idea (un archivo, dos lectores — front-matter + doc), el
+  pipeline real (`lint` → `export` → consumir, con el fallback embebido), un snippet real
+  de `monster-rpg`, los 14 perfiles con badge para los puro-datos, y 4 razones concretas
+  de por qué importa. Publicada en GitHub Pages: https://mauricioperera.github.io/game-protocol/
+- **El listado de demos existente se preserva intacto en `demos.html`** (mismo contenido,
+  mismas rutas relativas), ahora linkeado desde el nav/footer de la nueva home.
+- **Soporte multi-idioma (ES/EN/PT) en ambas páginas**: selector en el nav, detección por
+  `navigator.language` (fallback ES) persistida en `localStorage` bajo la clave
+  compartida `gp-lang` — el idioma elegido se mantiene al navegar entre `index.html` y
+  `demos.html`. 71 claves traducidas en `index.html`, 24 en `demos.html`; el código real
+  de `GAME.md` (tokens del protocolo) no se toca, solo la prosa explicativa.
+- README actualizado con los links a la página y a los demos.
 
 ## [2.17.0] — 2026-07-08
 

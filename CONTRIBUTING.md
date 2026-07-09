@@ -67,7 +67,7 @@ npm test        # todas las suites de test/ — la lista canonica vive en el scr
 - **`test/conformance.js`** cubre ≥1 caso inválido por regla por perfil — si añades o cambias una regla, añade su caso inválido.
 - **`test/all-examples.js`** verifica los pares `(GAME.md, generado)` con lint 0 errores + export sin-drift — si tocas el export, regenera el artefacto.
 - **`test/lifecycle.js`** verifica el ciclo de vida de deprecación (receta `MIGRATION.md`, regla de PR breaking, `SPEC §7.1`, `manifest.json`) — si tocas la política, actualiza el test.
-- **`test/buildGame-content.js`** cubre los 9 perfiles con aserciones de forma por clave derivada — si añades un perfil, extiéndelo.
+- **`test/buildGame-content.js`** cubre los 14 perfiles con aserciones de forma por clave derivada — si añades un perfil, extiéndelo.
 - Sin-drift: `node tools/game-manifest.js /tmp/m.json && diff -q /tmp/m.json manifest.json` y `node tools/game-schema.js && git diff --quiet schemas/`.
 
 ## Estructura
