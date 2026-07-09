@@ -1,5 +1,8 @@
 <!doctype html>
+<html lang="es">
+<head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GAME Protocol — demos</title>
 <style>
   html,body{margin:0;min-height:100%;background:#0b0e13;color:#cdd6e4;font:15px/1.5 system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px}
@@ -16,24 +19,141 @@
   h2{margin:0 0 -6px;font-size:12px;color:#6b7685;text-transform:uppercase;letter-spacing:.08em;align-self:flex-start}
   a.back{align-self:flex-start;font-size:12px;color:#7b8696;text-decoration:none}
   a.back:hover{color:#8fd6ff}
+  .topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:640px;align-self:center}
+  .langsw{display:flex;gap:2px;border:1px solid #2a3340;border-radius:5px;padding:2px}
+  .langsw button{font:11px/1 system-ui;letter-spacing:.04em;background:none;border:none;color:#7b8696;cursor:pointer;padding:4px 8px;border-radius:3px}
+  .langsw button:hover{color:#cdd6e4}
+  .langsw button[aria-current="true"]{background:#19212b;color:#8fd6ff}
 </style>
-<a class="back" href="index.html">← GAME Protocol</a>
-<h1><b>GAME Protocol</b> · 9 perfiles de referencia desde la spec</h1>
-<p>Cada perfil es un <code>.js</code> cargable bajo <code>profiles/</code>. Los marcados <span class="badge play">jugable</span> tienen demo renderizada desde su <code>GAME.md</code>; los marcados <span class="badge spec">spec</span> abren el documento <code>GAME.md</code> que los define.</p>
-<h2>Demos jugables</h2>
-<div class="row">
-  <a class="card" href="examples/roguelike.html"><b>Roguelike ▶</b><span>salas procedurales · perfil roguelike<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
-  <a class="card" href="examples/dungeon.html"><b>Mazmorra ▶</b><span>5 salas · combate + mapa · perfil dungeon<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
-  <a class="card" href="examples/adventure.html"><b>Escape Room ▶</b><span>juego completo · perfil adventure<br>flechas + Espacio</span><div class="badge play">jugable</div></a>
-  <a class="card" href="examples/tower-defense.html"><b>Tower Defense ▶</b><span>visor estático · perfil tower-defense<br>torres + oleadas + economía</span><div class="badge play">jugable</div></a>
-  <a class="card" href="examples/voxel-three.html"><b>Voxel · Three.js ▶</b><span>estructura voxel → render 3D<br>arrastra para orbitar</span><div class="badge play">jugable</div></a>
-  <a class="card" href="examples/game3d.html"><b>game3d · multi-perfil ▶</b><span>runtime Three.js con selector integrado:<br>un juego por cada perfil con runtime</span><div class="badge play">jugable</div></a>
+</head>
+<body>
+<div class="topbar">
+  <a class="back" href="index.html">← GAME Protocol</a>
+  <span class="langsw" role="group" aria-label="Language / Idioma / Idioma">
+    <button type="button" data-lang="es">ES</button>
+    <button type="button" data-lang="en">EN</button>
+    <button type="button" data-lang="pt">PT</button>
+  </span>
 </div>
-<h2>Perfiles (documento spec)</h2>
+<h1><b>GAME Protocol</b> · <span data-i18n="h1.rest">9 perfiles de referencia desde la spec</span></h1>
+<p data-i18n="intro">Cada perfil es un <code>.js</code> cargable bajo <code>profiles/</code>. Los marcados <span class="badge play">jugable</span> tienen demo renderizada desde su <code>GAME.md</code>; los marcados <span class="badge spec">spec</span> abren el documento <code>GAME.md</code> que los define.</p>
+<h2 data-i18n="h2.demos">Demos jugables</h2>
 <div class="row">
-  <a class="card" href="examples/GAME.md"><b>monster-rpg</b><span>creature-collector · perfil raíz<br>species, types, moves, evolutions</span><div class="badge spec">spec</div></a>
-  <a class="card" href="examples/platformer.GAME.md"><b>platformer</b><span>2D platformer<br>tilesets, enemies, levels, physics</span><div class="badge spec">spec</div></a>
-  <a class="card" href="examples/crafting.GAME.md"><b>crafting</b><span>árbol de recetas<br>materials, items, stations, recipes</span><div class="badge spec">spec</div></a>
-  <a class="card" href="examples/papers-please.GAME.md"><b>papers-please</b><span>control de fronteras<br>countries, documents, rules, days</span><div class="badge spec">spec</div></a>
+  <a class="card" href="examples/roguelike.html"><b data-i18n="c1.title">Roguelike ▶</b><span data-i18n="c1.desc">salas procedurales · perfil roguelike<br>flechas + Espacio</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
+  <a class="card" href="examples/dungeon.html"><b data-i18n="c2.title">Mazmorra ▶</b><span data-i18n="c2.desc">5 salas · combate + mapa · perfil dungeon<br>flechas + Espacio</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
+  <a class="card" href="examples/adventure.html"><b data-i18n="c3.title">Escape Room ▶</b><span data-i18n="c3.desc">juego completo · perfil adventure<br>flechas + Espacio</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
+  <a class="card" href="examples/tower-defense.html"><b data-i18n="c4.title">Tower Defense ▶</b><span data-i18n="c4.desc">visor estático · perfil tower-defense<br>torres + oleadas + economía</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
+  <a class="card" href="examples/voxel-three.html"><b data-i18n="c5.title">Voxel · Three.js ▶</b><span data-i18n="c5.desc">estructura voxel → render 3D<br>arrastra para orbitar</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
+  <a class="card" href="examples/game3d.html"><b data-i18n="c6.title">game3d · multi-perfil ▶</b><span data-i18n="c6.desc">runtime Three.js con selector integrado:<br>un juego por cada perfil con runtime</span><div class="badge play" data-i18n="badge.playable">jugable</div></a>
 </div>
-<p style="font-size:12px;color:#5a6472">Perfiles cargables: los 9 de referencia de SPEC §6 más los perfiles aplicados — la lista canónica vive en <code>manifest.json</code> (los puro-datos van marcados <code>dataOnly</code>). Si llegaste aquí desde un listado de archivos, recarga la pestaña del preview.</p>
+<h2 data-i18n="h2.perfiles">Perfiles (documento spec)</h2>
+<div class="row">
+  <a class="card" href="examples/GAME.md"><b>monster-rpg</b><span data-i18n="p1.desc">creature-collector · perfil raíz<br>species, types, moves, evolutions</span><div class="badge spec" data-i18n="badge.spec">spec</div></a>
+  <a class="card" href="examples/platformer.GAME.md"><b>platformer</b><span data-i18n="p2.desc">2D platformer<br>tilesets, enemies, levels, physics</span><div class="badge spec" data-i18n="badge.spec">spec</div></a>
+  <a class="card" href="examples/crafting.GAME.md"><b>crafting</b><span data-i18n="p3.desc">árbol de recetas<br>materials, items, stations, recipes</span><div class="badge spec" data-i18n="badge.spec">spec</div></a>
+  <a class="card" href="examples/papers-please.GAME.md"><b>papers-please</b><span data-i18n="p4.desc">control de fronteras<br>countries, documents, rules, days</span><div class="badge spec" data-i18n="badge.spec">spec</div></a>
+</div>
+<p style="font-size:12px;color:#5a6472" data-i18n="footnote">Perfiles cargables: los 9 de referencia de SPEC §6 más los perfiles aplicados — la lista canónica vive en <code>manifest.json</code> (los puro-datos van marcados <code>dataOnly</code>). Si llegaste aquí desde un listado de archivos, recarga la pestaña del preview.</p>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'gp-lang';
+
+  var DICT = {
+    es: {
+      'meta.title': 'GAME Protocol — demos',
+      'h1.rest': '9 perfiles de referencia desde la spec',
+      'intro': 'Cada perfil es un <code>.js</code> cargable bajo <code>profiles/</code>. Los marcados <span class="badge play">jugable</span> tienen demo renderizada desde su <code>GAME.md</code>; los marcados <span class="badge spec">spec</span> abren el documento <code>GAME.md</code> que los define.',
+      'h2.demos': 'Demos jugables',
+      'h2.perfiles': 'Perfiles (documento spec)',
+      'badge.playable': 'jugable', 'badge.spec': 'spec',
+      'c1.title': 'Roguelike ▶', 'c1.desc': 'salas procedurales · perfil roguelike<br>flechas + Espacio',
+      'c2.title': 'Mazmorra ▶', 'c2.desc': '5 salas · combate + mapa · perfil dungeon<br>flechas + Espacio',
+      'c3.title': 'Escape Room ▶', 'c3.desc': 'juego completo · perfil adventure<br>flechas + Espacio',
+      'c4.title': 'Tower Defense ▶', 'c4.desc': 'visor estático · perfil tower-defense<br>torres + oleadas + economía',
+      'c5.title': 'Voxel · Three.js ▶', 'c5.desc': 'estructura voxel → render 3D<br>arrastra para orbitar',
+      'c6.title': 'game3d · multi-perfil ▶', 'c6.desc': 'runtime Three.js con selector integrado:<br>un juego por cada perfil con runtime',
+      'p1.desc': 'creature-collector · perfil raíz<br>species, types, moves, evolutions',
+      'p2.desc': '2D platformer<br>tilesets, enemies, levels, physics',
+      'p3.desc': 'árbol de recetas<br>materials, items, stations, recipes',
+      'p4.desc': 'control de fronteras<br>countries, documents, rules, days',
+      'footnote': 'Perfiles cargables: los 9 de referencia de SPEC §6 más los perfiles aplicados — la lista canónica vive en <code>manifest.json</code> (los puro-datos van marcados <code>dataOnly</code>). Si llegaste aquí desde un listado de archivos, recarga la pestaña del preview.'
+    },
+    en: {
+      'meta.title': 'GAME Protocol — demos',
+      'h1.rest': '9 reference profiles from the spec',
+      'intro': 'Each profile is a loadable <code>.js</code> under <code>profiles/</code>. Those marked <span class="badge play">playable</span> have a demo rendered from their <code>GAME.md</code>; those marked <span class="badge spec">spec</span> open the <code>GAME.md</code> document that defines them.',
+      'h2.demos': 'Playable demos',
+      'h2.perfiles': 'Profiles (spec document)',
+      'badge.playable': 'playable', 'badge.spec': 'spec',
+      'c1.title': 'Roguelike ▶', 'c1.desc': 'procedural rooms · roguelike profile<br>arrows + Space',
+      'c2.title': 'Dungeon ▶', 'c2.desc': '5 rooms · combat + map · dungeon profile<br>arrows + Space',
+      'c3.title': 'Escape Room ▶', 'c3.desc': 'full game · adventure profile<br>arrows + Space',
+      'c4.title': 'Tower Defense ▶', 'c4.desc': 'static viewer · tower-defense profile<br>towers + waves + economy',
+      'c5.title': 'Voxel · Three.js ▶', 'c5.desc': 'voxel structure → 3D render<br>drag to orbit',
+      'c6.title': 'game3d · multi-profile ▶', 'c6.desc': 'Three.js runtime with a built-in selector:<br>one game per profile with a runtime',
+      'p1.desc': 'creature-collector · root profile<br>species, types, moves, evolutions',
+      'p2.desc': '2D platformer<br>tilesets, enemies, levels, physics',
+      'p3.desc': 'recipe tree<br>materials, items, stations, recipes',
+      'p4.desc': 'border control<br>countries, documents, rules, days',
+      'footnote': 'Loadable profiles: the 9 reference ones from SPEC §6 plus the applied profiles — the canonical list lives in <code>manifest.json</code> (pure-data ones are marked <code>dataOnly</code>). If you got here from a file listing, reload the preview tab.'
+    },
+    pt: {
+      'meta.title': 'GAME Protocol — demos',
+      'h1.rest': '9 perfis de referência da spec',
+      'intro': 'Cada perfil é um <code>.js</code> carregável em <code>profiles/</code>. Os marcados <span class="badge play">jogável</span> têm demo renderizada a partir do seu <code>GAME.md</code>; os marcados <span class="badge spec">spec</span> abrem o documento <code>GAME.md</code> que os define.',
+      'h2.demos': 'Demos jogáveis',
+      'h2.perfiles': 'Perfis (documento spec)',
+      'badge.playable': 'jogável', 'badge.spec': 'spec',
+      'c1.title': 'Roguelike ▶', 'c1.desc': 'salas procedurais · perfil roguelike<br>setas + Espaço',
+      'c2.title': 'Masmorra ▶', 'c2.desc': '5 salas · combate + mapa · perfil dungeon<br>setas + Espaço',
+      'c3.title': 'Escape Room ▶', 'c3.desc': 'jogo completo · perfil adventure<br>setas + Espaço',
+      'c4.title': 'Tower Defense ▶', 'c4.desc': 'visualizador estático · perfil tower-defense<br>torres + ondas + economia',
+      'c5.title': 'Voxel · Three.js ▶', 'c5.desc': 'estrutura voxel → render 3D<br>arraste para orbitar',
+      'c6.title': 'game3d · multi-perfil ▶', 'c6.desc': 'runtime Three.js com seletor integrado:<br>um jogo para cada perfil com runtime',
+      'p1.desc': 'creature-collector · perfil raiz<br>species, types, moves, evolutions',
+      'p2.desc': '2D platformer<br>tilesets, enemies, levels, physics',
+      'p3.desc': 'árvore de receitas<br>materials, items, stations, recipes',
+      'p4.desc': 'controle de fronteiras<br>countries, documents, rules, days',
+      'footnote': 'Perfis carregáveis: os 9 de referência da SPEC §6 mais os perfis aplicados — a lista canônica vive em <code>manifest.json</code> (os apenas-dados vêm marcados <code>dataOnly</code>). Se você chegou aqui a partir de uma listagem de arquivos, recarregue a aba do preview.'
+    }
+  };
+
+  function detect(){
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch(e){}
+    if (saved && DICT[saved]) return saved;
+    var nav = (navigator.language || 'es').toLowerCase();
+    if (nav.indexOf('en') === 0) return 'en';
+    if (nav.indexOf('pt') === 0) return 'pt';
+    return 'es';
+  }
+
+  function apply(lang){
+    var d = DICT[lang] || DICT.es;
+    document.documentElement.lang = lang;
+    document.title = d['meta.title'];
+    var nodes = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodes.length; i++){
+      var key = nodes[i].getAttribute('data-i18n');
+      if (d[key] != null) nodes[i].innerHTML = d[key];
+    }
+    var btns = document.querySelectorAll('.langsw button');
+    for (var j = 0; j < btns.length; j++){
+      btns[j].setAttribute('aria-current', btns[j].getAttribute('data-lang') === lang ? 'true' : 'false');
+    }
+    try { localStorage.setItem(STORAGE_KEY, lang); } catch(e){}
+  }
+
+  var buttons = document.querySelectorAll('.langsw button');
+  for (var k = 0; k < buttons.length; k++){
+    buttons[k].addEventListener('click', function(ev){
+      apply(ev.currentTarget.getAttribute('data-lang'));
+    });
+  }
+
+  apply(detect());
+})();
+</script>
+</body>
+</html>
