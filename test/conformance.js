@@ -302,6 +302,19 @@ for (const c of invalid) {
        .filter(x => x.level === 'error').length === 0, 'familias  datos validos → 0 errores');
 })();
 
+// ---- Cobertura de tools/rule-hints.js: todo rule-id REAL (disparado por un caso invalido de
+// arriba) debe tener un hint para el modo --agent. Excluye los 4 rule-ids del bloque sintetico
+// justo arriba (hp-range/speed-range/grid-dims/kind-enum): son fixtures de un perfil de prueba
+// inventado (id: 't2') para ejercitar las familias core bounds/dims/enums, nunca aparecen en un
+// perfil real y no deben tener hint (agregarles uno seria documentar una regla que no existe).
+(function () {
+  const hints = require(REPO + '/tools/rule-hints');
+  const SYNTHETIC_CORE_FAMILY_TEST_RULES = new Set(['hp-range', 'speed-range', 'grid-dims', 'kind-enum']);
+  const realRules = [...new Set(invalid.map(c => c.rule))].filter(r => !SYNTHETIC_CORE_FAMILY_TEST_RULES.has(r));
+  const missing = realRules.filter(r => !(r in hints));
+  ok(missing.length === 0, 'rule-hints.js  cubre los ' + realRules.length + ' rule-ids reales de los casos invalidos', missing.join(', '));
+})();
+
 console.log('\n— Cobertura inválidos por perfil —');
 const order = ['advance-wars', 'adventure', 'crafting', 'dungeon', 'monster-rpg', 'papers-please', 'peg-solitaire', 'platformer', 'quiz', 'roguelike', 'shooter', 'sudoku', 'tower-defense', 'voxel'];
 for (const p of order) console.log('  ' + p.padEnd(16) + (byProfile[p] || 0) + ' casos');
