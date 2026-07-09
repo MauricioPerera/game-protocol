@@ -9,6 +9,8 @@
 > **[GB-AI Studio](https://github.com/MauricioPerera/gb-ai-studio)** ([demo en vivo](https://mauricioperera.github.io/gb-ai-studio/)),
 > donde el contenido del juego se edita por datos y se valida/exporta con esta misma cadena de herramientas.
 
+🌐 **Página del protocolo (explicación + demos):** https://mauricioperera.github.io/game-protocol/
+
 📄 **La especificación completa está en [`SPEC.md`](./SPEC.md).**
 
 ---
