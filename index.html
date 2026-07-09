@@ -52,15 +52,25 @@
 
   /* ---- nav ---- */
   nav.top{
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
     padding:22px 0; border-bottom:1px solid var(--line);
     font-family:var(--font-mono); font-size:13px;
   }
   nav.top .brand{color:var(--text); letter-spacing:.04em}
   nav.top .brand b{color:var(--amber); font-weight:600}
+  nav.top .navright{display:flex; align-items:center; gap:22px; flex-wrap:wrap}
   nav.top .links{display:flex; gap:22px}
   nav.top .links a{color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent}
   nav.top .links a:hover{color:var(--teal); border-color:var(--teal)}
+
+  .langsw{display:flex; gap:2px; border:1px solid var(--line); border-radius:5px; padding:2px}
+  .langsw button{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.04em;
+    background:none; border:none; color:var(--text-dim); cursor:pointer;
+    padding:4px 8px; border-radius:3px; line-height:1;
+  }
+  .langsw button:hover{color:var(--text)}
+  .langsw button[aria-current="true"]{background:var(--bg-3); color:var(--amber)}
 
   /* ---- hero: front-matter conceit ---- */
   .hero{
@@ -181,12 +191,19 @@
 
   <nav class="top">
     <span class="brand"><b>GAME</b>·PROTOCOL</span>
-    <span class="links">
-      <a href="#idea">La idea</a>
-      <a href="#generos">Perfiles</a>
-      <a href="demos.html">Demos ▶</a>
-      <a href="https://github.com/MauricioPerera/game-protocol/blob/main/SPEC.md">Spec</a>
-      <a href="https://github.com/MauricioPerera/game-protocol">GitHub</a>
+    <span class="navright">
+      <span class="links">
+        <a href="#idea" data-i18n="nav.idea">La idea</a>
+        <a href="#generos" data-i18n="nav.perfiles">Perfiles</a>
+        <a href="demos.html" data-i18n="nav.demos">Demos ▶</a>
+        <a href="https://github.com/MauricioPerera/game-protocol/blob/main/SPEC.md" data-i18n="nav.spec">Spec</a>
+        <a href="https://github.com/MauricioPerera/game-protocol" data-i18n="nav.github">GitHub</a>
+      </span>
+      <span class="langsw" role="group" aria-label="Language / Idioma / Idioma">
+        <button type="button" data-lang="es">ES</button>
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="pt">PT</button>
+      </span>
     </span>
   </nav>
 
@@ -200,138 +217,358 @@
 <span class="tok-key">description:</span> <span class="tok-str">"..."</span><span class="caret"></span>
 <span class="fm-fence">---</span></pre>
       <ul class="stats">
-        <li>version <b>0.1</b></li>
-        <li>perfiles <b>14</b></li>
-        <li>reglas <b>136</b></li>
-        <li>dependencias <b>0</b></li>
+        <li><span data-i18n="stat.version">version</span> <b>0.1</b></li>
+        <li><span data-i18n="stat.profiles">perfiles</span> <b>14</b></li>
+        <li><span data-i18n="stat.rules">reglas</span> <b>136</b></li>
+        <li><span data-i18n="stat.deps">dependencias</span> <b>0</b></li>
       </ul>
     </div>
     <div class="hero-body">
       <p class="eyebrow" style="margin-bottom:14px">Gameplay as data</p>
-      <h1>El balance de tu juego, escrito como <em>dato</em> — no enterrado en el motor.</h1>
-      <p class="dek">GAME Protocol es un formato para declarar el contenido y el balance de un juego 2D como texto plano: un archivo, <code>GAME.md</code>, que a la vez documenta el diseño y alimenta el motor.</p>
-      <p class="provenance">Nace de un motor real — el mini-Pokémon GBA de <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio</a> — donde cambiar un ataque o reequilibrar un combate es editar texto, no tocar código.</p>
+      <h1 data-i18n="hero.h1">El balance de tu juego, escrito como <em>dato</em> — no enterrado en el motor.</h1>
+      <p class="dek" data-i18n="hero.dek">GAME Protocol es un formato para declarar el contenido y el balance de un juego 2D como texto plano: un archivo, <code>GAME.md</code>, que a la vez documenta el diseño y alimenta el motor.</p>
+      <p class="provenance" data-i18n="hero.provenance">Nace de un motor real — el mini-Pokémon GBA de <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio</a> — donde cambiar un ataque o reequilibrar un combate es editar texto, no tocar código.</p>
     </div>
   </div>
 
   <section id="problema">
-    <p class="eyebrow">El problema</p>
-    <h2>Los datos del juego viven adentro del código.</h2>
+    <p class="eyebrow" data-i18n="sec.problema.eyebrow">El problema</p>
+    <h2 data-i18n="sec.problema.h2">Los datos del juego viven adentro del código.</h2>
     <div class="measure">
-      <p class="lede">En la mayoría de motores, las estadísticas de las criaturas, las tablas de tipos, los precios, los mapas, los diálogos y el arte de los tiles están mezclados con la lógica en el mismo archivo <code>.js</code>.</p>
-      <p>Cambiar el personaje inicial, agregar un objeto o reequilibrar un combate exige tocar código, recompilar mentalmente las consecuencias y arriesgar una regresión. Y no hay forma automática de saber si un dato declarado se usa de verdad, o quedó muerto en el motor.</p>
+      <p class="lede" data-i18n="sec.problema.p1">En la mayoría de motores, las estadísticas de las criaturas, las tablas de tipos, los precios, los mapas, los diálogos y el arte de los tiles están mezclados con la lógica en el mismo archivo <code>.js</code>.</p>
+      <p data-i18n="sec.problema.p2">Cambiar el personaje inicial, agregar un objeto o reequilibrar un combate exige tocar código, recompilar mentalmente las consecuencias y arriesgar una regresión. Y no hay forma automática de saber si un dato declarado se usa de verdad, o quedó muerto en el motor.</p>
     </div>
   </section>
 
   <section id="idea">
-    <p class="eyebrow">La idea</p>
-    <h2>Un archivo, dos lectores.</h2>
+    <p class="eyebrow" data-i18n="sec.idea.eyebrow">La idea</p>
+    <h2 data-i18n="sec.idea.h2">Un archivo, dos lectores.</h2>
     <div class="measure">
-      <p class="lede"><code>GAME.md</code> es al mismo tiempo un <b>contrato de datos</b> (el front-matter YAML, que la herramienta valida) y un <b>documento canónico</b> (el cuerpo Markdown, que el equipo lee). El dato y su explicación nunca se desincronizan porque viven en el mismo archivo — patrón heredado de <code>design.md</code>, de Google.</p>
-      <p>El protocolo mismo no sabe qué es una "especie" o un "tile": eso lo define el <b>perfil</b> de cada género. El núcleo solo define la forma del archivo, cómo se valida, cómo se compila y qué pasa cuando falta un dato.</p>
+      <p class="lede" data-i18n="sec.idea.p1"><code>GAME.md</code> es al mismo tiempo un <b>contrato de datos</b> (el front-matter YAML, que la herramienta valida) y un <b>documento canónico</b> (el cuerpo Markdown, que el equipo lee). El dato y su explicación nunca se desincronizan porque viven en el mismo archivo — patrón heredado de <code>design.md</code>, de Google.</p>
+      <p data-i18n="sec.idea.p2">El protocolo mismo no sabe qué es una "especie" o un "tile": eso lo define el <b>perfil</b> de cada género. El núcleo solo define la forma del archivo, cómo se valida, cómo se compila y qué pasa cuando falta un dato.</p>
     </div>
 
     <div class="pipeline">
       <div class="pl-step">
-        <span class="pl-n">01 · VALIDAR</span>
+        <span class="pl-n" data-i18n="pipeline.step1.n">01 · VALIDAR</span>
         <h3>game-lint.js</h3>
-        <p>Revisa referencias rotas, rangos fuera de límite y simetrías de balance — antes de que el juego arranque.</p>
+        <p data-i18n="pipeline.step1.desc">Revisa referencias rotas, rangos fuera de límite y simetrías de balance — antes de que el juego arranque.</p>
       </div>
       <div class="pl-arrow">→</div>
       <div class="pl-step">
-        <span class="pl-n">02 · COMPILAR</span>
+        <span class="pl-n" data-i18n="pipeline.step2.n">02 · COMPILAR</span>
         <h3>game-export.js</h3>
-        <p>Convierte los tokens del front-matter en <code>window.GAME</code>, listo para consumir.</p>
+        <p data-i18n="pipeline.step2.desc">Convierte los tokens del front-matter en <code>window.GAME</code>, listo para consumir.</p>
       </div>
       <div class="pl-arrow">→</div>
       <div class="pl-step">
-        <span class="pl-n">03 · JUGAR</span>
-        <h3>el motor</h3>
-        <p>Lee <code>window.GAME</code> y gobierna su contenido — sin recompilar, sin tocar lógica.</p>
+        <span class="pl-n" data-i18n="pipeline.step3.n">03 · JUGAR</span>
+        <h3 data-i18n="pipeline.step3.title">el motor</h3>
+        <p data-i18n="pipeline.step3.desc">Lee <code>window.GAME</code> y gobierna su contenido — sin recompilar, sin tocar lógica.</p>
       </div>
     </div>
-    <div class="pl-fallback"><b>Fallback embebido:</b> si el archivo generado falta o está incompleto, el juego degrada con gracia en vez de romperse.</div>
+    <div class="pl-fallback" data-i18n="pipeline.fallback"><b>Fallback embebido:</b> si el archivo generado falta o está incompleto, el juego degrada con gracia en vez de romperse.</div>
   </section>
 
   <section id="snippet">
-    <p class="eyebrow">Cómo se ve</p>
-    <h2>Reequilibrar un combate es editar texto.</h2>
+    <p class="eyebrow" data-i18n="sec.snippet.eyebrow">Cómo se ve</p>
+    <h2 data-i18n="sec.snippet.h2">Reequilibrar un combate es editar texto.</h2>
     <div class="measure">
-      <p>Un fragmento real de un perfil <code>monster-rpg</code>: una especie, su tipo, sus ataques y su punto de evolución — todo declarado, nada hardcodeado.</p>
+      <p data-i18n="sec.snippet.p">Un fragmento real de un perfil <code>monster-rpg</code>: una especie, su tipo, sus ataques y su punto de evolución — todo declarado, nada hardcodeado.</p>
     </div>
     <div class="snippet-wrap">
       <div class="snippet">
-        <div class="fm-bar">species.GAME.md — fragmento</div>
+        <div class="fm-bar" data-i18n="snippet.filebar">species.GAME.md — fragmento</div>
         <pre><span class="c-key">species:</span>
   <span class="c-key">GOTIN:</span>
     <span class="c-key">maxhp:</span> <span class="c-num">45</span>
     <span class="c-key">type:</span> <span class="c-key">FUEGO</span>
     <span class="c-key">moves:</span> [ARAÑAZO, EMBESTIDA]
-    <span class="c-key">evolvesInto:</span> <span class="c-key">GOTAROS</span>  <span class="c-cmt"># referencia validada contra `species`</span></pre>
+    <span class="c-key">evolvesInto:</span> <span class="c-key">GOTAROS</span>  <span class="c-cmt" data-i18n="snippet.comment"># referencia validada contra `species`</span></pre>
       </div>
-      <p class="snippet-note">Si <code>evolvesInto</code> apunta a una especie que no existe, <code>game-lint.js</code> lo marca como <code>error</code> antes de exportar — no en producción, no en un playtest.</p>
+      <p class="snippet-note" data-i18n="snippet.note">Si <code>evolvesInto</code> apunta a una especie que no existe, <code>game-lint.js</code> lo marca como <code>error</code> antes de exportar — no en producción, no en un playtest.</p>
     </div>
   </section>
 
   <section id="generos">
-    <p class="eyebrow">Un núcleo, muchos géneros</p>
-    <h2>14 perfiles de referencia.</h2>
+    <p class="eyebrow" data-i18n="sec.generos.eyebrow">Un núcleo, muchos géneros</p>
+    <h2 data-i18n="sec.generos.h2">14 perfiles de referencia.</h2>
     <div class="measure">
-      <p>Cada perfil declara el vocabulario de un género — sus colecciones, sus reglas, sus derivaciones — sin tocar el núcleo genérico del protocolo.</p>
+      <p data-i18n="sec.generos.p">Cada perfil declara el vocabulario de un género — sus colecciones, sus reglas, sus derivaciones — sin tocar el núcleo genérico del protocolo.</p>
     </div>
     <div class="profiles">
-      <div class="profile"><span class="p-id">monster-rpg</span><span class="p-desc">Creature-collector: especies, tipos, ataques, evoluciones.</span></div>
-      <div class="profile"><span class="p-id">adventure</span><span class="p-desc">Una escena top-down completa: NPCs, objetos, meta.</span></div>
-      <div class="profile"><span class="p-id">dungeon</span><span class="p-desc">Mazmorra multi-sala: llaves, enemigos, warps entre salas.</span></div>
-      <div class="profile"><span class="p-id">roguelike</span><span class="p-desc">Generador procedural: semillas, salas, jefe, permadeath.</span></div>
-      <div class="profile"><span class="p-id">platformer</span><span class="p-desc">Plataformas 2D: física de salto, huecos, bandera de meta.</span></div>
-      <div class="profile"><span class="p-id">tower-defense</span><span class="p-desc">Torres, oleadas de enemigos, economía y balance.</span></div>
-      <div class="profile"><span class="p-id">crafting</span><span class="p-desc">Árbol de recetas: materiales, estaciones, objetos.</span></div>
-      <div class="profile"><span class="p-id">papers-please</span><span class="p-desc">Control de fronteras: documentos, reglas, días.</span></div>
-      <div class="profile"><span class="p-id">voxel</span><span class="p-desc">Estructuras voxel, renderizadas en 3D.</span></div>
-      <div class="profile"><span class="p-id">advance-wars</span><span class="p-desc">Arte extraído de cartucho: paletas y unidades 4bpp.</span></div>
-      <div class="profile data-only"><span class="p-badge">puro-datos</span><span class="p-id">quiz</span><span class="p-desc">Preguntas, categorías, rondas — cero código ejecutable.</span></div>
-      <div class="profile data-only"><span class="p-badge">puro-datos</span><span class="p-id">sudoku</span><span class="p-desc">Tablero, dificultad, validación de la solución.</span></div>
-      <div class="profile data-only"><span class="p-badge">puro-datos</span><span class="p-id">shooter</span><span class="p-desc">Enemigos, oleadas, proyectiles.</span></div>
-      <div class="profile data-only"><span class="p-badge">puro-datos</span><span class="p-id">peg-solitaire</span><span class="p-desc">Tablero, movimientos válidos, condición de victoria.</span></div>
+      <div class="profile"><span class="p-id">monster-rpg</span><span class="p-desc" data-i18n="profile.monster-rpg">Creature-collector: especies, tipos, ataques, evoluciones.</span></div>
+      <div class="profile"><span class="p-id">adventure</span><span class="p-desc" data-i18n="profile.adventure">Una escena top-down completa: NPCs, objetos, meta.</span></div>
+      <div class="profile"><span class="p-id">dungeon</span><span class="p-desc" data-i18n="profile.dungeon">Mazmorra multi-sala: llaves, enemigos, warps entre salas.</span></div>
+      <div class="profile"><span class="p-id">roguelike</span><span class="p-desc" data-i18n="profile.roguelike">Generador procedural: semillas, salas, jefe, permadeath.</span></div>
+      <div class="profile"><span class="p-id">platformer</span><span class="p-desc" data-i18n="profile.platformer">Plataformas 2D: física de salto, huecos, bandera de meta.</span></div>
+      <div class="profile"><span class="p-id">tower-defense</span><span class="p-desc" data-i18n="profile.tower-defense">Torres, oleadas de enemigos, economía y balance.</span></div>
+      <div class="profile"><span class="p-id">crafting</span><span class="p-desc" data-i18n="profile.crafting">Árbol de recetas: materiales, estaciones, objetos.</span></div>
+      <div class="profile"><span class="p-id">papers-please</span><span class="p-desc" data-i18n="profile.papers-please">Control de fronteras: documentos, reglas, días.</span></div>
+      <div class="profile"><span class="p-id">voxel</span><span class="p-desc" data-i18n="profile.voxel">Estructuras voxel, renderizadas en 3D.</span></div>
+      <div class="profile"><span class="p-id">advance-wars</span><span class="p-desc" data-i18n="profile.advance-wars">Arte extraído de cartucho: paletas y unidades 4bpp.</span></div>
+      <div class="profile data-only"><span class="p-badge" data-i18n="badge.dataOnly">puro-datos</span><span class="p-id">quiz</span><span class="p-desc" data-i18n="profile.quiz">Preguntas, categorías, rondas — cero código ejecutable.</span></div>
+      <div class="profile data-only"><span class="p-badge" data-i18n="badge.dataOnly">puro-datos</span><span class="p-id">sudoku</span><span class="p-desc" data-i18n="profile.sudoku">Tablero, dificultad, validación de la solución.</span></div>
+      <div class="profile data-only"><span class="p-badge" data-i18n="badge.dataOnly">puro-datos</span><span class="p-id">shooter</span><span class="p-desc" data-i18n="profile.shooter">Enemigos, oleadas, proyectiles.</span></div>
+      <div class="profile data-only"><span class="p-badge" data-i18n="badge.dataOnly">puro-datos</span><span class="p-id">peg-solitaire</span><span class="p-desc" data-i18n="profile.peg-solitaire">Tablero, movimientos válidos, condición de victoria.</span></div>
     </div>
   </section>
 
   <section id="por-que">
-    <p class="eyebrow">Por qué importa</p>
-    <h2>Cuatro consecuencias concretas.</h2>
+    <p class="eyebrow" data-i18n="sec.porque.eyebrow">Por qué importa</p>
+    <h2 data-i18n="sec.porque.h2">Cuatro consecuencias concretas.</h2>
     <div class="why">
       <div class="why-item">
-        <span class="k">Reequilibrar sin recompilar</span>
-        <p><b>Cambiar un precio, un daño o una dificultad</b> es editar un archivo de texto — no tocar el motor ni arriesgar una regresión en la lógica.</p>
+        <span class="k" data-i18n="why1.k">Reequilibrar sin recompilar</span>
+        <p data-i18n="why1.p"><b>Cambiar un precio, un daño o una dificultad</b> es editar un archivo de texto — no tocar el motor ni arriesgar una regresión en la lógica.</p>
       </div>
       <div class="why-item">
-        <span class="k">Validado antes de jugar</span>
-        <p><b>136 reglas</b> atrapan referencias rotas, rangos inválidos y desbalances de tipo — en el linter, antes de que el juego arranque.</p>
+        <span class="k" data-i18n="why2.k">Validado antes de jugar</span>
+        <p data-i18n="why2.p"><b>136 reglas</b> atrapan referencias rotas, rangos inválidos y desbalances de tipo — en el linter, antes de que el juego arranque.</p>
       </div>
       <div class="why-item">
-        <span class="k">Nunca se rompe del todo</span>
-        <p>Si el artefacto generado falta un dato, <b>el motor cae a un fallback embebido</b> en vez de crashear en producción.</p>
+        <span class="k" data-i18n="why3.k">Nunca se rompe del todo</span>
+        <p data-i18n="why3.p">Si el artefacto generado falta un dato, <b>el motor cae a un fallback embebido</b> en vez de crashear en producción.</p>
       </div>
       <div class="why-item">
-        <span class="k">Perfiles de terceros, con confianza</span>
-        <p>Un perfil <b><code>.json</code> puro-datos</b> se carga sin ejecutar código — seguro de consumir aunque no lo hayas escrito vos.</p>
+        <span class="k" data-i18n="why4.k">Perfiles de terceros, con confianza</span>
+        <p data-i18n="why4.p">Un perfil <b><code>.json</code> puro-datos</b> se carga sin ejecutar código — seguro de consumir aunque no lo hayas escrito vos.</p>
       </div>
     </div>
   </section>
 
   <footer>
     <div class="foot-links">
-      <a href="demos.html">Demos jugables</a>
-      <a href="https://github.com/MauricioPerera/game-protocol">Repositorio</a>
-      <a href="https://github.com/MauricioPerera/game-protocol/blob/main/SPEC.md">Especificación (SPEC.md)</a>
-      <a href="https://github.com/MauricioPerera/game-protocol/blob/main/README.md">README</a>
-      <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio (implementación de referencia)</a>
-      <a href="https://github.com/MauricioPerera/game-protocol/releases">Releases</a>
+      <a href="demos.html" data-i18n="foot.demos">Demos jugables</a>
+      <a href="https://github.com/MauricioPerera/game-protocol" data-i18n="foot.repo">Repositorio</a>
+      <a href="https://github.com/MauricioPerera/game-protocol/blob/main/SPEC.md" data-i18n="foot.spec">Especificación (SPEC.md)</a>
+      <a href="https://github.com/MauricioPerera/game-protocol/blob/main/README.md" data-i18n="foot.readme">README</a>
+      <a href="https://github.com/MauricioPerera/gb-ai-studio" data-i18n="foot.gbai">GB-AI Studio (implementación de referencia)</a>
+      <a href="https://github.com/MauricioPerera/game-protocol/releases" data-i18n="foot.releases">Releases</a>
     </div>
-    <p class="fineprint">GAME Protocol es una propuesta abierta, licencia MIT. La especificación del núcleo sigue en desarrollo (<code>v0.1</code>); el tooling de referencia (lint, export, 14 perfiles) es JavaScript vanilla, sin dependencias externas. Inspirado en el patrón <code>design.md</code> de Google.</p>
+    <p class="fineprint" data-i18n="foot.fineprint">GAME Protocol es una propuesta abierta, licencia MIT. La especificación del núcleo sigue en desarrollo (<code>v0.1</code>); el tooling de referencia (lint, export, 14 perfiles) es JavaScript vanilla, sin dependencias externas. Inspirado en el patrón <code>design.md</code> de Google.</p>
   </footer>
 
 </div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'gp-lang';
+
+  var DICT = {
+    es: {
+      'meta.title': 'GAME Protocol — Gameplay as Data',
+      'meta.desc': 'GAME Protocol: un formato para declarar el contenido y el balance de un juego 2D como datos — un archivo GAME.md que documenta y alimenta el motor a la vez.',
+      'nav.idea': 'La idea', 'nav.perfiles': 'Perfiles', 'nav.demos': 'Demos ▶', 'nav.spec': 'Spec', 'nav.github': 'GitHub',
+      'stat.version': 'version', 'stat.profiles': 'perfiles', 'stat.rules': 'reglas', 'stat.deps': 'dependencias',
+      'hero.h1': 'El balance de tu juego, escrito como <em>dato</em> — no enterrado en el motor.',
+      'hero.dek': 'GAME Protocol es un formato para declarar el contenido y el balance de un juego 2D como texto plano: un archivo, <code>GAME.md</code>, que a la vez documenta el diseño y alimenta el motor.',
+      'hero.provenance': 'Nace de un motor real — el mini-Pokémon GBA de <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio</a> — donde cambiar un ataque o reequilibrar un combate es editar texto, no tocar código.',
+      'sec.problema.eyebrow': 'El problema',
+      'sec.problema.h2': 'Los datos del juego viven adentro del código.',
+      'sec.problema.p1': 'En la mayoría de motores, las estadísticas de las criaturas, las tablas de tipos, los precios, los mapas, los diálogos y el arte de los tiles están mezclados con la lógica en el mismo archivo <code>.js</code>.',
+      'sec.problema.p2': 'Cambiar el personaje inicial, agregar un objeto o reequilibrar un combate exige tocar código, recompilar mentalmente las consecuencias y arriesgar una regresión. Y no hay forma automática de saber si un dato declarado se usa de verdad, o quedó muerto en el motor.',
+      'sec.idea.eyebrow': 'La idea',
+      'sec.idea.h2': 'Un archivo, dos lectores.',
+      'sec.idea.p1': '<code>GAME.md</code> es al mismo tiempo un <b>contrato de datos</b> (el front-matter YAML, que la herramienta valida) y un <b>documento canónico</b> (el cuerpo Markdown, que el equipo lee). El dato y su explicación nunca se desincronizan porque viven en el mismo archivo — patrón heredado de <code>design.md</code>, de Google.',
+      'sec.idea.p2': 'El protocolo mismo no sabe qué es una "especie" o un "tile": eso lo define el <b>perfil</b> de cada género. El núcleo solo define la forma del archivo, cómo se valida, cómo se compila y qué pasa cuando falta un dato.',
+      'pipeline.step1.n': '01 · VALIDAR', 'pipeline.step1.desc': 'Revisa referencias rotas, rangos fuera de límite y simetrías de balance — antes de que el juego arranque.',
+      'pipeline.step2.n': '02 · COMPILAR', 'pipeline.step2.desc': 'Convierte los tokens del front-matter en <code>window.GAME</code>, listo para consumir.',
+      'pipeline.step3.n': '03 · JUGAR', 'pipeline.step3.title': 'el motor', 'pipeline.step3.desc': 'Lee <code>window.GAME</code> y gobierna su contenido — sin recompilar, sin tocar lógica.',
+      'pipeline.fallback': '<b>Fallback embebido:</b> si el archivo generado falta o está incompleto, el juego degrada con gracia en vez de romperse.',
+      'sec.snippet.eyebrow': 'Cómo se ve',
+      'sec.snippet.h2': 'Reequilibrar un combate es editar texto.',
+      'sec.snippet.p': 'Un fragmento real de un perfil <code>monster-rpg</code>: una especie, su tipo, sus ataques y su punto de evolución — todo declarado, nada hardcodeado.',
+      'snippet.filebar': 'species.GAME.md — fragmento',
+      'snippet.comment': '# referencia validada contra `species`',
+      'snippet.note': 'Si <code>evolvesInto</code> apunta a una especie que no existe, <code>game-lint.js</code> lo marca como <code>error</code> antes de exportar — no en producción, no en un playtest.',
+      'sec.generos.eyebrow': 'Un núcleo, muchos géneros',
+      'sec.generos.h2': '14 perfiles de referencia.',
+      'sec.generos.p': 'Cada perfil declara el vocabulario de un género — sus colecciones, sus reglas, sus derivaciones — sin tocar el núcleo genérico del protocolo.',
+      'profile.monster-rpg': 'Creature-collector: especies, tipos, ataques, evoluciones.',
+      'profile.adventure': 'Una escena top-down completa: NPCs, objetos, meta.',
+      'profile.dungeon': 'Mazmorra multi-sala: llaves, enemigos, warps entre salas.',
+      'profile.roguelike': 'Generador procedural: semillas, salas, jefe, permadeath.',
+      'profile.platformer': 'Plataformas 2D: física de salto, huecos, bandera de meta.',
+      'profile.tower-defense': 'Torres, oleadas de enemigos, economía y balance.',
+      'profile.crafting': 'Árbol de recetas: materiales, estaciones, objetos.',
+      'profile.papers-please': 'Control de fronteras: documentos, reglas, días.',
+      'profile.voxel': 'Estructuras voxel, renderizadas en 3D.',
+      'profile.advance-wars': 'Arte extraído de cartucho: paletas y unidades 4bpp.',
+      'profile.quiz': 'Preguntas, categorías, rondas — cero código ejecutable.',
+      'profile.sudoku': 'Tablero, dificultad, validación de la solución.',
+      'profile.shooter': 'Enemigos, oleadas, proyectiles.',
+      'profile.peg-solitaire': 'Tablero, movimientos válidos, condición de victoria.',
+      'badge.dataOnly': 'puro-datos',
+      'sec.porque.eyebrow': 'Por qué importa',
+      'sec.porque.h2': 'Cuatro consecuencias concretas.',
+      'why1.k': 'Reequilibrar sin recompilar',
+      'why1.p': '<b>Cambiar un precio, un daño o una dificultad</b> es editar un archivo de texto — no tocar el motor ni arriesgar una regresión en la lógica.',
+      'why2.k': 'Validado antes de jugar',
+      'why2.p': '<b>136 reglas</b> atrapan referencias rotas, rangos inválidos y desbalances de tipo — en el linter, antes de que el juego arranque.',
+      'why3.k': 'Nunca se rompe del todo',
+      'why3.p': 'Si el artefacto generado falta un dato, <b>el motor cae a un fallback embebido</b> en vez de crashear en producción.',
+      'why4.k': 'Perfiles de terceros, con confianza',
+      'why4.p': 'Un perfil <b><code>.json</code> puro-datos</b> se carga sin ejecutar código — seguro de consumir aunque no lo hayas escrito vos.',
+      'foot.demos': 'Demos jugables', 'foot.repo': 'Repositorio', 'foot.spec': 'Especificación (SPEC.md)', 'foot.readme': 'README',
+      'foot.gbai': 'GB-AI Studio (implementación de referencia)', 'foot.releases': 'Releases',
+      'foot.fineprint': 'GAME Protocol es una propuesta abierta, licencia MIT. La especificación del núcleo sigue en desarrollo (<code>v0.1</code>); el tooling de referencia (lint, export, 14 perfiles) es JavaScript vanilla, sin dependencias externas. Inspirado en el patrón <code>design.md</code> de Google.'
+    },
+    en: {
+      'meta.title': 'GAME Protocol — Gameplay as Data',
+      'meta.desc': "GAME Protocol: a format for declaring a 2D game's content and balance as data — a GAME.md file that documents and feeds the engine at once.",
+      'nav.idea': 'The idea', 'nav.perfiles': 'Profiles', 'nav.demos': 'Demos ▶', 'nav.spec': 'Spec', 'nav.github': 'GitHub',
+      'stat.version': 'version', 'stat.profiles': 'profiles', 'stat.rules': 'rules', 'stat.deps': 'dependencies',
+      'hero.h1': "Your game's balance, written as <em>data</em> — not buried inside the engine.",
+      'hero.dek': "GAME Protocol is a format for declaring a 2D game's content and balance as plain text: one file, <code>GAME.md</code>, that documents the design and feeds the engine at the same time.",
+      'hero.provenance': 'It comes from a real engine — the mini-Pokémon GBA build in <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio</a> — where changing a move or rebalancing a battle means editing text, not touching code.',
+      'sec.problema.eyebrow': 'The problem',
+      'sec.problema.h2': 'Game data lives inside the code.',
+      'sec.problema.p1': 'In most engines, creature stats, type charts, prices, maps, dialogue and tile art are tangled up with the logic in the same <code>.js</code> file.',
+      'sec.problema.p2': "Changing the starter character, adding an item, or rebalancing a fight means touching code, mentally recompiling the consequences, and risking a regression. And there's no automatic way to know whether a declared piece of data is actually used, or dead in the engine.",
+      'sec.idea.eyebrow': 'The idea',
+      'sec.idea.h2': 'One file, two readers.',
+      'sec.idea.p1': "<code>GAME.md</code> is at once a <b>data contract</b> (the YAML front-matter, which the tool validates) and a <b>canonical document</b> (the Markdown body, which the team reads). The data and its explanation never drift apart because they live in the same file — a pattern inherited from Google's <code>design.md</code>.",
+      'sec.idea.p2': 'The protocol itself doesn\'t know what a "species" or a "tile" is: that\'s defined by each genre\'s <b>profile</b>. The core only defines the file\'s shape, how it\'s validated, how it\'s compiled, and what happens when a piece of data is missing.',
+      'pipeline.step1.n': '01 · VALIDATE', 'pipeline.step1.desc': 'Checks broken references, out-of-range values and balance symmetries — before the game even starts.',
+      'pipeline.step2.n': '02 · COMPILE', 'pipeline.step2.desc': 'Turns the front-matter tokens into <code>window.GAME</code>, ready to consume.',
+      'pipeline.step3.n': '03 · PLAY', 'pipeline.step3.title': 'the engine', 'pipeline.step3.desc': 'Reads <code>window.GAME</code> and governs its content — no recompiling, no touching logic.',
+      'pipeline.fallback': '<b>Built-in fallback:</b> if the generated file is missing or incomplete, the game degrades gracefully instead of crashing.',
+      'sec.snippet.eyebrow': 'What it looks like',
+      'sec.snippet.h2': 'Rebalancing a fight means editing text.',
+      'sec.snippet.p': 'A real fragment from a <code>monster-rpg</code> profile: a species, its type, its moves and its evolution point — all declared, nothing hardcoded.',
+      'snippet.filebar': 'species.GAME.md — excerpt',
+      'snippet.comment': '# reference validated against `species`',
+      'snippet.note': "If <code>evolvesInto</code> points to a species that doesn't exist, <code>game-lint.js</code> flags it as an <code>error</code> before export — not in production, not in a playtest.",
+      'sec.generos.eyebrow': 'One core, many genres',
+      'sec.generos.h2': '14 reference profiles.',
+      'sec.generos.p': "Each profile declares a genre's vocabulary — its collections, its rules, its derivations — without touching the protocol's generic core.",
+      'profile.monster-rpg': 'Creature-collector: species, types, moves, evolutions.',
+      'profile.adventure': 'One complete top-down scene: NPCs, items, goal.',
+      'profile.dungeon': 'Multi-room dungeon: keys, enemies, warps between rooms.',
+      'profile.roguelike': 'Procedural generator: seeds, rooms, boss, permadeath.',
+      'profile.platformer': '2D platformer: jump physics, gaps, goal flag.',
+      'profile.tower-defense': 'Towers, enemy waves, economy and balance.',
+      'profile.crafting': 'Recipe tree: materials, stations, items.',
+      'profile.papers-please': 'Border control: documents, rules, days.',
+      'profile.voxel': 'Voxel structures, rendered in 3D.',
+      'profile.advance-wars': 'Cartridge-extracted art: palettes and 4bpp units.',
+      'profile.quiz': 'Questions, categories, rounds — zero executable code.',
+      'profile.sudoku': 'Board, difficulty, solution validation.',
+      'profile.shooter': 'Enemies, waves, projectiles.',
+      'profile.peg-solitaire': 'Board, valid moves, win condition.',
+      'badge.dataOnly': 'data-only',
+      'sec.porque.eyebrow': 'Why it matters',
+      'sec.porque.h2': 'Four concrete consequences.',
+      'why1.k': 'Rebalance without recompiling',
+      'why1.p': '<b>Changing a price, a damage value or a difficulty</b> means editing a text file — not touching the engine or risking a logic regression.',
+      'why2.k': 'Validated before you play',
+      'why2.p': '<b>136 rules</b> catch broken references, invalid ranges and type imbalances — in the linter, before the game even starts.',
+      'why3.k': 'Never breaks completely',
+      'why3.p': 'If the generated artifact is missing a value, <b>the engine falls back to a built-in default</b> instead of crashing in production.',
+      'why4.k': 'Third-party profiles, with confidence',
+      'why4.p': "A <b>pure-data <code>.json</code> profile</b> loads without executing code — safe to consume even if you didn't write it yourself.",
+      'foot.demos': 'Playable demos', 'foot.repo': 'Repository', 'foot.spec': 'Specification (SPEC.md)', 'foot.readme': 'README',
+      'foot.gbai': 'GB-AI Studio (reference implementation)', 'foot.releases': 'Releases',
+      'foot.fineprint': "GAME Protocol is an open proposal, MIT licensed. The core specification is still in development (<code>v0.1</code>); the reference tooling (lint, export, 14 profiles) is vanilla JavaScript with no external dependencies. Inspired by Google's <code>design.md</code> pattern."
+    },
+    pt: {
+      'meta.title': 'GAME Protocol — Gameplay as Data',
+      'meta.desc': 'GAME Protocol: um formato para declarar o conteúdo e o balanceamento de um jogo 2D como dados — um arquivo GAME.md que documenta e alimenta o motor ao mesmo tempo.',
+      'nav.idea': 'A ideia', 'nav.perfiles': 'Perfis', 'nav.demos': 'Demos ▶', 'nav.spec': 'Spec', 'nav.github': 'GitHub',
+      'stat.version': 'versão', 'stat.profiles': 'perfis', 'stat.rules': 'regras', 'stat.deps': 'dependências',
+      'hero.h1': 'O balanceamento do seu jogo, escrito como <em>dado</em> — não enterrado no motor.',
+      'hero.dek': 'GAME Protocol é um formato para declarar o conteúdo e o balanceamento de um jogo 2D como texto simples: um arquivo, <code>GAME.md</code>, que documenta o design e alimenta o motor ao mesmo tempo.',
+      'hero.provenance': 'Nasce de um motor real — o mini-Pokémon GBA do <a href="https://github.com/MauricioPerera/gb-ai-studio">GB-AI Studio</a> — onde trocar um ataque ou reequilibrar uma batalha é editar texto, não mexer em código.',
+      'sec.problema.eyebrow': 'O problema',
+      'sec.problema.h2': 'Os dados do jogo vivem dentro do código.',
+      'sec.problema.p1': 'Na maioria dos motores, os status das criaturas, as tabelas de tipo, os preços, os mapas, os diálogos e a arte dos tiles ficam misturados com a lógica no mesmo arquivo <code>.js</code>.',
+      'sec.problema.p2': 'Trocar o personagem inicial, adicionar um item ou reequilibrar uma luta exige mexer em código, recompilar mentalmente as consequências e arriscar uma regressão. E não há como saber automaticamente se um dado declarado é realmente usado, ou ficou morto no motor.',
+      'sec.idea.eyebrow': 'A ideia',
+      'sec.idea.h2': 'Um arquivo, dois leitores.',
+      'sec.idea.p1': '<code>GAME.md</code> é ao mesmo tempo um <b>contrato de dados</b> (o front-matter YAML, que a ferramenta valida) e um <b>documento canônico</b> (o corpo em Markdown, que o time lê). O dado e sua explicação nunca se desincronizam porque vivem no mesmo arquivo — padrão herdado do <code>design.md</code>, do Google.',
+      'sec.idea.p2': 'O protocolo em si não sabe o que é uma "espécie" ou um "tile": isso é definido pelo <b>perfil</b> de cada gênero. O núcleo só define a forma do arquivo, como ele é validado, como é compilado e o que acontece quando falta um dado.',
+      'pipeline.step1.n': '01 · VALIDAR', 'pipeline.step1.desc': 'Verifica referências quebradas, valores fora do intervalo e simetrias de balanceamento — antes do jogo sequer começar.',
+      'pipeline.step2.n': '02 · COMPILAR', 'pipeline.step2.desc': 'Transforma os tokens do front-matter em <code>window.GAME</code>, pronto para consumir.',
+      'pipeline.step3.n': '03 · JOGAR', 'pipeline.step3.title': 'o motor', 'pipeline.step3.desc': 'Lê <code>window.GAME</code> e governa seu conteúdo — sem recompilar, sem mexer na lógica.',
+      'pipeline.fallback': '<b>Fallback embutido:</b> se o arquivo gerado estiver faltando ou incompleto, o jogo degrada com elegância em vez de quebrar.',
+      'sec.snippet.eyebrow': 'Como se parece',
+      'sec.snippet.h2': 'Reequilibrar uma luta é editar texto.',
+      'sec.snippet.p': 'Um fragmento real de um perfil <code>monster-rpg</code>: uma espécie, seu tipo, seus ataques e seu ponto de evolução — tudo declarado, nada hardcoded.',
+      'snippet.filebar': 'species.GAME.md — trecho',
+      'snippet.comment': '# referência validada contra `species`',
+      'snippet.note': 'Se <code>evolvesInto</code> apontar para uma espécie que não existe, <code>game-lint.js</code> marca como <code>error</code> antes de exportar — não em produção, não em um playtest.',
+      'sec.generos.eyebrow': 'Um núcleo, muitos gêneros',
+      'sec.generos.h2': '14 perfis de referência.',
+      'sec.generos.p': 'Cada perfil declara o vocabulário de um gênero — suas coleções, suas regras, suas derivações — sem tocar no núcleo genérico do protocolo.',
+      'profile.monster-rpg': 'Creature-collector: espécies, tipos, ataques, evoluções.',
+      'profile.adventure': 'Uma cena top-down completa: NPCs, itens, objetivo.',
+      'profile.dungeon': 'Masmorra multi-sala: chaves, inimigos, warps entre salas.',
+      'profile.roguelike': 'Gerador procedural: sementes, salas, chefe, permadeath.',
+      'profile.platformer': 'Plataforma 2D: física de pulo, buracos, bandeira de meta.',
+      'profile.tower-defense': 'Torres, ondas de inimigos, economia e balanceamento.',
+      'profile.crafting': 'Árvore de receitas: materiais, estações, itens.',
+      'profile.papers-please': 'Controle de fronteiras: documentos, regras, dias.',
+      'profile.voxel': 'Estruturas voxel, renderizadas em 3D.',
+      'profile.advance-wars': 'Arte extraída do cartucho: paletas e unidades 4bpp.',
+      'profile.quiz': 'Perguntas, categorias, rodadas — zero código executável.',
+      'profile.sudoku': 'Tabuleiro, dificuldade, validação da solução.',
+      'profile.shooter': 'Inimigos, ondas, projéteis.',
+      'profile.peg-solitaire': 'Tabuleiro, movimentos válidos, condição de vitória.',
+      'badge.dataOnly': 'apenas dados',
+      'sec.porque.eyebrow': 'Por que importa',
+      'sec.porque.h2': 'Quatro consequências concretas.',
+      'why1.k': 'Reequilibrar sem recompilar',
+      'why1.p': '<b>Mudar um preço, um dano ou uma dificuldade</b> é editar um arquivo de texto — sem mexer no motor nem arriscar uma regressão na lógica.',
+      'why2.k': 'Validado antes de jogar',
+      'why2.p': '<b>136 regras</b> capturam referências quebradas, intervalos inválidos e desbalanceamentos de tipo — no linter, antes do jogo começar.',
+      'why3.k': 'Nunca quebra de vez',
+      'why3.p': 'Se o artefato gerado estiver faltando um dado, <b>o motor recorre a um fallback embutido</b> em vez de travar em produção.',
+      'why4.k': 'Perfis de terceiros, com confiança',
+      'why4.p': 'Um perfil <b><code>.json</code> apenas dados</b> carrega sem executar código — seguro de consumir mesmo que você não o tenha escrito.',
+      'foot.demos': 'Demos jogáveis', 'foot.repo': 'Repositório', 'foot.spec': 'Especificação (SPEC.md)', 'foot.readme': 'README',
+      'foot.gbai': 'GB-AI Studio (implementação de referência)', 'foot.releases': 'Releases',
+      'foot.fineprint': 'GAME Protocol é uma proposta aberta, licença MIT. A especificação do núcleo ainda está em desenvolvimento (<code>v0.1</code>); o tooling de referência (lint, export, 14 perfis) é JavaScript vanilla, sem dependências externas. Inspirado no padrão <code>design.md</code>, do Google.'
+    }
+  };
+
+  function detect(){
+    var saved = null;
+    try { saved = localStorage.getItem(STORAGE_KEY); } catch(e){}
+    if (saved && DICT[saved]) return saved;
+    var nav = (navigator.language || 'es').toLowerCase();
+    if (nav.indexOf('en') === 0) return 'en';
+    if (nav.indexOf('pt') === 0) return 'pt';
+    return 'es';
+  }
+
+  function apply(lang){
+    var d = DICT[lang] || DICT.es;
+    document.documentElement.lang = lang;
+    document.title = d['meta.title'];
+    var m = document.querySelector('meta[name="description"]');
+    if (m) m.setAttribute('content', d['meta.desc']);
+    var nodes = document.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < nodes.length; i++){
+      var key = nodes[i].getAttribute('data-i18n');
+      if (d[key] != null) nodes[i].innerHTML = d[key];
+    }
+    var btns = document.querySelectorAll('.langsw button');
+    for (var j = 0; j < btns.length; j++){
+      btns[j].setAttribute('aria-current', btns[j].getAttribute('data-lang') === lang ? 'true' : 'false');
+    }
+    try { localStorage.setItem(STORAGE_KEY, lang); } catch(e){}
+  }
+
+  var buttons = document.querySelectorAll('.langsw button');
+  for (var k = 0; k < buttons.length; k++){
+    buttons[k].addEventListener('click', function(ev){
+      apply(ev.currentTarget.getAttribute('data-lang'));
+    });
+  }
+
+  apply(detect());
+})();
+</script>
 </body>
 </html>
