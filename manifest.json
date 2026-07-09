@@ -45,6 +45,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {
@@ -77,13 +78,25 @@
       "rules": [
         "rulePalettes",
         "ruleTileArt",
-        "ruleScene",
         "ruleEntities",
         "rulePlayer",
         "ruleText"
       ],
       "bounds": [],
       "dims": [],
+      "grids": [
+        {
+          "rule": "scene-dims",
+          "level": "error",
+          "target": "scene",
+          "legend": {
+            "rule": "scene-legend-ref",
+            "level": "error",
+            "tileTarget": "tiles",
+            "palMax": "palettesCount"
+          }
+        }
+      ],
       "enums": [],
       "output": [
         {
@@ -157,6 +170,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {
@@ -205,6 +219,18 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [
+        {
+          "rule": "scene-dims",
+          "level": "error",
+          "target": "scenes.*",
+          "legend": {
+            "rule": "scene-legend-ref",
+            "level": "error",
+            "tileTarget": "tiles"
+          }
+        }
+      ],
       "enums": [],
       "output": [
         {
@@ -358,6 +384,22 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [
+        {
+          "rule": "map-dims",
+          "level": "error",
+          "target": "maps.*",
+          "shape": {
+            "from": "platform.rows/cols"
+          },
+          "legend": {
+            "rule": "map-legend-ref",
+            "level": "error",
+            "tileTarget": "tiles",
+            "palMax": "palettesCount"
+          }
+        }
+      ],
       "enums": [],
       "output": [
         {
@@ -507,6 +549,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {
@@ -565,6 +608,7 @@
       "rules": [],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [
         {
           "rule": "board-goal",
@@ -680,6 +724,7 @@
         }
       ],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {
@@ -769,6 +814,7 @@
         }
       ],
       "dims": [],
+      "grids": [],
       "enums": [
         {
           "rule": "question-difficulty",
@@ -828,6 +874,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {
@@ -1026,6 +1073,7 @@
         }
       ],
       "dims": [],
+      "grids": [],
       "enums": [
         {
           "rule": "enemy-behavior",
@@ -1130,6 +1178,7 @@
         }
       ],
       "dims": [],
+      "grids": [],
       "enums": [
         {
           "rule": "puzzle-difficulty",
@@ -1222,6 +1271,21 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [
+        {
+          "rule": "map-dims",
+          "level": "error",
+          "target": "maps.*",
+          "shape": {
+            "from": "platform.rows/cols"
+          },
+          "legend": {
+            "rule": "map-legend-ref",
+            "level": "error",
+            "tileTarget": "tiles"
+          }
+        }
+      ],
       "enums": [],
       "output": [
         {
@@ -1322,6 +1386,7 @@
       ],
       "bounds": [],
       "dims": [],
+      "grids": [],
       "enums": [],
       "output": [
         {

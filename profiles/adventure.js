@@ -20,23 +20,6 @@
     const rows = (data.scene || {}).rows || [];
     return { h: rows.length, w: rows.length ? String(rows[0]).length : 0 };
   }
-  function ruleScene({ data, add }) {
-    const tiles = data.tiles || {}; const palCount = data.palettesCount || 0;
-    const sc = data.scene || {};
-    const rows = sc.rows || [];
-    if (!rows.length) { add('error', 'scene-rows', 'scene.rows vacio'); return; }
-    const w = String(rows[0]).length;
-    for (let r = 0; r < rows.length; r++)
-      if (String(rows[r]).length !== w) add('error', 'scene-dims', 'scene fila ' + r + ' no tiene ' + w + ' columnas');
-    const cells = Object.assign({}, sc.legend || {});
-    if (sc.fill) cells['<fill>'] = sc.fill;
-    for (const [sym, cell] of Object.entries(cells)) {
-      if (!cell || cell.tile == null || !(cell.tile in tiles))
-        add('error', 'scene-legend-ref', 'scene simbolo "' + sym + '" referencia tile inexistente: ' + (cell && cell.tile));
-      if (cell && typeof cell.pal === 'number' && (cell.pal < 0 || cell.pal >= palCount))
-        add('error', 'scene-legend-ref', 'scene simbolo "' + sym + '" usa paleta fuera de rango: ' + cell.pal);
-    }
-  }
   function ruleEntities({ data, add }) {
     const tiles = data.tiles || {}; const text = data.text || {};
     const { w, h } = sceneDims(data);
@@ -97,7 +80,11 @@
     sections: ['Overview', 'Tiles', 'Scene', 'Entities', 'Player', 'Text', "Do's and Don'ts"],
     required: ['version', 'name'],
     refs: [],
-    rules: [rulePalettes, ruleTileArt, ruleScene, ruleEntities, rulePlayer, ruleText],
+    grids: [{
+      rule: 'scene-dims', emptyRule: 'scene-rows', singleton: 'scene',
+      legend: { rule: 'scene-legend-ref', tileTarget: { collection: 'tiles' }, palField: 'pal', palMax: 'palettesCount' },
+    }],
+    rules: [rulePalettes, ruleTileArt, ruleEntities, rulePlayer, ruleText],
     derive: derive,
   };
 });

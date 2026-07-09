@@ -42,6 +42,12 @@ function profileEntry(p) {
       integer: b.integer || undefined, required: b.required || undefined,
     })),
     dims: (p.dims || []).map(d => ({ rule: d.rule, level: d.level || 'error', collection: d.collection, shape: d.shape })),
+    grids: (p.grids || []).map(g => ({
+      rule: g.rule, level: g.level || 'error',
+      target: g.collection ? g.collection + '.*' : g.singleton,
+      shape: g.shape ? { from: g.shape.singleton + '.' + (g.shape.rowsField || 'rows') + '/' + (g.shape.colsField || 'cols') } : undefined,
+      legend: g.legend ? { rule: g.legend.rule, level: g.legend.level || g.level || 'error', tileTarget: g.legend.tileTarget.collection, palMax: g.legend.palMax } : undefined,
+    })),
     enums: (p.enums || []).map(e => ({
       rule: e.rule, level: e.level || 'error',
       target: (e.collection ? e.collection + '.*.' : e.singleton + '.') + e.field,

@@ -128,6 +128,87 @@
         add(level, e.rule, e.collection + '.' + k + ' no es ' + h + 'x' + w);
   }
 
+  // ---- FAMILIA grid/legend DECLARATIVA (SPEC §11): mapas de tiles como filas de texto
+  // ("rows") + una leyenda de simbolo→celda ("legend", con "fill" opcional para el
+  // relleno por defecto). Cubre el patron repetido en 4+ perfiles (scene/scenes con rows
+  // desparejas y simbolos que referencian tiles/paletas inexistentes) — antes era codigo
+  // JS casi identico en cada perfil (ruleScene/ruleScenes).
+  //
+  // Entrada: { rule, emptyRule?, level?, collection|singleton, rowsField?, legendField?, fillField?,
+  //            shape?: { singleton, rowsField?, colsField? },
+  //            legend?: { rule, level?, tileField?, tileTarget: { collection, allow? },
+  //                       palField?, palMax? } }.
+  //   rule          fila con ancho distinto a la primera ("scene-dims"), o (con `shape`)
+  //                 desajuste contra la forma externa.
+  //   emptyRule     rows vacio o ausente (solo sin `shape`); default = rule.
+  //   rowsField/legendField/fillField    default a 'rows'/'legend'/'fill'.
+  //   shape         forma FIJA tomada de OTRO singleton (p.ej. `platform.rows`/`.cols`),
+  //                 en vez de autoconsistencia contra la primera fila (mapas de
+  //                 tower-defense/monster-rpg, donde varios `maps.*` deben calzar con la
+  //                 grilla global). Cada chequeo es opcional: si el campo objetivo no está
+  //                 seteado, no se exige. A diferencia del modo autoconsistente, rows=[]
+  //                 NO corta el procesamiento del legend (los mapas pueden declarar legend
+  //                 sin filas todavia).
+  //   legend.tileTarget                  misma forma que refs[].target (broken-ref): el
+  //                                      chequeo usa el operador `in` (no un Set de
+  //                                      Object.keys) para que funcione con colecciones de
+  //                                      claves numericas (p.ej. `tiles: {16: {...}}`).
+  //   legend.palMax                      numero literal, o el nombre de un campo raiz de
+  //                                      `data` (p.ej. 'palettesCount') que lo contiene.
+  function gridInstances(e, data) {
+    if (e.collection) return Object.entries(data[e.collection] || {});
+    if (e.singleton) return [[e.singleton, data[e.singleton] || {}]];
+    return [];
+  }
+  function processGrid(e, data, add) {
+    const level = e.level || 'error';
+    const rowsField = e.rowsField || 'rows';
+    const legendField = e.legendField || 'legend';
+    const fillField = e.fillField || 'fill';
+    const emptyRule = e.emptyRule || e.rule;
+    const shape = e.shape;
+    const lg = e.legend;
+    const targetCol = lg && lg.tileTarget ? (data[lg.tileTarget.collection] || {}) : null;
+    const allow = new Set((lg && lg.tileTarget && lg.tileTarget.allow) || []);
+    const palMax = lg && lg.palMax != null
+      ? (typeof lg.palMax === 'number' ? lg.palMax : (data[lg.palMax] || 0))
+      : null;
+
+    for (const [name, obj] of gridInstances(e, data)) {
+      const rows = (obj && obj[rowsField]) || [];
+      if (shape) {
+        const target = data[shape.singleton] || {};
+        const wantRows = target[shape.rowsField || 'rows'];
+        const wantCols = target[shape.colsField || 'cols'];
+        if (wantRows && rows.length !== wantRows)
+          add(level, e.rule, name + ' tiene ' + rows.length + ' filas (esperado ' + wantRows + ')');
+        for (let r = 0; r < rows.length; r++)
+          if (wantCols && String(rows[r]).length !== wantCols)
+            add(level, e.rule, name + ' fila ' + r + ' tiene ' + String(rows[r]).length + ' cols (esperado ' + wantCols + ')');
+      } else {
+        if (!rows.length) { add(level, emptyRule, name + '.' + rowsField + ' vacio'); continue; }
+        const w = String(rows[0]).length;
+        for (let r = 0; r < rows.length; r++)
+          if (String(rows[r]).length !== w) add(level, e.rule, name + ': fila ' + r + ' no tiene ' + w + ' columnas');
+      }
+
+      if (lg) {
+        const lvl2 = lg.level || level;
+        const cells = Object.assign({}, (obj && obj[legendField]) || {});
+        if (obj && obj[fillField]) cells['<fill>'] = obj[fillField];
+        for (const [sym, cell] of Object.entries(cells)) {
+          const tileField = lg.tileField || 'tile';
+          const tileVal = cell && cell[tileField];
+          if (targetCol && (tileVal == null || (!(tileVal in targetCol) && !allow.has(tileVal))))
+            add(lvl2, lg.rule, name + ': simbolo "' + sym + '" referencia ' + lg.tileTarget.collection + ' inexistente: ' + tileVal);
+          const palField = lg.palField;
+          if (palField && cell && typeof cell[palField] === 'number' && palMax != null && (cell[palField] < 0 || cell[palField] >= palMax))
+            add(lvl2, lg.rule, name + ': simbolo "' + sym + '" usa paleta fuera de rango: ' + cell[palField]);
+        }
+      }
+    }
+  }
+
   // P1: pre-tokeniza el motor una sola vez por llamada a lintGame. Extrae los tokens que el
   // motor "usa": literales string (cubre gBal('k') y ['k']) y accesos miembro `.k` (cubre
   // `.k\b`). ruleDeadToken consulta este Set en O(1) por clave de balance, en vez de lanzar
@@ -233,10 +314,11 @@
     const setCache = new Map();
     for (const entry of (profile.refs || [])) processRef(entry, data, add, setCache);
 
-    // ---- FAMILIAS range/dims/enum dirigidas por el descriptor del perfil (tablas declarativas) ----
+    // ---- FAMILIAS range/dims/enum/grid dirigidas por el descriptor del perfil (tablas declarativas) ----
     for (const entry of (profile.bounds || [])) processBound(entry, data, add);
     for (const entry of (profile.dims || [])) processDims(entry, data, add);
     for (const entry of (profile.enums || [])) processEnum(entry, data, add);
+    for (const entry of (profile.grids || [])) processGrid(entry, data, add);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
     // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`

@@ -26,15 +26,9 @@
     for (const sc of Object.values(scenes)) for (const p of (sc.pickups || [])) allItems.add(p.item);
     for (const [name, sc] of Object.entries(scenes)) {
       const rows = sc.rows || [];
-      if (!rows.length) { add('error', 'scene-rows', 'escena ' + name + ' sin rows'); continue; }
+      if (!rows.length) continue; // scene-rows/scene-dims/scene-legend-ref: familia grids (declarativa)
       const { w, h } = dimsOf(sc);
-      for (let r = 0; r < rows.length; r++)
-        if (String(rows[r]).length !== w) add('error', 'scene-dims', 'escena ' + name + ' fila ' + r + ' no tiene ' + w + ' cols');
       const inB = (c, r) => typeof c === 'number' && typeof r === 'number' && c >= 0 && r >= 0 && c < w && r < h;
-      const cells = Object.assign({}, sc.legend || {}); if (sc.fill) cells['<fill>'] = sc.fill;
-      for (const [sym, cell] of Object.entries(cells))
-        if (!cell || cell.tile == null || !(cell.tile in tiles))
-          add('error', 'scene-legend-ref', 'escena ' + name + ' simbolo "' + sym + '" tile inexistente: ' + (cell && cell.tile));
       for (const n of (sc.npcs || [])) {
         if (!inB(n.col, n.row)) add('error', 'entity-bounds', name + ': NPC fuera de la escena ' + JSON.stringify([n.col, n.row]));
         if (n.tile != null && !(n.tile in tiles)) add('error', 'entity-tile', name + ': NPC tile inexistente ' + n.tile);
@@ -97,6 +91,10 @@
     id: 'dungeon', specVersion: '0.1',
     sections: ['Overview', 'Tiles', 'Scenes', 'Player', 'Text', "Do's and Don'ts"],
     required: ['version', 'name'], refs: [],
+    grids: [{
+      rule: 'scene-dims', emptyRule: 'scene-rows', collection: 'scenes',
+      legend: { rule: 'scene-legend-ref', tileTarget: { collection: 'tiles' } },
+    }],
     rules: [rulePalettes, ruleTileArt, ruleScenes, ruleText],
     derive: derive,
   };

@@ -37,6 +37,9 @@ const bad = [
   ['bound sin field',        (p) => { p.bounds = [{ rule: 'r', collection: 'a' }]; }],
   ['bound sin coleccion',    (p) => { p.bounds = [{ rule: 'r', field: 'hp' }]; }],
   ['dim sin shape valido',   (p) => { p.dims = [{ rule: 'r', collection: 'a', shape: [0, 2] }]; }],
+  ['grid sin coleccion',     (p) => { p.grids = [{ rule: 'r' }]; }],
+  ['grid.legend sin target', (p) => { p.grids = [{ rule: 'r', collection: 'a', legend: { rule: 'r2' } }]; }],
+  ['grid.shape sin singleton', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: {} }]; }],
   ['derive sin key',         (p) => { p.derive = [{ from: 'x' }]; }],
   ['derive fn no-funcion',   (p) => { p.derive = [{ key: 'K', fn: 'x' }]; }],
 ];

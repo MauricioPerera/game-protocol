@@ -119,23 +119,12 @@
     }
   }
 
-  // Mapas: dims vs platform, legend/fill referencian tiles, y `path-contiguous` (error):
-  // cada par de waypoints consecutivo debe ser ortogonalmente adyacente.
+  // Mapas: dims/legend viven en la familia declarativa `grids` (ver descriptor); aqui solo
+  // `path-contiguous`/`path-bounds`, lógica no uniforme (cada par de waypoints consecutivo
+  // debe ser ortogonalmente adyacente).
   function ruleMaps({ data, add }) {
-    const tiles = data.tiles || {}; const platform = data.platform || {};
+    const platform = data.platform || {};
     for (const [name, def] of Object.entries(data.maps || {})) {
-      const rows = def.rows || [];
-      if (platform.rows && rows.length !== platform.rows)
-        add('error', 'map-dims', 'mapa ' + name + ' tiene ' + rows.length + ' filas (esperado ' + platform.rows + ')');
-      for (let r = 0; r < rows.length; r++)
-        if (platform.cols && String(rows[r]).length !== platform.cols)
-          add('error', 'map-dims', 'mapa ' + name + ' fila ' + r + ' tiene ' + String(rows[r]).length + ' cols (esperado ' + platform.cols + ')');
-      const cells = Object.assign({}, def.legend || {});
-      if (def.fill) cells['<fill>'] = def.fill;
-      for (const [sym, cell] of Object.entries(cells)) {
-        if (!cell || cell.tile == null || !(cell.tile in tiles))
-          add('error', 'map-legend-ref', 'mapa ' + name + ' simbolo "' + sym + '" referencia tile inexistente: ' + (cell && cell.tile));
-      }
       const path = def.path || [];
       const inB = pt => pt && typeof pt.col === 'number' && typeof pt.row === 'number' &&
         pt.col >= 0 && (!platform.cols || pt.col < platform.cols) && pt.row >= 0 && (!platform.rows || pt.row < platform.rows);
@@ -220,6 +209,10 @@
     sections: ['Overview', 'Towers', 'DamageTypes', 'Enemies', 'Waves', 'Maps', 'Economy & Balance', "Do's and Don'ts"],
     required: ['version', 'name'],
     refs: refs,
+    grids: [{
+      rule: 'map-dims', collection: 'maps', shape: { singleton: 'platform' },
+      legend: { rule: 'map-legend-ref', tileTarget: { collection: 'tiles' } },
+    }],
     rules: [ruleTowerBounds, ruleEnemyBounds, ruleWaves, ruleEconomy, ruleDmgChart, ruleMaps, ruleSpriteDims, ruleTileArt],
     derive: derive,
   };

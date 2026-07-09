@@ -142,6 +142,19 @@
           !Array.isArray(d.shape) || d.shape.length !== 2 || d.shape.some(n => !Number.isInteger(n) || n <= 0))
         return fail('dims[' + i + '] necesita { rule, collection, shape: [alto, ancho] }');
     }
+    const grids = p.grids || [];
+    for (let i = 0; i < grids.length; i++) {
+      const g = grids[i];
+      if (!g || typeof g.rule !== 'string' || !(g.collection || g.singleton))
+        return fail('grids[' + i + '] necesita { rule, collection|singleton }');
+      if (g.shape != null && typeof g.shape.singleton !== 'string')
+        return fail('grids[' + i + '].shape necesita { singleton }');
+      if (g.legend != null) {
+        const lg = g.legend;
+        if (!lg || typeof lg.rule !== 'string' || !lg.tileTarget || typeof lg.tileTarget.collection !== 'string')
+          return fail('grids[' + i + '].legend necesita { rule, tileTarget.collection }');
+      }
+    }
     const derive = p.derive || [];
     for (let i = 0; i < derive.length; i++) {
       const e = derive[i];
