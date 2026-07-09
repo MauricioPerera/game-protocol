@@ -21,9 +21,6 @@
   function ruleScenes({ data, add }) {
     const tiles = data.tiles || {}; const text = data.text || {};
     const scenes = data.scenes || {};
-    // inventario de items que algun pickup otorga (para validar puertas con llave)
-    const allItems = new Set();
-    for (const sc of Object.values(scenes)) for (const p of (sc.pickups || [])) allItems.add(p.item);
     for (const [name, sc] of Object.entries(scenes)) {
       const rows = sc.rows || [];
       if (!rows.length) continue; // scene-rows/scene-dims/scene-legend-ref: familia grids (declarativa)
@@ -46,7 +43,7 @@
       for (const wp of (sc.warps || [])) {
         if (!inB(wp.col, wp.row)) add('error', 'entity-bounds', name + ': warp fuera de la escena');
         if (!wp.to || !(wp.to in scenes)) add('error', 'warp-ref', name + ': warp a escena inexistente: ' + wp.to);
-        if (wp.locked && !allItems.has(wp.locked)) add('error', 'warp-lock', name + ': warp.locked exige item que ningun pickup da: ' + wp.locked);
+        // warp-lock: familia broken-ref (agregado cross-escena, ver descriptor `refs`)
       }
       if (sc.goal && !inB(sc.goal.col, sc.goal.row)) add('error', 'entity-bounds', name + ': goal fuera de la escena');
     }
@@ -90,7 +87,13 @@
   return {
     id: 'dungeon', specVersion: '0.1',
     sections: ['Overview', 'Tiles', 'Scenes', 'Player', 'Text', "Do's and Don'ts"],
-    required: ['version', 'name'], refs: [],
+    required: ['version', 'name'],
+    refs: [{
+      rule: 'warp-lock', level: 'error', optional: true,
+      src: { collection: 'scenes', arrayField: 'warps', itemField: 'locked' },
+      target: { collection: 'scenes', arrayField: 'pickups', itemField: 'item' },
+      msg: (v, k) => k + ': warp.locked exige item que ningun pickup da: ' + v,
+    }],
     grids: [{
       rule: 'scene-dims', emptyRule: 'scene-rows', collection: 'scenes',
       legend: { rule: 'scene-legend-ref', tileTarget: { collection: 'tiles' } },

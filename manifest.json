@@ -210,7 +210,15 @@
         "version",
         "name"
       ],
-      "references": [],
+      "references": [
+        {
+          "rule": "warp-lock",
+          "level": "error",
+          "from": "scenes.*.warps[].locked",
+          "to": "scenes",
+          "optional": true
+        }
+      ],
       "rules": [
         "rulePalettes",
         "ruleTileArt",

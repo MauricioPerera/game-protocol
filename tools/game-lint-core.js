@@ -26,15 +26,31 @@
 
   // ---- FAMILIA broken-ref: maquinaria genérica de resolución de referencias ----
   // Una entrada `ref` declara de dónde salen los valores (src) y contra qué se validan (target).
-  // P3: el Set de claves válidas del target se cachea por `collection` dentro de una misma
-  // llamada a lintGame. Antes se reconstruía en cada processRef (O(refs * keys)); ahora si
-  // varias refs apuntan a la misma colección, el Set se construye una sola vez (O(keys) total).
+  // P3: el Set de claves válidas del target se cachea por firma (collection[::arrayField::itemField])
+  // dentro de una misma llamada a lintGame. Antes se reconstruía en cada processRef (O(refs * keys));
+  // ahora si varias refs apuntan a la misma firma, el Set se construye una sola vez (O(keys) total).
+  //
+  // target.arrayField (+ itemField opcional) = AGREGADO cross-colección (SPEC §11): en vez de
+  // Object.keys(data[collection]) (claves de la colección), el set válido se junta escaneando
+  // TODAS las entradas de `collection` y recolectando `obj[arrayField][].itemField` (o el item
+  // crudo si no hay itemField). Cubre el caso "cualquier X entre N filas otorga el valor Y"
+  // (p.ej. dungeon: `warp.locked` exige un item que ALGUN pickup, en CUALQUIER escena, otorgue —
+  // antes era codigo JS a mano, ver profiles/dungeon.js).
   function targetSet(target, data, cache) {
     const col = target.collection;
-    if (cache && cache.has(col)) return cache.get(col);
-    const keys = Object.keys(data[col] || {});
+    const sig = target.arrayField ? (col + '::' + target.arrayField + '::' + (target.itemField || '')) : col;
+    if (cache && cache.has(sig)) return cache.get(sig);
+    let keys;
+    if (target.arrayField) {
+      keys = [];
+      for (const obj of Object.values(data[col] || {}))
+        for (const v of ((obj && obj[target.arrayField]) || []))
+          keys.push(target.itemField ? (v && v[target.itemField]) : v);
+    } else {
+      keys = Object.keys(data[col] || {});
+    }
     const set = new Set(keys.concat(target.allow || []));
-    if (cache) cache.set(col, set);
+    if (cache) cache.set(sig, set);
     return set;
   }
   // Recolecta [{ value, owner }] según la forma de la fuente.
