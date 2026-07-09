@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+### Added — familias declarativas `grids` + agregado cross-colección en `refs` (SPEC §11, segunda y tercera etapa)
+- **Familia `grids` declarativa** en el core: `{ rule, emptyRule?, collection|singleton,
+  shape?: { singleton, rowsField?, colsField? }, legend?: { rule, tileTarget, palField?,
+  palMax? } }` — valida filas de mapa/escena de ancho uniforme (autoconsistente contra la
+  primera fila, o contra una forma fija externa como `platform.rows`/`.cols` vía `shape`) y
+  resuelve cada símbolo de `legend`/`fill` contra tiles+paleta, sin ejecutar código de perfil.
+- **4 perfiles migrados** (mismos rule-ids, cero cambio de comportamiento observable):
+  `adventure`/`dungeon` (`scene-rows`/`scene-dims`/`scene-legend-ref`, autoconsistente) y
+  `monster-rpg`/`tower-defense` (`map-dims`/`map-legend-ref`, forma fija vía `platform`) —
+  la misma lógica estaba duplicada en JS en los 4.
+- **`refs[].target` acepta agregado cross-colección**: `arrayField` (+ `itemField`) además
+  de `collection` — el set válido se junta escaneando un array anidado en TODAS las
+  entradas de la colección, no solo `Object.keys`. Cubre "algún X entre N filas otorga el
+  valor Y" como dato en vez de código a mano.
+- **`dungeon.warp-lock` migrado**: `warp.locked` exige un item que ALGÚN `pickup`, en
+  CUALQUIER escena, otorgue — antes un `Set` armado a mano en `ruleScenes`, ahora una
+  entrada declarativa de `refs`.
+- SPEC §6.1/§11 actualizado (grids + agregado cross-colección documentados; queda como
+  "tercera etapa" de reglas puras-de-datos — lo que sigue en `rules` es lógica genuinamente
+  no reducible a forma declarativa sin volverse un DSL). `test/profile-descriptor.js` cubre
+  las formas nuevas del descriptor (31 chequeos, de 28). Suite sin regresiones: mismas 136
+  reglas, 190 casos de conformidad, mutation audit 20/20.
+
 ### Added — roguelike a lo grande: mecánicas por datos, un solo generador, mundo continuo
 - **Mecánicas nuevas 100% data-driven** en el perfil `roguelike` y su ejemplo:
   **llaves y puertas cerradas** (`generator.lockChance`/`keyChance` + tiles `key`/
