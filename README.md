@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.17.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.18.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -96,7 +96,16 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.17.0`** — aditivo, dos frentes. **Core**: familia declarativa `grids`
+**Release `v2.18.0`** — aditivo. **Página del protocolo** en GitHub Pages
+(https://mauricioperera.github.io/game-protocol/) con selector **ES/EN/PT**: explica el
+problema, la idea (un archivo, dos lectores), el pipeline real y los 14 perfiles a
+público semi-técnico; el listado de demos existente se preserva en `demos.html`. Más
+una **auditoría de datos** que corrige 4 inconsistencias documentales (conteo de
+perfiles en `demos.html`/`CONTRIBUTING.md`, perfiles faltantes en `llms.txt`, 23 hints
+faltantes en `tools/rule-hints.js`) y agrega un test que gatea la cobertura de hints a
+futuro. 191 casos de conformidad, mutation audit 20/20.
+
+`v2.17.0` — aditivo, dos frentes. **Core**: familia declarativa `grids`
 (filas de mapa/escena + legend/fill resueltos como dato, autoconsistente o contra una
 forma externa como `platform.rows`/`.cols`) y agregado cross-colección en `refs`
 (`arrayField`+`itemField`, para el caso "algún X entre N filas otorga el valor Y") —

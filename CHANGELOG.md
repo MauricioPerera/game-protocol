@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.18.0] — 2026-07-09
+
+Release **aditivo** sobre `2.17.0` (bump minor, [SPEC §7.0](./SPEC.md)): la página del
+protocolo en GitHub Pages con soporte ES/EN/PT, y una auditoría de datos que corrige 4
+inconsistencias documentales (conteo de perfiles en `demos.html`/`CONTRIBUTING.md`,
+perfiles faltantes en `llms.txt`, hints faltantes en `tools/rule-hints.js`) y agrega un
+test que gatea la cobertura de hints a futuro. La versión del protocolo sigue en `0.1`.
+
 ### Added — página del protocolo (GitHub Pages) + soporte ES/EN/PT
 - **`index.html` pasa de "listado de demos" a landing explicativa**: el problema (datos
   mezclados con lógica), la idea (un archivo, dos lectores — front-matter + doc), el
@@ -16,6 +26,21 @@
   `demos.html`. 71 claves traducidas en `index.html`, 24 en `demos.html`; el código real
   de `GAME.md` (tokens del protocolo) no se toca, solo la prosa explicativa.
 - README actualizado con los links a la página y a los demos.
+
+### Fixed — auditoría de datos del protocolo
+- **`demos.html`** decía "9 perfiles de referencia desde la spec" en los 3 idiomas
+  mientras `index.html` (mismo sitio) dice correctamente "14 perfiles" — corregido.
+- **`llms.txt`** listaba 12 de los 14 perfiles reales — se agregan `sudoku` y
+  `peg-solitaire` (ambos puro-datos, como `quiz`/`shooter`).
+- **`tools/rule-hints.js`** le faltaban 23 hints de reglas reales (verificado contra
+  `test/conformance.js`): papers-please, crafting, platformer, voxel y la familia
+  `grids` (`scene-rows` entre otras) quedan cubiertas. Nuevo test en
+  `conformance.js` gatea que todo rule-id real tenga hint, para que el gap no
+  vuelva a aparecer en silencio. De paso, 5 hints ya existentes que estaban mal
+  etiquetados bajo el comentario "roguelike" quedan reordenados a su sección real.
+- **`CONTRIBUTING.md`** decía que `test/buildGame-content.js` cubre "9 perfiles" —
+  corregido a los 14 reales.
+- **`CHANGELOG.md`** (este archivo) estaba desactualizado respecto a `HEAD`.
 
 ## [2.17.0] — 2026-07-08
 
@@ -898,6 +923,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.18.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.18.0
 [2.17.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.17.0
 [2.16.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.16.0
 [2.15.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.15.0
