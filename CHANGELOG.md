@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.17.0] — 2026-07-08
+
+Release **aditivo** sobre `2.16.0` (bump minor, [SPEC §7.0](./SPEC.md)): dos frentes
+independientes. En el **core**, la familia declarativa `grids` y el agregado
+cross-colección en `refs` cierran la tercera etapa de reglas puras-de-datos (SPEC §11),
+migrando los 4 perfiles que duplicaban esta lógica en JS. En **`roguelike`**, mecánicas
+100% data-driven (llaves/puertas, jefe, progresión, permadeath), un solo generador
+compartido entre los dos motores, mazmorra en mundo continuo 3D con minimapa, y guardado
+persistente. La versión del protocolo sigue en `0.1`.
+
 ### Added — familias declarativas `grids` + agregado cross-colección en `refs` (SPEC §11, segunda y tercera etapa)
 - **Familia `grids` declarativa** en el core: `{ rule, emptyRule?, collection|singleton,
   shape?: { singleton, rowsField?, colsField? }, legend?: { rule, tileTarget, palField?,
@@ -873,6 +885,7 @@ independiente y reacha `1.0.0`.
 - Sin política de deprecation → resuelto en S2.
 - `tower-defense` listado como planned en SPEC §9 → implementado en S1.
 
+[2.17.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.17.0
 [2.16.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.16.0
 [2.15.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.15.0
 [2.14.0]: https://github.com/MauricioPerera/game-protocol/releases/tag/v2.14.0

@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.16.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.17.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -94,7 +94,19 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.16.0`** — aditivo: **runtime `advance-wars` en game3d** (visor), y con
+**Release `v2.17.0`** — aditivo, dos frentes. **Core**: familia declarativa `grids`
+(filas de mapa/escena + legend/fill resueltos como dato, autoconsistente o contra una
+forma externa como `platform.rows`/`.cols`) y agregado cross-colección en `refs`
+(`arrayField`+`itemField`, para el caso "algún X entre N filas otorga el valor Y") —
+cierran la tercera etapa de reglas puras-de-datos (SPEC §11); 4 perfiles
+(`adventure`/`dungeon`/`monster-rpg`/`tower-defense`) migran su lógica JS duplicada a
+estas familias, mismos rule-ids, cero cambio observable. **`roguelike`**: llaves y
+puertas cerradas, jefe custodiando el cofre, progresión por XP y permadeath — 100%
+data-driven; un solo generador compartido entre el visor 2D y game3d; mazmorra en
+mundo continuo 3D con minimapa del grafo explorado; guardado persistente en
+localStorage. 190 casos de conformidad, mutation audit 20/20, 171 tests de lógica.
+
+`v2.16.0` — aditivo: **runtime `advance-wars` en game3d** (visor), y con
 él **los 14 perfiles del repo tienen runtime**. El perfil `advance-wars` modela
 **solo arte** (PALETTES + UNITS 4bpp), así que su runtime es un desfile 3D sobre la
 rejilla de `platform` con inspección y recolocación — **sin combate inventado**:
