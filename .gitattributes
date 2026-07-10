@@ -6,3 +6,4 @@
 
 # Binarios: nunca normalizar.
 *.png binary
+skills-index.snapshot -text

@@ -1,61 +1,20 @@
-# GAME Protocol
+# game-protocol
 
-> Formato generico para declarar **contenido de juego como datos** (un archivo `GAME.md`: front-matter YAML + cuerpo Markdown). El core es agnostico al genero; cada genero es un **perfil**. Pensado para **co-crear con agentes de IA**: el agente edita datos, el linter valida con un contrato maquina-verificable, el motor (codigo) consume el resultado.
+> Deterministic game-data protocol: two-layer documents (machine-verifiable +
+> human-judgeable) for game data, sibling of CCDD/taskmd/ccdd-gate in the KDD
+> family. This page publishes the protocol's own spec as searchable skills.
 
-## Que es
+## Docs
 
-Un `GAME.md` es un **contrato hibrido** (linaje `design.md` de Google): a la vez datos legibles por maquina (front-matter) y documentacion canonica (Markdown). Separa **QUE** (tokens: tiles, criaturas, salas, reglas) de **COMO** (motor: render, input, formulas). El agente trabaja sobre el QUE; el motor es codigo que se escribe una vez por backend.
+- [Spec](/SPEC.md)
+- [Repository](https://github.com/MauricioPerera/game-protocol)
 
-## Bucle de trabajo para un agente
+<!-- skills-memory: {"snapshot":"/skills-index.snapshot","snapshot_sha256":"7c7a7e0816ef9e837d3b1e8cdeb3c7304b14fa1105923d254c27591f464a7dc5","format":"minimemory-okf-v1"} -->
 
-1. Lee las capacidades: `node tools/game-manifest.js` (o [manifest.json](manifest.json)) — lista perfiles, tokens, grafo de referencias, claves de salida.
-2. Edita o crea un `GAME.md` con `profile: <id>` en el front-matter.
-3. Valida en modo agente: `node tools/game-lint.js TU.md --agent` — devuelve hallazgos con `hint` (como arreglar) y el siguiente paso. Objetivo: `errors=0`.
-4. Compila: `node tools/game-export.js TU.md salida.js` — produce `window.GAME` (funcion pura, deterministica).
-5. El motor consume `window.GAME` con fallback embebido (nunca rompe si falta un dato).
+## Skills
 
-## CLI
+Skills published by game-protocol - search and browse the protocol's own spec and migration docs.
 
-- Validar (agente): `node tools/game-lint.js [GAME.md] --agent`
-- Compilar: `node tools/game-export.js [GAME.md] [salida.js]`
-- Capacidades: `node tools/game-manifest.js` → [manifest.json](manifest.json)
-- Conformidad: `node test/conformance.js`
-
-## Perfiles (generos)
-
-Cada uno declara `sections`, `required`, `refs` (grafo de referencias), `rules` y `derive` (salida). Detalle completo en [manifest.json](manifest.json).
-
-- `monster-rpg` — RPG de coleccion de criaturas (perfil original). [doc](profiles/monster-rpg.md)
-- `platformer` — plataformas (tilesets, enemigos, niveles, fisica).
-- `crafting` — crafteo (materiales, items, estaciones, recetas).
-- `papers-please` — inspeccion de documentos (sin tiles; reglas como datos).
-- `voxel` — estructuras voxel por composicion de prefabs (3D).
-- `adventure` — aventura top-down jugable (escena, entidades, meta).
-- `dungeon` — mazmorra multi-sala con combate y minimapa.
-- `roguelike` — mazmorra **procedural 3D** generada en tiempo real (el spec declara el generador, no las salas).
-- `tower-defense` — tower defense (torres, tipos de daño, enemigos, oleadas, mapas, economia). [doc](profiles/tower-defense.md)
-- `advance-wars` — sprites GBA extraidos (paletas BGR555 0..31 + unidades 4bpp con tileData de nibbles 0..15). Nace del pipeline de extraccion (tools/SPRITE_EXTRACTION.md).
-- `quiz` — **perfil puro-de-datos de referencia** (profiles/quiz.json, sin funciones): categorias, preguntas, rondas. Se carga con JSON.parse, nunca se ejecuta codigo; valida solo con las familias declarativas (refs/bounds/enums).
-- `shooter` — arena shmup vertical, tambien **puro-de-datos** (profiles/shooter.json): naves, armas, enemigos con behavior (enum), oleadas, powerups, arena continua. Su simulacion de referencia es pura y esta testeada en Node (game3d-logic).
-- `sudoku` — tablero, dificultad, validacion de la solucion, tambien **puro-de-datos** (profiles/sudoku.json).
-- `peg-solitaire` — tablero, movimientos validos, condicion de victoria, tambien **puro-de-datos** (profiles/peg-solitaire.json).
-- La lista canonica de perfiles vive en [manifest.json](manifest.json); esta es orientativa.
-
-## Crear un genero nuevo
-
-Un genero = un **perfil** que exporta `{ id, sections, required, refs, bounds, dims, enums, rules, derive }` (contrato en SPEC §6.1). El core no se toca. Dos vias:
-
-- **Puro-datos (`profiles/<id>.json`)** — la via preferida para un agente: solo tablas declarativas (`refs` sin msg — el core pone el mensaje por defecto —, `bounds` con gt/min/max/integer/required, `dims` con shape [h,w], `enums` con values) y `derive` from/value. Se carga con JSON.parse, NUNCA se ejecuta codigo: seguro de compartir e instalar. Referencia: `profiles/quiz.json` (manifest lo marca `dataOnly: true`).
-- **Con codigo (`profiles/<id>.js`)** — solo si el genero necesita logica no uniforme (funciones `rules`, `derive.fn`). Es codigo ejecutable: se revisa como una dependencia (SPEC §10).
-
-## Reglas de oro
-
-- El spec declara datos; la logica del juego es del motor. No metas formulas/IA en el `GAME.md`.
-- Toda referencia entre tokens se valida (familia broken-ref). Si refieres algo, debe existir.
-- La salida es funcion pura de la fuente: CI rechaza drift. Misma fuente → mismo `window.GAME`.
-
-## Referencias
-
-- Spec del core: [SPEC.md](SPEC.md)
-- Reparto de reglas core/perfil: [RULE-SPLIT.md](RULE-SPLIT.md)
-- Ejemplos validos por perfil: [examples/](examples/)
+- [search_knowledge](/skills/search_knowledge/SKILL.md): BM25 search over this origin's published knowledge bundle. Use it to find which concept answers a question before fetching it. <!-- skill: {"version":"0.1.0","license":"MIT","sha256":"a093440b30bb81abafc12014a130635b6acc22c608e2dae3914511e058fbde5e","tool":"/skills/search_knowledge/tool.js","tool_sha256":"b13a3c0448c4ee8c744b1ee33b1dd441ecc0c7c3552e23f04b5f9aaf79049ab7"} -->
+- [get_concept](/skills/get_concept/SKILL.md): fetch the full markdown of a knowledge concept by id from this origin's bundle. <!-- skill: {"version":"0.1.0","license":"MIT","sha256":"c63b95427c4888b215b476442044d0e8ceeb9e4bd7e15eac7d762c9754988655","tool":"/skills/get_concept/tool.js","tool_sha256":"6738e7789285fd3bddb3c158d57db9884ec6c1c7d2291e504583f5a2c00ebd24"} -->
+- [list_concepts](/skills/list_concepts/SKILL.md): list every knowledge concept this origin publishes (id, type, title, description). <!-- skill: {"version":"0.1.0","license":"MIT","sha256":"3576ada3394b026b552620b009c8b3d6690995778d0cb63c4ca32fe78e793c19","tool":"/skills/list_concepts/tool.js","tool_sha256":"cae5d762eb3382ef903473c9d8da5d5c1541d8cf3fba24643b283d70b5f90e66"} -->
