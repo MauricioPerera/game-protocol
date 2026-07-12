@@ -48,6 +48,9 @@
     },
     "win": {
       "type": "object"
+    },
+    "scenes": {
+      "type": "object"
     }
   },
   "additionalProperties": true,
@@ -59,7 +62,13 @@
     "Text",
     "Do's and Don'ts"
   ],
-  "x-references": [],
+  "x-references": [
+    {
+      "rule": "warp-lock",
+      "from": "scenes.*.warps[].locked",
+      "to": "scenes"
+    }
+  ],
   "x-outputKeys": [
     "PALETTES",
     "TILES",

@@ -358,5 +358,29 @@
     return findings;
   }
 
-  return { lintGame: lintGame };
+  // ---- Sellado de datos (data-seal) — canonicalización PURA (sin node:crypto) ----
+  // Serializa los tokens del front-matter a un JSON CANÓNICO y determinista: claves de
+  // objeto ordenadas recursivamente, arrays en su orden, escalares vía JSON.stringify.
+  // Es string-pura e isomorfa (Node + navegador): NO calcula el hash (eso usa node:crypto y
+  // vive en el wrapper CLI para no romper la isomorfía del core). La clave `dataSha256` (el
+  // sello mismo) se EXCLUYE del nivel superior: así sellar un doc ya sellado da el mismo hash.
+  function canonicalJson(value) {
+    if (value === null || value === undefined) return 'null';
+    if (Array.isArray(value)) return '[' + value.map(canonicalJson).join(',') + ']';
+    if (typeof value === 'object') {
+      const keys = Object.keys(value).sort();
+      return '{' + keys.map(function (k) {
+        return JSON.stringify(k) + ':' + canonicalJson(value[k]);
+      }).join(',') + '}';
+    }
+    return JSON.stringify(value);
+  }
+  function canonicalDataJson(tokens) {
+    const src = (tokens && typeof tokens === 'object' && !Array.isArray(tokens)) ? tokens : {};
+    const clone = {};
+    for (const k of Object.keys(src)) if (k !== 'dataSha256') clone[k] = src[k];
+    return canonicalJson(clone);
+  }
+
+  return { lintGame: lintGame, canonicalJson: canonicalJson, canonicalDataJson: canonicalDataJson };
 });

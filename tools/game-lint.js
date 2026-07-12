@@ -7,8 +7,9 @@
  */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { splitFrontMatter, parseYamlSubset } = require('./yaml-min');
-const { lintGame } = require('./game-lint-core');
+const { lintGame, canonicalDataJson } = require('./game-lint-core');
 const { validateProfile } = require('./profile-helpers');
 
 const PROFILES_DIR = path.resolve(__dirname, '../profiles');
@@ -88,6 +89,21 @@ if (process.env.GAME_ENGINE) {
 const findings = preFindings.concat(
   lintGame(data, body || '', { profile, profileId: coreProfileId, engineSource, requireEngine: false, frontMatterPresent: !!fm })
 );
+
+// Regla data-seal (sello OPCIONAL de los datos, análogo de tests_sha256 en KDD): si el
+// front-matter trae `dataSha256` y NO coincide con el hash canónico de los tokens (excluida
+// la clave del sello), es error. Sin `dataSha256` no hay finding (el sello es opcional). El
+// HASH usa node:crypto, por eso la verificación vive en el wrapper CLI y no en el core
+// isomorfo (mismo patrón que los cruces GAME_ENGINE); la canonicalización sí es del core.
+if (data && typeof data === 'object' && 'dataSha256' in data) {
+  const expected = crypto.createHash('sha256').update(canonicalDataJson(data), 'utf8').digest('hex');
+  const actual = String(data.dataSha256);
+  if (actual !== expected) {
+    findings.push({ level: 'error', rule: 'data-seal',
+      msg: 'sello de datos no coincide: esperado ' + expected + ' vs actual ' + actual +
+           ' (re-sella con: node tools/game-seal.js ' + file + ')' });
+  }
+}
 
 const errors = findings.filter(f => f.level === 'error').length;
 const warns = findings.filter(f => f.level === 'warn').length;

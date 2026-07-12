@@ -126,7 +126,7 @@ Every CLI in `tools/` shares one exit-code contract (also shown by each `--help`
 | `1` | Validation | `game-lint.js` only: the source parsed and loaded, but the linter found `error`-level findings. |
 | `2` | Input / profile / syntax | File unreadable, front-matter missing or unparseable, `profile` unknown or unloadable, unknown CLI flag, or (for `render-png.js`) a generated file whose profile the renderer does not support. |
 
-`game-export.js`, `game-manifest.js`, `game-schema.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
+`game-export.js`, `game-manifest.js`, `game-schema.js`, `game-seal.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
 
 **Usage notes.**
 
@@ -135,6 +135,7 @@ Every CLI in `tools/` shares one exit-code contract (also shown by each `--help`
 - `game-export.js` writes the generated artifact only on success (`0`). A non-existent source, unparseable front-matter, or an unknown/invalid profile all exit `2` with a one-line stderr message; no artifact is written.
 - `build-standalone.js` inlines every local `<script src="...">` (relative path resolved against the HTML file's directory) and leaves `http(s)://` CDN scripts untouched. A missing input file or a missing local script exits `2`; the latter still reports `externos sin inlinar` so the build is auditable.
 - `render-png.js` only supports the `adventure` profile (it reads `G.SCENE.tilemap`/`attrs`). A generated file of another profile, a missing `genFile`, or a `genFile` outside `examples/` exits `2` with an actionable message (not a raw `TypeError`).
+- `game-seal.js <GAME.md>` seals the **data**: it prints (single stdout line, exit `0`) the lowercase-hex sha256 of the **canonical** JSON of the front-matter tokens — object keys sorted recursively, arrays in their order, UTF-8 — **excluding** the `dataSha256` key (the seal itself), so re-sealing an already-sealed file yields the same hash. The Markdown body does **not** enter the hash (the seal covers data, not prose). A missing file or missing/unparseable front-matter exits `2` with a one-line stderr message; it never emits `1`. Copy the hash into the front-matter as `dataSha256: '<hash>'` and `game-lint.js` will enforce it via the `data-seal` rule (§4).
 - All exit codes are verified by `test/cli-errors.js` (run in CI).
 
 ## 4. Core validation rules (genre-agnostic)
@@ -154,11 +155,12 @@ These rules apply to **every** `GAME.md` regardless of profile. Profiles add the
 | `range` | error | Numeric tokens fall within declared bounds |
 | `dead-token` | warn | Tokens not referenced by engine code (optional, via `GAME_ENGINE`) |
 | `text-valid` | error | Declared text entries are non-empty strings |
+| `data-seal` | error | **Optional** data seal: if the front-matter carries `dataSha256`, it must equal the canonical sha256 of the tokens (excluding the seal); a mismatch means a token was edited after sealing. No `dataSha256` → no finding. Emitted by the `game-lint.js` wrapper (the hash needs `node:crypto`), not the isomorphic core. Seal with `game-seal.js` (§3.1). |
 | `no-drift` | error (CI) | Generated artifact matches current `GAME.md` |
 
 > `broken-ref`, `dims`, `range` (and `enum`) are **rule families**: the profile supplies *which* tokens they apply to and *what* the bounds/dimensions/values are. The core supplies the checking machinery. All four are **declarative tables** in the profile descriptor (§6.1): `refs` (broken-ref; `msg` optional — the core generates a default message), `bounds` (range: `gt`/`min`/`max`/`integer`/`required` over collection or singleton fields), `dims` (fixed-shape matrices) and `enums` (closed value sets). Non-uniform logic stays in `rules` functions — a profile that needs none of them can ship as pure data (§6.1, §11).
 
-> `profile-known` and `version-migration` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access and does not belong in the isomorphic core.
+> `profile-known` and `version-migration` are emitted by `lintGame` itself (not only by the CLI wrapper), so a direct consumer of the core (browser, other tool) that calls `lintGame(data, body, {profile, profileId})` receives them. The CLI wrapper still owns `profile-load-error` (a syntax error in a profile module), which requires filesystem access, and `data-seal` (the `dataSha256` check), whose sha256 needs `node:crypto` — neither belongs in the isomorphic core. The core does export the pure, browser-safe **canonicalization** the seal hashes (`canonicalDataJson`), so both `game-seal.js` and the wrapper canonicalize identically.
 
 ## 5. Cross-validation with the engine (optional)
 

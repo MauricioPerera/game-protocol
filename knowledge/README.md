@@ -30,7 +30,7 @@ Separar **datos** de **lógica** con un contrato explícito:
 GAME.md            →   game-export.js   →   game-data.generated.js   →   motor
 (tokens + doc)         (compila)            (window.GAME)                (consume con fallback)
    ↑
-game-lint.js (valida 136 reglas + cruces opcionales con el motor)
+game-lint.js (valida 137 reglas + cruces opcionales con el motor)
 ```
 
 - **`GAME.md`** es la *fuente única de verdad*: front-matter YAML (tokens) + cuerpo Markdown (doc).
@@ -78,7 +78,7 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 | Ruta | Rol |
 |---|---|
-| [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 136 reglas — core §4 + perfiles §6; hints de arreglo en [`tools/rule-hints.js`](./tools/rule-hints.js) —, frontera datos/código). |
+| [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 137 reglas — core §4 + perfiles §6; hints de arreglo en [`tools/rule-hints.js`](./tools/rule-hints.js) —, frontera datos/código). |
 | [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (isomorfo Node/navegador). |
 | [`tools/game-lint-core.js`](./tools/game-lint-core.js) | Reglas de validación puras (`lintGame`), isomorfas. |
 | [`tools/game-lint.js`](./tools/game-lint.js) | CLI del validador (cruces con el motor opcionales vía `GAME_ENGINE`). |
@@ -96,7 +96,15 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.18.0`** — aditivo. **Página del protocolo** en GitHub Pages
+**Release `v2.19.0`** — aditivo. **Sellado opcional de datos** (`dataSha256`), el análogo
+de `tests_sha256` de KDD para el `GAME.md`: `node tools/game-seal.js <GAME.md>` calcula el
+sha256 del JSON **canónico** de los tokens del front-matter (claves ordenadas, arrays en su
+orden, el cuerpo Markdown no cuenta) y lo copiás como `dataSha256`; la nueva regla `data-seal`
+del linter detecta cualquier edición silenciosa de los datos tras sellar (error, exit 1) y no
+molesta si no hay sello (opcional). Suma la skill `game_planner` y regenera `manifest.json` /
+`schemas/` (fix de drift del CI). 191 casos de conformidad, mutation audit 20/20.
+
+`v2.18.0` — aditivo. **Página del protocolo** en GitHub Pages
 (https://mauricioperera.github.io/game-protocol/) con selector **ES/EN/PT**: explica el
 problema, la idea (un archivo, dos lectores), el pipeline real y los 14 perfiles a
 público semi-técnico; el listado de demos existente se preserva en `demos.html`. Más

@@ -4,6 +4,44 @@
 
 _No hay cambios pendientes._
 
+## [2.19.0] — 2026-07-11
+
+Release **aditivo** sobre `2.18.0` (bump minor, [SPEC §7.0](./SPEC.md)): **sellado opcional
+de los datos** de un `GAME.md` (`dataSha256`) — el análogo de `tests_sha256` de KDD para los
+datos del juego —, la skill `game_planner`, y la regeneración de `manifest.json`/`schemas/`
+que corrige un drift preexistente del CI. La versión del protocolo sigue en `0.1`.
+
+### Added — sellado de datos (`dataSha256`) + CLI `game-seal`
+- **`tools/game-seal.js <GAME.md>`** (CLI nuevo, Node puro): imprime en stdout el sha256 hex
+  del **JSON canónico** de los tokens del front-matter (claves de objeto ordenadas
+  recursivamente, arrays en su orden, UTF-8) **excluyendo** la clave `dataSha256` — el sello
+  mismo, así sellar un doc ya sellado da el mismo hash. El **cuerpo Markdown NO entra** al
+  hash: el sello cubre DATOS, no prosa. Exit `0` con el hash; archivo inexistente o sin
+  front-matter → stderr + exit `2` ([SPEC §3.1](./SPEC.md)). Nunca emite `1`.
+- **Regla `data-seal` en `game-lint.js`**: si el front-matter trae `dataSha256` y **no**
+  coincide con el hash canónico, emite `{level: error, rule: data-seal}` con esperado vs
+  actual y sale `1`; si coincide o si no hay `dataSha256`, ningún finding (el **sello es
+  opcional**). Detecta drift silencioso: editar un token tras sellar rompe el sello.
+- **Frontera browser preservada**: la **canonicalización** (string pura, isomorfa) se exporta
+  desde `game-lint-core.js` (`canonicalDataJson`), pero el **hash** usa `node:crypto`, así
+  que la verificación vive en el wrapper CLI (mismo patrón que los cruces `GAME_ENGINE`), no
+  en el core isomorfo. `game-seal.js` y el wrapper canonicalizan idénticamente.
+- **Hint de `data-seal`** en `tools/rule-hints.js` (modo `--agent`) y documentación en
+  [SPEC §3.1](./SPEC.md) (CLI) y §4 (regla). Conteo de reglas: 136 → **137**.
+- **Tests congelados** `test/data-seal.js` (13 casos: canonicidad, independencia del orden de
+  claves y del cuerpo, exclusión del sello, opcionalidad, detección de drift, errores de CLI)
+  sumados a la cadena `npm test`.
+
+### Added — skill `game_planner`
+- Skill de prompt interactiva **Arquitecto de Prompts de Videojuegos** (`skills/game_planner/`),
+  sin tool ejecutable — guía la redacción de un `GAME.md` a partir de una idea.
+
+### Fixed — drift de artefactos del CI (job `agent-artifacts`)
+- **`schemas/dungeon.schema.json`** estaba desactualizado respecto de su descriptor (la ref
+  `warp-lock` sobre `scenes` no se había regenerado): el job `agent-artifacts` fallaba en
+  `main` con «schemas/ desactualizado». Regenerado con `node tools/game-schema.js`;
+  `manifest.json` regenera idéntico (sin drift). CI vuelve a verde.
+
 ## [2.18.0] — 2026-07-09
 
 Release **aditivo** sobre `2.17.0` (bump minor, [SPEC §7.0](./SPEC.md)): la página del

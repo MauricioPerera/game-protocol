@@ -13,6 +13,7 @@ module.exports = {
   'version-migration': 'El `version` del GAME.md no coincide con la specVersion soportada por el tooling. Si es anterior, actualiza el archivo segun MIGRATION.md (la version vieja se remueve en la major siguiente). Si es posterior, actualiza el tooling.',
   'section-order': 'Reordena los encabezados `##` segun `sections` del perfil (ver manifest.json) o renombra el no-canonico.',
   'text-valid': 'El valor de cada clave de `text` debe ser una cadena no vacia.',
+  'data-seal': 'El sello `dataSha256` del front-matter no coincide con los datos: alguien editó un token tras sellar. Re-sella con `node tools/game-seal.js <GAME.md>` y copia el hash en `dataSha256`, o quita `dataSha256` (el sello es opcional).',
   // --- familia broken-ref (referencias) ---
   'broken-ref': 'El valor referenciado no existe en la coleccion destino. Crea esa entrada o corrige el nombre (ver `references` del perfil en manifest.json).',
   'move-type-valid': 'El `type` del ataque debe existir en `types` (o ser NORMAL).',
