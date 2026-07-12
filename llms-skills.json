@@ -21,6 +21,11 @@
       "summary": "list every knowledge concept this origin publishes (id, type, title, description).",
       "tool": "skills/list_concepts/tool.js",
       "tool_url": "/skills/list_concepts/tool.js"
+    },
+    {
+      "path": "skills/game_planner/SKILL.md",
+      "url": "/skills/game_planner/SKILL.md",
+      "summary": "Arquitecto de Prompts de Videojuegos: consultor interactivo que co-crea el prompt de desarrollo definitivo para un pipeline autonomo multi-agente (prompt skill, sin tool ejecutable)."
     }
   ],
   "memory": {
