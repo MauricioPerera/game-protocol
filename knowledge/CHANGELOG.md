@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.20.0] — 2026-07-26
+
+Release **aditivo** sobre `2.19.0` (bump minor, [SPEC §7.0](./SPEC.md)): el **arranque
+limpio** — `game-new.js` crea un `GAME.md` nuevo sin copiar un ejemplo, cerrando el hueco por
+el que un proyecto nacía heredando el contenido de `examples/` —, más cinco correcciones de
+cosas que fallaban **en silencio**: el parser perdía datos ante flujo mal formado y aceptaba
+literales que su gramática no define, el índice BM25 de skills estaba roto y sin generador,
+`knowledge/` podía driftear sin gate, y el CI corría menos suites que `npm test`. Cada
+arreglo entra con su gate: **11 → 17 suites** en CI. La versión del protocolo sigue en `0.1`.
+
 ### Added — arranque limpio: CLI `game-new` (un `GAME.md` nuevo sin copiar ejemplos)
 - **`tools/game-new.js <perfil> [salida.GAME.md]`** (CLI nuevo, Node puro): escribe el
   **esqueleto mínimo** de un perfil — los tokens core más *sólo* los tokens sin los cuales

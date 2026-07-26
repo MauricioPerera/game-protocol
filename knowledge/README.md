@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.19.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.20.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -126,7 +126,18 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.19.0`** — aditivo. **Sellado opcional de datos** (`dataSha256`), el análogo
+**Release `v2.20.0`** — aditivo. **Arranque limpio**: `node tools/game-new.js <perfil>
+mi-juego.GAME.md` crea un `GAME.md` nuevo que lintea **0 errores** sin copiar nada de
+`examples/`. Cierra el hueco por el que un proyecto nacía heredando el contenido del ejemplo:
+el tooling nombraba `GAME.md` por defecto pero el repo no traía ninguno, y el `agentLoop`
+empezaba en *"editar GAME.md"*, presuponiendo que ya existía. Suma cinco correcciones de
+cosas que fallaban **en silencio** — el parser perdía datos ante flujo mal formado
+(`a: [1, 2` daba `[1]`) y aceptaba literales que su gramática no define (`0x1f` → `31`), el
+índice BM25 de skills estaba roto y sin generador (2608 chunks basura → 266 útiles),
+`knowledge/` podía driftear sin gate, y el CI corría 11 de las 14 suites. Cada arreglo entra
+con su gate: **11 → 17 suites** en CI. 191 casos de conformidad, mutation audit 20/20.
+
+`v2.19.0` — aditivo. **Sellado opcional de datos** (`dataSha256`), el análogo
 de `tests_sha256` de KDD para el `GAME.md`: `node tools/game-seal.js <GAME.md>` calcula el
 sha256 del JSON **canónico** de los tokens del front-matter (claves ordenadas, arrays en su
 orden, el cuerpo Markdown no cuenta) y lo copiás como `dataSha256`; la nueva regla `data-seal`
