@@ -1,5 +1,5 @@
 {
-  "$comment": "Perfil PURO-DE-DATOS 'shooter' (arena shmup vertical): naves, armas, enemigos por oleadas, powerups y arena continua. Sin funciones: valida solo con refs/bounds/enums. Limite conocido: bounds no alcanza campos dentro de arrays (waves.*.spawns[].count/gap quedan sin validar — material para SPEC §11, agregados anidados).",
+  "$comment": "Perfil PURO-DE-DATOS 'shooter' (arena shmup vertical): naves, armas, enemigos por oleadas, powerups y arena continua. Sin funciones: valida solo con refs/bounds/enums/matches. El limite que declaraba este perfil (bounds no alcanzaba campos dentro de arrays) ya no aplica: `waves.*.spawns[].count/gap` se validan con la forma `arrayField` de bounds (SPEC §11).",
   "id": "shooter",
   "specVersion": "0.1",
   "sections": ["Overview", "Ships", "Weapons", "Enemies", "Waves", "Arena", "Text", "Do's and Don'ts"],
@@ -28,7 +28,11 @@
     { "rule": "arena-bounds", "singleton": "arena", "field": "width", "gt": 0, "required": true },
     { "rule": "arena-bounds", "singleton": "arena", "field": "height", "gt": 0, "required": true },
     { "rule": "balance-bounds", "singleton": "balance", "field": "powerupChance", "min": 0, "max": 1 },
-    { "rule": "balance-bounds", "singleton": "balance", "field": "lives", "min": 0, "integer": true }
+    { "rule": "balance-bounds", "singleton": "balance", "field": "lives", "min": 0, "integer": true },
+    { "rule": "spawn-bounds", "collection": "waves", "arrayField": "spawns", "itemField": "count",
+      "gt": 0, "integer": true, "required": true },
+    { "rule": "spawn-bounds", "collection": "waves", "arrayField": "spawns", "itemField": "gap",
+      "gt": 0, "integer": true, "required": true }
   ],
   "enums": [
     { "rule": "enemy-behavior", "collection": "enemies", "field": "behavior",

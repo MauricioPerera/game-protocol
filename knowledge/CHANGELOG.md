@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — familias `matches` y `bounds` sobre `arrayField` (SPEC §11, cuarta etapa)
+- **`matches`** (familia declarativa nueva): propiedad de **texto por expresión regular**.
+  Entrada `{ rule, level?, collection|singleton, field|arrayField(+itemField), pattern,
+  required?, msg?() }`. El patrón **no se ancla solo** (usá `^…$` para match total) y un
+  valor ausente o no-string **se salta** — eso es trabajo de `bounds`/`required`. Un
+  `pattern` que no compila se rechaza **al cargar el perfil** (`profile-load-error`), no a
+  mitad del lint.
+- **`bounds` acepta `arrayField`(+`itemField`)**, con la misma convención que `refs`: alcanza
+  campos **dentro de un array anidado**, que la familia no podía tocar.
+- **Cierra los dos huecos que los perfiles puro-datos declaraban en su propio `$comment`**:
+  - `sudoku` — `grid`/`solution` de 81 caracteres y su alfabeto (`puzzle-grid-shape`), antes
+    solo verificados por la simulación de referencia.
+  - `peg-solitaire` — cada fila del `layout`, 7 caracteres de `_o.` (`board-layout-shape`).
+  - `shooter` — `waves.*.spawns[].count/gap`, enteros > 0 requeridos (`spawn-bounds`); su
+    `$comment` decía literalmente *"bounds no alcanza campos dentro de arrays"*.
+- **Linaje**: ambas vienen del proyecto hermano [KDD](https://github.com/MauricioPerera/KDD),
+  cuyo motor de rule contracts ya había generalizado los `refs`/`bounds`/`enums` de este
+  protocolo a reglas de negocio y desarrolló allí `matches`/`each` primero. La semántica de
+  `matches` es **deliberadamente idéntica** (sin anclar, no-strings se saltan) para que una
+  regla se lea igual en los dos. El equivalente de `each` no se portó como familia anidada:
+  en este protocolo la capacidad ya la da `arrayField`, que es la convención nativa y evita
+  un mini-lenguaje de reglas dentro de reglas.
+- `manifest.json` expone `matches` (con su `pattern`) y describe correctamente los `bounds`
+  sobre arrays — antes una entrada con `arrayField` se habría descrito como
+  `coleccion.*.undefined`.
+- Hints para las tres reglas nuevas en `tools/rule-hints.js` (137 → **140**), 7 casos de
+  conformidad nuevos (197 → **204**), 6 chequeos de descriptor malformado (31 → **37**) y
+  13 mutantes verificados a mano sobre las familias nuevas antes de congelarlas.
+- Sin cambios de rendimiento: `perf-smoke` se mantiene en el rango habitual (2,6–3,4 ms
+  sobre 10K datos) pese al refactor de `processBound`.
 
 ## [2.20.0] — 2026-07-26
 

@@ -129,11 +129,29 @@
           !Array.isArray(e.values) || e.values.length === 0)
         return fail('enums[' + i + '] necesita { rule, field, collection|singleton, values: [..] }');
     }
+    // `field` o `arrayField` (la forma que alcanza campos dentro de arrays anidados).
     const bounds = p.bounds || [];
     for (let i = 0; i < bounds.length; i++) {
       const b = bounds[i];
-      if (!b || typeof b.rule !== 'string' || typeof b.field !== 'string' || !(b.collection || b.singleton))
-        return fail('bounds[' + i + '] necesita { rule, field, collection|singleton }');
+      if (!b || typeof b.rule !== 'string' || !(typeof b.field === 'string' || typeof b.arrayField === 'string') ||
+          !(b.collection || b.singleton))
+        return fail('bounds[' + i + '] necesita { rule, field|arrayField, collection|singleton }');
+      if (b.arrayField && !b.collection)
+        return fail('bounds[' + i + '].arrayField solo aplica sobre `collection`');
+    }
+    const matches = p.matches || [];
+    for (let i = 0; i < matches.length; i++) {
+      const m = matches[i];
+      if (!m || typeof m.rule !== 'string' || typeof m.pattern !== 'string' ||
+          !(typeof m.field === 'string' || typeof m.arrayField === 'string') ||
+          !(m.collection || m.singleton))
+        return fail('matches[' + i + '] necesita { rule, pattern, field|arrayField, collection|singleton }');
+      if (m.arrayField && !m.collection)
+        return fail('matches[' + i + '].arrayField solo aplica sobre `collection`');
+      // Un pattern que no compila haria fallar la familia entera en tiempo de lint:
+      // se rechaza al cargar el perfil, con el offending entry (SPEC §6.1).
+      try { new RegExp(m.pattern); }
+      catch (e) { return fail('matches[' + i + '].pattern no es una RegExp valida: ' + m.pattern); }
     }
     const dims = p.dims || [];
     for (let i = 0; i < dims.length; i++) {

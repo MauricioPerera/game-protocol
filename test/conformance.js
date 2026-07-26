@@ -42,6 +42,10 @@ const hasRule = (f, rule) => f.some(x => x.rule === rule);
 // Base front-matter válido (evita required-fields / version-migration).
 const B = pid => ({ version: '0.1', name: 'x', profile: pid });
 const M8 = () => Array.from({ length: 8 }, () => Array(8).fill(0)); // tileArt 8x8 válido
+// Sudoku válido de forma (81 chars, alfabeto correcto) para aislar la regla bajo prueba
+// de la familia `matches`: un fixture con grid: 'x' dispararía puzzle-grid-shape.
+const SUD_SOL = '123456789456789123789123456234567891567891234891234567345678912678912345912345678';
+const SUD_GRID = '..' + SUD_SOL.slice(2);
 const GEN = { seed: 1, roomW: 5, roomH: 5, maxDepth: 1 }; // generator roguelike válido
 // Base tower-defense válida: armors + un dmgType con su armor, para que las reglas de
 // bounds aisladas no arrastren findings de broken-ref (tower-dmgtype-valid / dmgtype-armor-valid).
@@ -227,13 +231,19 @@ const invalid = [
 
   // ---- peg-solitaire (perfil puro-datos: profiles/peg-solitaire.json; el layout lo valida pegCheck en game3d-logic) ----
   { p: 'peg-solitaire', rule: 'player-start-ref', data: { ...B('peg-solitaire'), boards: {}, player: { start: 'NOPE' } } },
-  { p: 'peg-solitaire', rule: 'board-goal', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oo.'], goal: 'sideways', difficulty: 'easy' } } } },
-  { p: 'peg-solitaire', rule: 'board-difficulty', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oo.'], goal: 'clear', difficulty: 'imposible' } } } },
+  { p: 'peg-solitaire', rule: 'board-goal', data: { ...B('peg-solitaire'), boards: { X: { layout: ['ooooooo'], goal: 'sideways', difficulty: 'easy' } } } },
+  { p: 'peg-solitaire', rule: 'board-difficulty', data: { ...B('peg-solitaire'), boards: { X: { layout: ['ooooooo'], goal: 'clear', difficulty: 'imposible' } } } },
+  // familia `matches` sobre arrayField: cada fila del layout, ancho exacto + alfabeto.
+  { p: 'peg-solitaire', rule: 'board-layout-shape', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oooooo'], goal: 'clear', difficulty: 'easy' } } } },
+  { p: 'peg-solitaire', rule: 'board-layout-shape', data: { ...B('peg-solitaire'), boards: { X: { layout: ['xoooooo'], goal: 'clear', difficulty: 'easy' } } } },
 
   // ---- sudoku (perfil puro-datos: profiles/sudoku.json; grid/solution los valida sudokuCheck en game3d-logic) ----
   { p: 'sudoku', rule: 'player-start-ref', data: { ...B('sudoku'), puzzles: {}, player: { start: 'NOPE' } } },
-  { p: 'sudoku', rule: 'puzzle-difficulty', data: { ...B('sudoku'), puzzles: { P: { grid: 'x', solution: 'y', difficulty: 'imposible' } } } },
+  { p: 'sudoku', rule: 'puzzle-difficulty', data: { ...B('sudoku'), puzzles: { P: { grid: SUD_GRID, solution: SUD_SOL, difficulty: 'imposible' } } } },
   { p: 'sudoku', rule: 'sudoku-balance', data: { ...B('sudoku'), balance: { lives: -1 } } },
+  // familia `matches`: longitud exacta (81) y alfabeto de grid/solution.
+  { p: 'sudoku', rule: 'puzzle-grid-shape', data: { ...B('sudoku'), puzzles: { P: { grid: SUD_GRID.slice(1), solution: SUD_SOL, difficulty: 'easy' } } } },
+  { p: 'sudoku', rule: 'puzzle-grid-shape', data: { ...B('sudoku'), puzzles: { P: { grid: SUD_GRID, solution: '.' + SUD_SOL.slice(1), difficulty: 'easy' } } } },
 
   // ---- shooter (perfil puro-datos: profiles/shooter.json, sin funciones) ----
   { p: 'shooter', rule: 'ship-weapon-ref', data: { ...B('shooter'), weapons: {}, ships: { V: { speed: 1, hp: 1, weapon: 'NOPE' } } } },
@@ -249,6 +259,9 @@ const invalid = [
   { p: 'shooter', rule: 'powerup-duration', data: { ...B('shooter'), powerups: { P: { effect: 'rapid', duration: 0 } } } },
   { p: 'shooter', rule: 'arena-bounds', data: { ...B('shooter'), arena: { width: 0, height: 5 } } },
   { p: 'shooter', rule: 'balance-bounds', data: { ...B('shooter'), balance: { powerupChance: 2 } } },
+  // familia `bounds` sobre arrayField: campos DENTRO de un array anidado (spawns[]).
+  { p: 'shooter', rule: 'spawn-bounds', data: { ...B('shooter'), enemies: { D: { hp: 1, speed: 1, behavior: 'chaser' } }, waves: { 1: { spawns: [{ enemy: 'D', count: 0, gap: 1 }] } } } },
+  { p: 'shooter', rule: 'spawn-bounds', data: { ...B('shooter'), enemies: { D: { hp: 1, speed: 1, behavior: 'chaser' } }, waves: { 1: { spawns: [{ enemy: 'D', count: 1 }] } } } },
 
   // ---- voxel ----
   { p: 'voxel', rule: 'material-color', data: { ...B('voxel'), materials: { M: { color: [999, 0, 0] } } } },
@@ -287,9 +300,12 @@ for (const c of invalid) {
 (function () {
   const prof = { id: 't2', specVersion: '0.1', sections: [], required: ['version', 'name', 'profile'], refs: [],
     bounds: [{ rule: 'hp-range', collection: 'units', field: 'hp', gt: 0, required: true },
-             { rule: 'speed-range', singleton: 'physics', field: 'speed', min: 1, max: 9, integer: true }],
+             { rule: 'speed-range', singleton: 'physics', field: 'speed', min: 1, max: 9, integer: true },
+             { rule: 'slot-range', collection: 'units', arrayField: 'slots', itemField: 'n', gt: 0 }],
     dims: [{ rule: 'grid-dims', collection: 'grids', shape: [2, 2] }],
     enums: [{ rule: 'kind-enum', collection: 'units', field: 'kind', values: ['melee', 'ranged'] }],
+    matches: [{ rule: 'code-shape', collection: 'units', field: 'code', pattern: '^[A-Z]{3}$' },
+              { rule: 'tag-shape', collection: 'units', arrayField: 'tags', pattern: 'x' }],
     rules: [], derive: [] };
   const L = d => lintGame(Object.assign({ version: '0.1', name: 'x', profile: 't2' }, d), '', { profile: prof, frontMatterPresent: true });
   ok(hasRule(L({ units: { A: { hp: -1 } } }), 'hp-range'), 'familia bounds  hp -1 → hp-range');
@@ -298,7 +314,18 @@ for (const c of invalid) {
   ok(hasRule(L({ physics: { speed: 99 } }), 'speed-range'), 'familia bounds  max violado → speed-range');
   ok(hasRule(L({ grids: { g: [[1]] } }), 'grid-dims'), 'familia dims  1x1 vs shape 2x2 → grid-dims');
   ok(hasRule(L({ units: { A: { hp: 5, kind: 'magic' } } }), 'kind-enum'), 'familia enums  valor fuera del set → kind-enum');
-  ok(L({ units: { A: { hp: 5, kind: 'melee' } }, physics: { speed: 3 }, grids: { g: [[1, 2], [3, 4]] } })
+  // familia `matches` (SPEC §11, cuarta etapa): propiedad de texto por RegExp.
+  ok(hasRule(L({ units: { A: { hp: 1, code: 'ab' } } }), 'code-shape'), 'familia matches  no cumple el patron → code-shape');
+  ok(!hasRule(L({ units: { A: { hp: 1 } } }), 'code-shape'), 'familia matches  campo ausente sin required → sin hallazgo');
+  ok(!hasRule(L({ units: { A: { hp: 1, code: 42 } } }), 'code-shape'), 'familia matches  valor no-string se salta (es trabajo de bounds/type)');
+  // NO se ancla sola: el patron 'x' es una busqueda de subcadena, como `re.search`.
+  ok(!hasRule(L({ units: { A: { hp: 1, tags: ['axb'] } } }), 'tag-shape'), 'familia matches  patron sin anclar matchea subcadena');
+  ok(hasRule(L({ units: { A: { hp: 1, tags: ['ok-x', 'nope'] } } }), 'tag-shape'), 'familia matches  arrayField revisa CADA elemento → tag-shape');
+  // familia `bounds` sobre arrayField: campos dentro de un array anidado.
+  ok(hasRule(L({ units: { A: { hp: 1, slots: [{ n: 2 }, { n: 0 }] } } }), 'slot-range'), 'familia bounds  arrayField alcanza el item malo → slot-range');
+  ok(!hasRule(L({ units: { A: { hp: 1, slots: [{ n: 2 }, { n: 5 }] } } }), 'slot-range'), 'familia bounds  arrayField con todos los items validos → sin hallazgo');
+
+  ok(L({ units: { A: { hp: 5, kind: 'melee', code: 'ABC', tags: ['x1'], slots: [{ n: 1 }] } }, physics: { speed: 3 }, grids: { g: [[1, 2], [3, 4]] } })
        .filter(x => x.level === 'error').length === 0, 'familias  datos validos → 0 errores');
 })();
 
@@ -309,7 +336,8 @@ for (const c of invalid) {
 // perfil real y no deben tener hint (agregarles uno seria documentar una regla que no existe).
 (function () {
   const hints = require(REPO + '/tools/rule-hints');
-  const SYNTHETIC_CORE_FAMILY_TEST_RULES = new Set(['hp-range', 'speed-range', 'grid-dims', 'kind-enum']);
+  const SYNTHETIC_CORE_FAMILY_TEST_RULES = new Set(['hp-range', 'speed-range', 'grid-dims', 'kind-enum',
+    'code-shape', 'tag-shape', 'slot-range']);
   const realRules = [...new Set(invalid.map(c => c.rule))].filter(r => !SYNTHETIC_CORE_FAMILY_TEST_RULES.has(r));
   const missing = realRules.filter(r => !(r in hints));
   ok(missing.length === 0, 'rule-hints.js  cubre los ' + realRules.length + ' rule-ids reales de los casos invalidos', missing.join(', '));
