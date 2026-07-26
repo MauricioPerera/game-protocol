@@ -87,6 +87,43 @@ grep -q '^profile:' GAME.md || sed -i '/^name:/a profile: monster-rpg' GAME.md
 node tools/game-lint.js GAME.md --agent
 ```
 
+### Literales no decimales en el front-matter  (estado: **vigente**)
+
+> Afecta al **parser**, no al spec del protocolo (que sigue en `0.1`). Aplica a cualquier
+> `GAME.md`, sea cual sea su `version`.
+
+**Qué cambia.** La gramática normativa ([SPEC §1.2](./SPEC.md)) siempre definió `number`
+como **decimal**, pero la implementación de referencia delegaba en `Number()`, que además
+acepta hexadecimal, binario y octal. Un `0x1f` entraba en silencio como `31` sin que ninguna
+regla lo declarara. El parser ahora los **rechaza con un error accionable**, alineando la
+implementación con su propia gramática.
+
+| Antes | Ahora |
+|---|---|
+| `damage: 0x1f` → `31` | error de parseo (exit `2`) |
+| `mask: 0b101` → `5` | error de parseo (exit `2`) |
+| `perms: 0o17` → `15` | error de parseo (exit `2`) |
+| `code: 0xZZ` → `"0xZZ"` | `"0xZZ"` (sin cambio: no es numérico) |
+| `speed: 1e3` → `1000` | `1000` (sin cambio: es decimal) |
+
+**Impacto.** Ningún ejemplo ni perfil del repo usaba estas formas, así que el impacto es
+nulo dentro del proyecto. Si un documento de terceros las usaba, el parseo falla con un
+mensaje que indica las dos salidas posibles.
+
+**Receta.** Dos opciones según lo que quisieras decir:
+
+```sh
+# ¿Era un número? Escribilo en decimal — el mensaje de error ya te da el valor.
+#   yaml-min: literal no decimal "0x1f" (...): escribilo en decimal (31), o entrecomillalo ("0x1f")
+sed -i 's/: 0x1f\b/: 31/' GAME.md
+
+# ¿Era texto (un color, un id, una máscara)? Entrecomillalo.
+sed -i "s/: \(0[xXbBoO][0-9a-zA-Z]\+\)\s*$/: '\1'/" GAME.md
+
+# Re-lint: debe quedar en 0 errores
+node tools/game-lint.js GAME.md --agent
+```
+
 ### De 0.1 → 0.2  (estado: pendiente — se completa cuando 0.2 sale)
 
 > Placeholder. `0.1` es la versión actual; no hay cambios pendientes todavía. Esta entrada

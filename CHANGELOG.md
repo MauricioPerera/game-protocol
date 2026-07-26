@@ -91,6 +91,28 @@
   en `test/parser.js` (16 → **30**). Los 18 `GAME.md` del repo siguen linteando 0 errores:
   ninguno dependía del comportamiento laxo.
 
+### Fixed — el parser aceptaba literales no decimales que su gramática no define
+- [SPEC §1.2](./SPEC.md) define `number` como **decimal** desde que la gramática es
+  normativa (`2.3.0`), pero la implementación de referencia delegaba en `Number()`, que
+  además acepta **hexadecimal, binario y octal**. `0x1f` entraba en silencio como `31`,
+  `0b101` como `5` y `0o17` como `15`: la implementación contradecía su propia gramática y
+  ninguna regla lo declaraba.
+- Ahora se **lanza un error accionable** que ofrece las dos salidas — el valor en decimal
+  (que el propio mensaje calcula) o entrecomillarlo si se quería texto. Se lanza en vez de
+  degradar a string: convertirlo en texto en silencio dejaría un string donde el autor puso
+  un número, justo el fallo que el subset existe para evitar.
+- **No cambia** lo que sí es decimal: notación exponencial (`1e3`), punto inicial (`.5`),
+  signo (`+5`, `-0.5`), ni los enteros con cero a la izquierda (`007`, que siguen siendo
+  string). Un texto con pinta de hex pero no numérico (`0xZZ`) sigue siendo string, como
+  cualquier escalar sin comillas.
+- **Impacto medido: nulo dentro del repo** — ningún `GAME.md`, ejemplo o perfil usaba estas
+  formas; los 18 documentos siguen linteando 0 errores. Para documentos de terceros que sí
+  las usaran, hay receta en [`MIGRATION.md`](./MIGRATION.md) (§3, *Literales no decimales*).
+- Es un **fix de conformidad**, no una remoción: el contrato normativo nunca prometió estas
+  bases, así que no entra en el ciclo de deprecation de [SPEC §7.1](./SPEC.md) (que cubre
+  tokens, reglas y perfiles declarados). [SPEC §1.2](./SPEC.md) y §9.1 actualizados.
+  `test/parser.js`: 30 → **42** casos.
+
 ### Fixed — el CI corría menos suites que `npm test`
 - El job `tests` de `.github/workflows/ci.yml` enumeraba **11** suites mientras `npm test`
   encadenaba **14**: `perf-smoke`, `mutation-manual` y `data-seal` — el sellado de datos, la

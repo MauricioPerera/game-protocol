@@ -73,8 +73,10 @@ pair       = key ":" value ;      (* the ":" is the first top-level one outside 
 flow-list  = "[" [ value { "," value } ] "]" ;
 scalar     = quoted | number | boolean | plain ;
 quoted     = '"' { char } '"' | "'" { char } "'" ;   (* commas and ":" allowed inside *)
-number     = valid FINITE JS decimal ;  (* leading-zero integers ("007") stay strings;
-                                          a non-finite value (1e999, Infinity) is an error *)
+number     = valid FINITE JS decimal ;  (* exponent form (1e3) and a leading "." or sign are
+                                          decimal; leading-zero integers ("007") stay strings;
+                                          a non-finite value (1e999, Infinity) is an error;
+                                          hex/binary/octal (0x1f, 0b101, 0o17) are errors *)
 boolean    = "true" | "false" ;
 plain      = unquoted text ;      (* in flow context: no top-level "," or ":" *)
 ```
@@ -87,6 +89,7 @@ Semantics and hard failures (MUST raise a clear parse error, never degrade silen
 - A **malformed flow value** is an error, never a partial parse: an unclosed `{`/`[`, a stray closer, mismatched brackets (`{k: [1, 2}`), text after the outer closer, and an unclosed quote inside a flow value. Silently slicing an unclosed value would *drop data* (`a: [1, 2` yielding `[1]`), which §10 forbids.
 - An **empty element from a stray comma** (`[a, , b]`, `{x: 1, , y: 2}`) is an error. A single **trailing comma** (`[a, b, ]`) is tolerated. An explicitly quoted empty string (`[a, "", b]`) is a legitimate element and MUST be preserved.
 - A **non-finite number** (`1e999`, `Infinity`) is an error: it would serialize to `null` in the compiled artifact, losing the token silently.
+- A **non-decimal numeric literal** (`0x1f`, `0b101`, `0o17`) is an error. `number` is decimal by definition above; a host `Number()` that also accepts these bases MUST NOT widen the subset. Write the decimal value, or quote it (`'0x1f'`) to mean text. Plain text that merely looks non-decimal but is not numeric (`0xZZ`) stays a string, as any other unquoted scalar.
 - `\r\n` / `\r` line endings are normalized to `\n` before parsing. Line comments are stripped only on their own line — a `#` after a flow value is **not** a comment (it becomes part of the last scalar; see `tools/SPRITE_EXTRACTION.md`).
 
 ## 2. Core tokens (genre-agnostic)
@@ -300,7 +303,7 @@ The protocol has a lifecycle: tokens, rules, and profiles can be **deprecated** 
 
 GAME Protocol distinguishes the **reference implementation** (`tools/`) from the protocol itself. An alternative implementation is **conformant** if it satisfies all of the following:
 
-1. **Parser.** It parses the YAML subset of §1.1 identically to the reference parser, including the hard-failure cases: block sequences (`- item`), front-matter lines without `:`, duplicate keys, unclosed strings, tab indentation, over-indentation, nesting deeper than 64 levels, the forbidden keys `__proto__`/`constructor`/`prototype`, malformed flow values (unclosed, stray or mismatched brackets, trailing text), stray-comma gaps in flow, and non-finite numbers. `test/parser.js` is the executable definition of these cases. Implementations MAY substitute a full YAML parser as long as the documented subset parses identically.
+1. **Parser.** It parses the YAML subset of §1.1 identically to the reference parser, including the hard-failure cases: block sequences (`- item`), front-matter lines without `:`, duplicate keys, unclosed strings, tab indentation, over-indentation, nesting deeper than 64 levels, the forbidden keys `__proto__`/`constructor`/`prototype`, malformed flow values (unclosed, stray or mismatched brackets, trailing text), stray-comma gaps in flow, non-finite numbers, and non-decimal numeric literals. `test/parser.js` is the executable definition of these cases. Implementations MAY substitute a full YAML parser as long as the documented subset parses identically.
 2. **Linter.** It emits the core rules of §4 at the documented levels, executes the active profile's reference graph (`refs`, broken-ref family) and rule functions, and reports findings as `{level, rule, msg}` (plus `since`/`removedIn` at the `deprecated` level). A document is valid iff it produces zero `error`-level findings. `test/conformance.js` is the executable reference: every valid example MUST lint clean and every invalid case MUST trigger its rule.
 3. **Compiler.** Its output is a pure function of the source (§3). For the reference artifact format (`window.GAME` as JSON), output MUST be byte-identical to `tools/game-export.js`: universal meta first (`generatedFrom`, `profile`, `name`, `description`, `platform`, `palettesCount`), then the profile's `derive` keys in declaration order, serialized as JSON with 2-space indent and LF line endings. The `profile` meta key lets multi-profile consumers dispatch a runtime without key-sniffing heuristics.
 4. **Exit codes.** CLI surfaces follow the §3.1 contract (`0` OK / `1` validation, lint only / `2` input, profile or syntax). `test/cli-errors.js` is the executable reference.
