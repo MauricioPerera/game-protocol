@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.21.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.22.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -126,7 +126,18 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.21.0`** — aditivo. **Cuarta etapa de reglas puras-de-datos**
+**Release `v2.22.0`** — aditivo. Cierra los dos huecos declarativos que quedaban tras la
+cuarta etapa, ambos nacidos de issues. **`grids.shape` acepta forma literal**
+(`{ rows: 7 }`) además de la referencia a otro token: sirve para cuando la geometría es
+**intrínseca al género** y no vive en ningún dato — un tablero de senku es 7×7 porque así es
+el juego, no porque un `platform` lo declare; con eso `peg-solitaire` valida su forma
+**completa** (número de filas por `grids`, ancho y alfabeto por `matches`). Y los `schemas/`
+publican **`bounds`** como `minimum`/`maximum`/`exclusiveMinimum`, completando lo que
+`2.21.0` empezó con `matches` → `pattern`: las dos únicas familias del core con equivalente
+nativo en JSON Schema ya viajan en el artefacto, con la semántica **exacta** del linter
+verificada contra un validador Draft-07 real. 205 casos de conformidad, mutation audit 20/20.
+
+`v2.21.0` — aditivo. **Cuarta etapa de reglas puras-de-datos**
 ([SPEC §11](./SPEC.md)): la familia **`matches`** valida una propiedad de texto por
 expresión regular, y **`bounds` acepta `arrayField`** para alcanzar campos dentro de arrays
 anidados. Entre las dos cierran los **tres huecos** que los perfiles puro-datos declaraban

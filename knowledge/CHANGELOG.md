@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.22.0] — 2026-07-26
+
+Release **aditivo** sobre `2.21.0` (bump minor, [SPEC §7.0](./SPEC.md)): cierra los dos
+huecos declarativos que quedaban abiertos tras la cuarta etapa, ambos nacidos de issues
+([#9](https://github.com/MauricioPerera/game-protocol/issues/9),
+[#10](https://github.com/MauricioPerera/game-protocol/issues/10)). **`grids.shape` acepta
+forma literal** (`{ rows, cols }`), para cuando la geometría es intrínseca al género y no
+vive en ningún token — con eso `peg-solitaire` valida su tablero 7×7 **completo** como dato.
+Y **los schemas publican `bounds`** como `minimum`/`maximum`/`exclusiveMinimum`, completando
+lo que `2.21.0` empezó con `matches` → `pattern`: las dos únicas familias del core con
+equivalente nativo en JSON Schema ya viajan en el artefacto. La versión del protocolo sigue
+en `0.1`.
+
 ### Added — `grids.shape` acepta forma literal, además de por referencia
 - Cierra [#10](https://github.com/MauricioPerera/game-protocol/issues/10). `shape` ya permitía
   tomar la forma de **otro token** (`{ singleton, rowsField?, colsField? }` — así `monster-rpg`
