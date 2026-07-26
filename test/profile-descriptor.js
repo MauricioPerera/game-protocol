@@ -40,7 +40,9 @@ const bad = [
   ['dim sin shape valido',   (p) => { p.dims = [{ rule: 'r', collection: 'a', shape: [0, 2] }]; }],
   ['grid sin coleccion',     (p) => { p.grids = [{ rule: 'r' }]; }],
   ['grid.legend sin target', (p) => { p.grids = [{ rule: 'r', collection: 'a', legend: { rule: 'r2' } }]; }],
-  ['grid.shape sin singleton', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: {} }]; }],
+  ['grid.shape sin singleton ni literal', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: {} }]; }],
+  ['grid.shape literal no entero', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: { rows: 7.5 } }]; }],
+  ['grid.shape literal <= 0', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: { rows: 0 } }]; }],
   ['derive sin key',         (p) => { p.derive = [{ from: 'x' }]; }],
   ['derive fn no-funcion',   (p) => { p.derive = [{ key: 'K', fn: 'x' }]; }],
   // familia `matches` (§6.1) y la forma arrayField de `bounds`

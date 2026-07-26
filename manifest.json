@@ -625,7 +625,16 @@
       "rules": [],
       "bounds": [],
       "dims": [],
-      "grids": [],
+      "grids": [
+        {
+          "rule": "board-layout-shape",
+          "level": "error",
+          "target": "boards.*",
+          "shape": {
+            "from": "undefined.rows/cols"
+          }
+        }
+      ],
       "enums": [
         {
           "rule": "board-goal",

@@ -253,9 +253,18 @@
     for (const [name, obj] of gridInstances(e, data)) {
       const rows = (obj && obj[rowsField]) || [];
       if (shape) {
-        const target = data[shape.singleton] || {};
-        const wantRows = target[shape.rowsField || 'rows'];
-        const wantCols = target[shape.colsField || 'cols'];
+        // `shape` admite dos formas:
+        //   REFERENCIA  { singleton, rowsField?, colsField? } — la forma la fija OTRO token
+        //               (p.ej. `platform.rows`/`.cols`), y varias grillas deben calzar con
+        //               esa rejilla global.
+        //   LITERAL     { rows?, cols? } — la forma es intrinseca al genero y no vive en
+        //               ningun token: el tablero de senku es 7x7 porque asi es el juego, no
+        //               porque un `platform` lo diga.
+        // Cada chequeo sigue siendo opcional: sin el campo objetivo, no se exige.
+        const byRef = typeof shape.singleton === 'string';
+        const target = byRef ? (data[shape.singleton] || {}) : shape;
+        const wantRows = byRef ? target[shape.rowsField || 'rows'] : shape.rows;
+        const wantCols = byRef ? target[shape.colsField || 'cols'] : shape.cols;
         if (wantRows && rows.length !== wantRows)
           add(level, e.rule, name + ' tiene ' + rows.length + ' filas (esperado ' + wantRows + ')');
         for (let r = 0; r < rows.length; r++)

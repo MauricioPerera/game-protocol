@@ -165,8 +165,17 @@
       const g = grids[i];
       if (!g || typeof g.rule !== 'string' || !(g.collection || g.singleton))
         return fail('grids[' + i + '] necesita { rule, collection|singleton }');
-      if (g.shape != null && typeof g.shape.singleton !== 'string')
-        return fail('grids[' + i + '].shape necesita { singleton }');
+      // `shape` es por REFERENCIA ({ singleton, ... }) o LITERAL ({ rows?, cols? }).
+      if (g.shape != null) {
+        const s = g.shape;
+        const byRef = typeof s.singleton === 'string';
+        const literal = Number.isInteger(s.rows) || Number.isInteger(s.cols);
+        if (!byRef && !literal)
+          return fail('grids[' + i + '].shape necesita { singleton } (referencia) o { rows|cols } enteros (literal)');
+        if (!byRef && ((s.rows != null && !(Number.isInteger(s.rows) && s.rows > 0)) ||
+                       (s.cols != null && !(Number.isInteger(s.cols) && s.cols > 0))))
+          return fail('grids[' + i + '].shape literal necesita rows/cols enteros > 0');
+      }
       if (g.legend != null) {
         const lg = g.legend;
         if (!lg || typeof lg.rule !== 'string' || !lg.tileTarget || typeof lg.tileTarget.collection !== 'string')

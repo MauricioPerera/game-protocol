@@ -1,5 +1,5 @@
 {
-  "$comment": "Perfil PURO-DE-DATOS 'peg-solitaire' (senku/solitario de clavijas): tableros como 7 filas de 7 caracteres ('_' fuera del tablero, 'o' peg, '.' hueco), objetivo por enum (clear = dejar 1 peg; center = dejar 1 peg en el centro) y dificultad por enum. El ancho exacto (7) y el alfabeto de CADA fila SI se validan, con la familia declarativa `matches` sobre `arrayField` (SPEC §11). Limites que quedan: el NUMERO de filas (7) no es expresable sin declarar la forma en otro token, y que el tablero sea SOLUBLE no es expresable como patron — ambos los cubre la simulacion de referencia (pegCheck en game3d-logic) y sus tests de Node.",
+  "$comment": "Perfil PURO-DE-DATOS 'peg-solitaire' (senku/solitario de clavijas): tableros como 7 filas de 7 caracteres ('_' fuera del tablero, 'o' peg, '.' hueco), objetivo por enum (clear = dejar 1 peg; center = dejar 1 peg en el centro) y dificultad por enum. La forma COMPLETA se valida como dato: el ancho y el alfabeto de cada fila con `matches` sobre `arrayField`, y el numero exacto de filas con `grids` + `shape` literal (SPEC §11). Limite que queda: que el tablero sea SOLUBLE no es expresable declarativamente — lo cubre la simulacion de referencia (pegCheck en game3d-logic) y sus tests de Node.",
   "id": "peg-solitaire",
   "specVersion": "0.1",
   "sections": ["Overview", "Boards", "Text", "Do's and Don'ts"],
@@ -12,6 +12,11 @@
   "matches": [
     { "rule": "board-layout-shape", "collection": "boards", "arrayField": "layout",
       "pattern": "^[_o.]{7}$" }
+  ],
+  "grids": [
+    { "$why": "El ancho y el alfabeto de cada fila los fija `matches` con {7}; esto exige que sean exactamente 7 filas. `cols` se omite a proposito para no duplicar el chequeo de ancho.",
+      "rule": "board-layout-shape", "collection": "boards", "rowsField": "layout",
+      "shape": { "rows": 7 } }
   ],
   "enums": [
     { "rule": "board-goal", "collection": "boards", "field": "goal",
