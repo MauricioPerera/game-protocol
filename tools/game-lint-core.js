@@ -107,30 +107,90 @@
     }
   }
 
+  // ---- Recolector de valores comun a las familias de campo (bounds, matches).
+  // Tres formas, con la MISMA convencion que `refs` (SPEC §6.1):
+  //   { collection, field }                  -> coleccion[k][field]
+  //   { collection, arrayField, itemField? } -> coleccion[k][arrayField][].itemField
+  //                                             (sin itemField: el item crudo)
+  //   { singleton, field }                   -> data[singleton][field]
+  // La forma `arrayField` es la que alcanza CAMPOS DENTRO DE ARRAYS anidados — el hueco
+  // que los perfiles declaraban como pendiente (p.ej. shooter: `waves.*.spawns[].count`).
+  // `present` distingue "el campo no esta" de "vale null", que es lo que mira `required`.
+  function fieldValues(e, data) {
+    const out = [];
+    if (e.collection && e.arrayField) {
+      for (const [k, obj] of Object.entries(data[e.collection] || {})) {
+        const list = (obj && obj[e.arrayField]) || [];
+        list.forEach((item, i) => {
+          const owner = e.collection + '.' + k + '.' + e.arrayField + '[' + i + ']';
+          const v = e.itemField ? (item && item[e.itemField]) : item;
+          out.push({ value: v, owner, present: e.itemField ? !!(item && e.itemField in item) : true });
+        });
+      }
+    } else if (e.collection) {
+      for (const [k, obj] of Object.entries(data[e.collection] || {}))
+        out.push({ value: obj && obj[e.field], owner: e.collection + '.' + k, present: !!(obj && e.field in obj) });
+    } else if (e.singleton) {
+      const o = data[e.singleton] || {};
+      out.push({ value: o[e.field], owner: e.singleton, present: e.field in o });
+    }
+    return out;
+  }
+  // Etiqueta legible del campo para los mensajes: con arrayField+itemField el owner ya
+  // lleva el indice, asi que el sufijo es el itemField (o nada si el item es escalar).
+  function fieldLabel(e) {
+    if (e.arrayField) return e.itemField ? ('.' + e.itemField) : '';
+    return '.' + e.field;
+  }
+
   // ---- FAMILIA range/bounds DECLARATIVA: el perfil declara una tabla `bounds` y el core
   // la ejecuta (antes esta familia existia solo como funciones-regla en cada perfil).
-  // Entrada: { rule, level?, collection|singleton, field, gt?, min?, max?, integer?,
-  //            required?, msg? }. gt = minimo exclusivo (el caso "> 0" tipico).
+  // Entrada: { rule, level?, collection|singleton, field|arrayField(+itemField), gt?, min?,
+  //            max?, integer?, required?, msg? }. gt = minimo exclusivo (el caso "> 0").
   function processBound(e, data, add) {
     const level = e.level || 'error';
-    const check = (owner, v) => {
+    const label = fieldLabel(e);
+    for (const { value: v, owner } of fieldValues(e, data)) {
+      // Un campo ausente solo se reporta si es `required`; asi una seccion opcional
+      // entera no dispara la familia.
       if (v == null) {
-        if (e.required) add(level, e.rule, owner + '.' + e.field + ' requerido');
-        return;
+        if (e.required) add(level, e.rule, owner + label + ' requerido');
+        continue;
       }
       const bad = typeof v !== 'number'
         || (e.integer && !Number.isInteger(v))
         || (e.gt != null && !(v > e.gt))
         || (e.min != null && v < e.min)
         || (e.max != null && v > e.max);
-      if (bad) add(level, e.rule, e.msg ? e.msg(v, owner) : owner + '.' + e.field + ' fuera de rango: ' + v);
-    };
-    if (e.collection) {
-      for (const [k, obj] of Object.entries(data[e.collection] || {}))
-        check(e.collection + '.' + k, obj && obj[e.field]);
-    } else if (e.singleton) {
-      const o = data[e.singleton] || {};
-      if (e.field in o || e.required) check(e.singleton, o[e.field]);
+      if (bad) add(level, e.rule, e.msg ? e.msg(v, owner) : owner + label + ' fuera de rango: ' + v);
+    }
+  }
+
+  // ---- FAMILIA matches DECLARATIVA: propiedad de TEXTO por expresion regular.
+  // Cierra el hueco que los perfiles puro-datos declaraban ("la longitud/patron de los
+  // strings no son expresables en refs/bounds/enums"): tableros de 7x7, grids de sudoku
+  // de 81 caracteres, ids con formato.
+  // Entrada: { rule, level?, collection|singleton, field|arrayField(+itemField), pattern,
+  //            required?, msg? }.
+  //   pattern   string de RegExp. NO se ancla solo: usa ^...$ para exigir match total
+  //             (misma semantica que `re.search` del rule-engine de KDD, de donde viene
+  //             esta familia).
+  //   Un valor ausente o no-string se SALTA (eso es trabajo de `required`/`bounds`),
+  //   salvo que `required` lo exija.
+  function processMatch(e, data, add) {
+    const level = e.level || 'error';
+    const label = fieldLabel(e);
+    let re;
+    try { re = new RegExp(e.pattern); }
+    catch (err) { add('error', e.rule, 'pattern invalido en el perfil: ' + e.pattern); return; }
+    for (const { value: v, owner } of fieldValues(e, data)) {
+      if (v == null || typeof v !== 'string') {
+        if (e.required) add(level, e.rule, owner + label + ' requerido (texto que cumpla ' + e.pattern + ')');
+        continue;
+      }
+      if (!re.test(v))
+        add(level, e.rule, e.msg ? e.msg(v, owner)
+          : owner + label + ' no cumple el patron ' + e.pattern + ': ' + JSON.stringify(v));
     }
   }
 
@@ -338,6 +398,7 @@
     for (const entry of (profile.dims || [])) processDims(entry, data, add);
     for (const entry of (profile.enums || [])) processEnum(entry, data, add);
     for (const entry of (profile.grids || [])) processGrid(entry, data, add);
+    for (const entry of (profile.matches || [])) processMatch(entry, data, add);
 
     // ---- Reglas específicas del perfil (lógica no uniforme: charts, mapas, balance…) ----
     // Nivel `deprecated` (S2.1): una regla puede marcar `rule.deprecated = {since, removedIn}`

@@ -42,6 +42,15 @@ const bad = [
   ['grid.shape sin singleton', (p) => { p.grids = [{ rule: 'r', collection: 'a', shape: {} }]; }],
   ['derive sin key',         (p) => { p.derive = [{ from: 'x' }]; }],
   ['derive fn no-funcion',   (p) => { p.derive = [{ key: 'K', fn: 'x' }]; }],
+  // familia `matches` (§6.1) y la forma arrayField de `bounds`
+  ['match sin pattern',      (p) => { p.matches = [{ rule: 'r', collection: 'a', field: 'f' }]; }],
+  ['match sin field',        (p) => { p.matches = [{ rule: 'r', collection: 'a', pattern: '^x$' }]; }],
+  ['match sin coleccion',    (p) => { p.matches = [{ rule: 'r', field: 'f', pattern: '^x$' }]; }],
+  // un pattern que no compila se rechaza AL CARGAR el perfil: si no, la familia entera
+  // reventaria a mitad del lint con un SyntaxError opaco.
+  ['match con regex rota',   (p) => { p.matches = [{ rule: 'r', collection: 'a', field: 'f', pattern: '^[a-' }]; }],
+  ['match arrayField sobre singleton', (p) => { p.matches = [{ rule: 'r', singleton: 's', arrayField: 'l', pattern: '^x$' }]; }],
+  ['bound arrayField sobre singleton', (p) => { p.bounds = [{ rule: 'r', singleton: 's', arrayField: 'l', gt: 0 }]; }],
 ];
 for (const [name, mut] of bad) {
   const p = base(); mut(p);

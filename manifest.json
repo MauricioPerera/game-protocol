@@ -50,6 +50,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "PALETTES",
@@ -101,6 +102,7 @@
         }
       ],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "PALETTES",
@@ -175,6 +177,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "MATERIALS",
@@ -243,6 +246,7 @@
         }
       ],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "PALETTES",
@@ -412,6 +416,7 @@
         }
       ],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "TYPE_CHART",
@@ -562,6 +567,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "COUNTRIES",
@@ -641,6 +647,14 @@
             "hard"
           ],
           "required": true
+        }
+      ],
+      "matches": [
+        {
+          "rule": "board-layout-shape",
+          "level": "error",
+          "target": "boards.*.layout[]",
+          "pattern": "^[_o.]{7}$"
         }
       ],
       "dataOnly": true,
@@ -737,6 +751,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "TILESETS",
@@ -839,6 +854,7 @@
           "required": true
         }
       ],
+      "matches": [],
       "dataOnly": true,
       "output": [
         {
@@ -887,6 +903,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "PALETTES",
@@ -1081,6 +1098,22 @@
           "target": "balance.lives",
           "min": 0,
           "integer": true
+        },
+        {
+          "rule": "spawn-bounds",
+          "level": "error",
+          "target": "waves.*.spawns[].count",
+          "gt": 0,
+          "integer": true,
+          "required": true
+        },
+        {
+          "rule": "spawn-bounds",
+          "level": "error",
+          "target": "waves.*.spawns[].gap",
+          "gt": 0,
+          "integer": true,
+          "required": true
         }
       ],
       "dims": [],
@@ -1108,6 +1141,7 @@
           "required": true
         }
       ],
+      "matches": [],
       "dataOnly": true,
       "output": [
         {
@@ -1200,6 +1234,22 @@
             "normal",
             "hard"
           ],
+          "required": true
+        }
+      ],
+      "matches": [
+        {
+          "rule": "puzzle-grid-shape",
+          "level": "error",
+          "target": "puzzles.*.grid",
+          "pattern": "^[1-9.]{81}$",
+          "required": true
+        },
+        {
+          "rule": "puzzle-grid-shape",
+          "level": "error",
+          "target": "puzzles.*.solution",
+          "pattern": "^[1-9]{81}$",
           "required": true
         }
       ],
@@ -1298,6 +1348,7 @@
         }
       ],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "TOWERS",
@@ -1399,6 +1450,7 @@
       "dims": [],
       "grids": [],
       "enums": [],
+      "matches": [],
       "output": [
         {
           "key": "MATERIALS",

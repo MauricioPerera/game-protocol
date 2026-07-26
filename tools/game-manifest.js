@@ -37,7 +37,9 @@ function profileEntry(p) {
     // que rangos y formas se validan sin leer el codigo del perfil.
     bounds: (p.bounds || []).map(b => ({
       rule: b.rule, level: b.level || 'error',
-      target: (b.collection ? b.collection + '.*.' : b.singleton + '.') + b.field,
+      // describeSrc cubre las tres formas, incluida `arrayField`(+`itemField`) — sin él
+      // una entrada sobre un array anidado se describía como `coleccion.*.undefined`.
+      target: describeSrc(b),
       gt: b.gt, min: b.min, max: b.max,
       integer: b.integer || undefined, required: b.required || undefined,
     })),
@@ -52,6 +54,12 @@ function profileEntry(p) {
       rule: e.rule, level: e.level || 'error',
       target: (e.collection ? e.collection + '.*.' : e.singleton + '.') + e.field,
       values: e.values, required: e.required || undefined,
+    })),
+    // Familia `matches`: propiedad de texto por RegExp. Se expone el patron para que un
+    // agente sepa que forma exige el token sin leer el descriptor.
+    matches: (p.matches || []).map(m => ({
+      rule: m.rule, level: m.level || 'error',
+      target: describeSrc(m), pattern: m.pattern, required: m.required || undefined,
     })),
     // true = descriptor sin una sola funcion (cargable como JSON puro, SPEC §11):
     // un agente/consumidor sabe que puede confiar en el sin revisar codigo (SPEC §10).

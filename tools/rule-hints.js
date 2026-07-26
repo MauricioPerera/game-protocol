@@ -122,10 +122,12 @@ module.exports = {
   // --- peg-solitaire (perfil puro-datos) ---
   'board-goal': '`goal` obligatorio: clear (dejar 1 peg) | center (dejar 1 peg en el centro).',
   'board-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
+  'board-layout-shape': 'Cada fila de `layout` son exactamente 7 caracteres de `_` (fuera del tablero), `o` (peg) o `.` (hueco). Revisa la fila que reporta el mensaje: sobra o falta un caracter, o hay un simbolo ajeno.',
   // --- sudoku (perfil puro-datos) ---
   'player-start-ref': '`player.start` debe existir en la coleccion inicial del perfil (p.ej. `puzzles` o `boards`).',
   'puzzle-difficulty': '`difficulty` obligatorio: easy | normal | hard.',
   'sudoku-balance': '`lives` y `hints` enteros >= 0 (si se declaran).',
+  'puzzle-grid-shape': '`grid` y `solution` son exactamente 81 caracteres: `grid` admite 1-9 y `.` para las celdas vacias; `solution` va completa, solo 1-9 (sin puntos). Cuenta los caracteres: lo mas comun es que falte o sobre uno.',
   // --- shooter (perfil puro-datos) ---
   'ship-weapon-ref': 'El `weapon` de la nave debe existir en `weapons`.',
   'enemy-weapon-ref': 'El `weapon` del enemigo (opcional) debe existir en `weapons`.',
@@ -139,6 +141,7 @@ module.exports = {
   'powerup-duration': '`duration` del powerup entero > 0 (si se declara).',
   'arena-bounds': '`arena.width` y `arena.height` requeridos y > 0.',
   'balance-bounds': '`powerupChance` en [0,1]; `lives` entero >= 0.',
+  'spawn-bounds': 'Cada entrada de `waves.<n>.spawns[]` requiere `count` y `gap`, enteros > 0 (`gap` son ticks entre apariciones). El mensaje trae el indice exacto del spawn.',
   // --- tower-defense ---
   'tower-dmgtype-valid': 'El `dmgType` de la torre debe existir en `dmgTypes`.',
   'wave-enemy-valid': 'Cada `enemy` de `waves.*.spawns` debe estar declarado en `enemies`.',
