@@ -236,6 +236,9 @@ const invalid = [
   // familia `matches` sobre arrayField: cada fila del layout, ancho exacto + alfabeto.
   { p: 'peg-solitaire', rule: 'board-layout-shape', data: { ...B('peg-solitaire'), boards: { X: { layout: ['oooooo'], goal: 'clear', difficulty: 'easy' } } } },
   { p: 'peg-solitaire', rule: 'board-layout-shape', data: { ...B('peg-solitaire'), boards: { X: { layout: ['xoooooo'], goal: 'clear', difficulty: 'easy' } } } },
+  // familia `grids` con shape LITERAL: el numero exacto de filas (7), que ninguna otra
+  // familia alcanzaba — el tablero es 7x7 por el genero, no porque un token lo declare.
+  { p: 'peg-solitaire', rule: 'board-layout-shape', data: { ...B('peg-solitaire'), boards: { X: { layout: ['ooooooo', 'ooooooo', 'ooooooo'], goal: 'clear', difficulty: 'easy' } } } },
 
   // ---- sudoku (perfil puro-datos: profiles/sudoku.json; grid/solution los valida sudokuCheck en game3d-logic) ----
   { p: 'sudoku', rule: 'player-start-ref', data: { ...B('sudoku'), puzzles: {}, player: { start: 'NOPE' } } },

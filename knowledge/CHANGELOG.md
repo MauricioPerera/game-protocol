@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+### Added — `grids.shape` acepta forma literal, además de por referencia
+- Cierra [#10](https://github.com/MauricioPerera/game-protocol/issues/10). `shape` ya permitía
+  tomar la forma de **otro token** (`{ singleton, rowsField?, colsField? }` — así `monster-rpg`
+  y `tower-defense` exigen que sus mapas calcen con `platform.rows`/`.cols`). Ahora admite
+  también la forma **literal** `{ rows?, cols? }` (enteros > 0), para cuando la forma es
+  intrínseca al género y no vive en ningún token: **un tablero de senku es 7×7 porque así es
+  el juego**, no porque un `platform` lo declare.
+- Con eso, `peg-solitaire` valida su forma **completa** como dato: el ancho y el alfabeto de
+  cada fila los fija `matches` (`^[_o.]{7}$`), y el **número exacto de filas** lo fija ahora
+  `grids` con `shape: { rows: 7 }`. Un tablero de 3 filas correctas pasaba el gate y ya no.
+  `cols` se omite a propósito para no duplicar el chequeo de ancho que `matches` ya hace.
+- **Por qué no una familia nueva.** SPEC §11 pide evidencia repetida antes de añadir una
+  familia. Se buscó: de los arrays de tamaño fijo del repo, `tileArt` (8 filas) y `sprites`
+  (16) ya los cubren reglas en código junto con otras comprobaciones que no son de conteo, y
+  el resto son de tamaño variable. **Un solo caso descubierto no justifica una familia
+  `counts`**; extender una familia existente donde el caso encaja sí.
+- El `$comment` de `peg-solitaire` pasa de declarar el hueco a declarar lo único que queda
+  fuera: que el tablero sea **soluble**, que no es expresable declarativamente y lo cubre la
+  simulación de referencia.
+- Conformance 204 → **205**; descriptor 95 → **97** (formas literales malformadas: no entera,
+  ≤ 0). La forma por referencia se verificó sin regresión.
+
 ### Added — los schemas publican `bounds` como `minimum`/`maximum`/`exclusiveMinimum`
 - Cierra [#9](https://github.com/MauricioPerera/game-protocol/issues/9). `tools/game-schema.js`
   traduce la familia `bounds` a las keywords numéricas nativas de JSON Schema, completando lo
