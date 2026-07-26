@@ -36,6 +36,21 @@ ok(/deprecated:\s*\{\s*since,\s*removedIn\s*\}|rule\.deprecated\s*=\s*\{/.test(s
 ok(/version-migration/.test(spec), 'SPEC.md  documenta la regla version-migration (reemplaza version-compatible)');
 ok(/0\.x/.test(spec) && /breaking changes bump the minor/i.test(spec), 'SPEC.md  declara semver 0.x (breaking = minor)');
 
+// ---- README declara la version vigente (evita el drift del encabezado) ----
+// El encabezado del README se quedo en `v2.18.0` un release entero mientras package.json y
+// la seccion "Estado" del propio README ya decian `v2.19.0`. Es la primera linea que lee
+// cualquiera: si driftea, todo el documento pierde credibilidad.
+const pkgVersion = JSON.parse(read('package.json')).version;
+const readme = read('README.md');
+const headerVersion = (readme.match(/\*\*Especificación `v([\d.]+)`\*\*/) || [])[1];
+ok(headerVersion === pkgVersion,
+   'README.md  el encabezado declara la version de package.json (' + pkgVersion + ')',
+   'README dice v' + headerVersion);
+const releaseVersion = (readme.match(/\*\*Release `v([\d.]+)`\*\*/) || [])[1];
+ok(releaseVersion === pkgVersion,
+   'README.md  la seccion Estado declara la version de package.json (' + pkgVersion + ')',
+   'README dice v' + releaseVersion);
+
 // ---- manifest.json expone el ciclo de vida (S2.1/S2.3 DoD) ----
 const manifest = JSON.parse(read('manifest.json'));
 ok(Array.isArray(manifest.migrations && manifest.migrations.supported) && manifest.migrations.doc === 'MIGRATION.md',

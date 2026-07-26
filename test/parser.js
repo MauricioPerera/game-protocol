@@ -73,5 +73,55 @@ ok(throws(() => parseYamlSubset('a: 1\n    b: 2')),
 ok(eq(parseYamlSubset('a:\n  b:\n    c: 1').a.b.c, 1),
   'anidamiento 3 niveles sigue parseando');
 
+// --- Valores de FLUJO mal formados: antes degradaban EN SILENCIO ---
+// `slice(1, -1)` se aplicaba a ciegas sin comprobar que el valor cerrara, asi que un
+// bracket sin cerrar no fallaba: se PERDIAN datos sin aviso (`a: [1, 2` daba [1]).
+ok(throws(() => parseYamlSubset('a: {k: 1')),
+  'flow-map sin cerrar lanza error (antes: {k: ""})');
+
+ok(throws(() => parseYamlSubset('a: [1, 2')),
+  'flow-list sin cerrar lanza error (antes: [1] — perdia el 2)');
+
+ok(throws(() => parseYamlSubset('a: {k: 1}}')),
+  'cierre de mas en flujo lanza error');
+
+ok(throws(() => parseYamlSubset('a: {k: [1, 2}')),
+  'brackets cruzados en flujo lanzan error');
+
+ok(throws(() => parseYamlSubset('a: {k: 1} basura')),
+  'texto despues del cierre del flujo lanza error');
+
+ok(throws(() => parseYamlSubset('a: [ "abc ]')),
+  'comilla sin cerrar dentro de un flujo lanza error');
+
+// hueco interno por coma de mas: el elemento vacio desaparecia del resultado.
+ok(throws(() => parseYamlSubset('a: [x, , y]')),
+  'hueco interno en flow-list lanza error');
+
+ok(throws(() => parseYamlSubset('a: {x: 1, , y: 2}')),
+  'hueco interno en flow-map lanza error');
+
+// numero no finito: Number('1e999') = Infinity, y JSON.stringify(Infinity) = null, o sea
+// el token se convertia en `null` dentro del artefacto generado, sin ningun aviso.
+ok(throws(() => parseYamlSubset('a: 1e999')),
+  'numero no finito lanza error (antes: null en el artefacto)');
+
+ok(throws(() => parseYamlSubset('a: Infinity')),
+  'Infinity literal lanza error');
+
+// --- Lo que NO debe romperse con el endurecimiento anterior ---
+// un "" explicito es un elemento legitimo; antes lo borraba un filter(v => v !== '').
+ok(eq(parseYamlSubset('a: [x, "", y]').a, ['x', '', 'y']),
+  'string vacio explicito se conserva en flow-list', parseYamlSubset('a: [x, "", y]').a);
+
+ok(eq(parseYamlSubset('a: []').a, []) && eq(parseYamlSubset('a: {}').a, {}),
+  'lista y mapa vacios siguen parseando');
+
+ok(eq(parseYamlSubset('a: [1, 2, ]').a, [1, 2]),
+  'coma final se sigue tolerando', parseYamlSubset('a: [1, 2, ]').a);
+
+ok(eq(parseYamlSubset('a: { k: [1, 2], j: { z: 3 } }').a, { k: [1, 2], j: { z: 3 } }),
+  'flujo anidado bien formado sigue parseando');
+
 console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' tests del parser pasan') : (fail + ' FALLOS de ' + (pass + fail))));
 process.exit(fail === 0 ? 0 : 1);

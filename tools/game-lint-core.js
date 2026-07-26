@@ -293,18 +293,21 @@
     //   - data.version > esperada → error: el GAME.md usa una versión que este tooling
     //     aún no soporta; hay que actualizar el tooling.
     //   - iguales → sin hallazgo.
+    // La comparación es SEMÁNTICA (cmpVersion), no textual: `version: 0.1` sin comillas
+    // parsea como NÚMERO y `0.1.0` es la misma versión que `0.1`. Comparar las cadenas con
+    // `!==` reportaba error en ambos casos con un mensaje autocontradictorio ("version 0.1 no
+    // soportada (max 0.1)"), castigando a quien escribe un GAME.md desde cero en vez de
+    // copiar un ejemplo. Sólo un desajuste REAL de versión emite hallazgo.
     const SUPPORTED_VERSION = '0.1';
     if ('version' in data) {
       const expected = profile.specVersion || SUPPORTED_VERSION;
-      if (data.version !== expected) {
-        const cmp = cmpVersion(data.version, expected);
-        if (cmp < 0)
-          add('warn', 'version-migration',
-              'version ' + data.version + ' es anterior a la soportada ' + expected + '; consulta MIGRATION.md para migrar (se remueve en la major siguiente)');
-        else
-          add('error', 'version-migration',
-              'version ' + data.version + ' no soportada por este tooling (max ' + expected + '); actualiza el tooling');
-      }
+      const cmp = cmpVersion(data.version, expected);
+      if (cmp < 0)
+        add('warn', 'version-migration',
+            'version ' + data.version + ' es anterior a la soportada ' + expected + '; consulta MIGRATION.md para migrar (se remueve en la major siguiente)');
+      else if (cmp > 0)
+        add('error', 'version-migration',
+            'version ' + data.version + ' no soportada por este tooling (max ' + expected + '); actualiza el tooling');
     }
 
     // section-order (el orden canónico lo aporta el perfil; sin perfil no se valida)

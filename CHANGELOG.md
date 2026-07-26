@@ -2,7 +2,116 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — arranque limpio: CLI `game-new` (un `GAME.md` nuevo sin copiar ejemplos)
+- **`tools/game-new.js <perfil> [salida.GAME.md]`** (CLI nuevo, Node puro): escribe el
+  **esqueleto mínimo** de un perfil — los tokens core más *sólo* los tokens sin los cuales
+  ese perfil no puede lintear limpio — de forma que un `GAME.md` recién creado arranca en
+  **0 errores** y **no hereda una sola línea de `examples/`**. Flags: `--list` (perfiles
+  disponibles), `--name` (título), `--force` (sobrescribir; sin él, una salida existente sale
+  `2`). Exit `0`/`2`, nunca `1` ([SPEC §3.1](./SPEC.md)).
+- **`tools/game-new-seeds.json`**: las semillas por perfil, **puro-datos** (`JSON.parse`,
+  nunca se ejecuta — [SPEC §10](./SPEC.md)). Sólo 6 de los 14 perfiles necesitan semilla
+  (`adventure`, `dungeon`, `roguelike`, `shooter`, `peg-solitaire`, `sudoku`); los otros 8
+  lintean limpio con los tokens core solos. Cada entrada documenta en `$why` **qué regla**
+  la obliga.
+- **Por qué**: el tooling nombra `GAME.md` por defecto (`game-lint.js` sin argumentos lo
+  busca en el cwd) pero el repo no traía ninguno, y `manifest.json → agentLoop` empezaba en
+  *"editar GAME.md"* — presuponiendo que ya existía. El único `GAME.md` del repo era
+  `examples/GAME.md`, un monster-rpg completo: humanos y agentes lo copiaban y heredaban
+  criaturas, tiles y mapas creyendo que era el punto de partida de su proyecto. Este CLI
+  cierra ese hueco.
+- **Paso 0 explícito** en la superficie que leen los agentes: `manifest.json` gana
+  `cli.new` y el campo `examplesAreExamples`, y su `agentLoop` ahora empieza en *"crear el
+  documento"*; `llms.txt` gana una sección **Start here**; el README antepone *"Empezar un
+  juego nuevo"* a *"Explorar los ejemplos"* y advierte que `examples/` son demos borrables,
+  no una plantilla de proyecto.
+- **Tests congelados** `test/game-new.js` (47 chequeos) sumados a `npm test` y al CI: el
+  esqueleto de **cada** perfil del repo debe lintear 0 errores y exportar, `--list` debe
+  cubrir todos los perfiles de `profiles/`, ningún esqueleto puede contener tokens de
+  contenido heredados, y el contrato de exit codes (incluido el rechazo de un id con
+  traversal) debe cumplirse.
+
+### Fixed — el índice BM25 de skills estaba roto y sin generador
+- **`skills-index.snapshot` estaba commiteado sin nada que lo produjera ni lo verificara.**
+  Su troceado había degenerado en una **ventana deslizante de un carácter**, y producía
+  miles de chunks-cola inútiles (`"0/20."`, `"/20."`, `"20."`): de **2608** chunks, **2387**
+  medían menos de 60 caracteres, el mínimo era **1** carácter y **901** estaban duplicados.
+  Un índice así no responde a ninguna consulta pasados los primeros chunks reales de cada
+  documento. Además estaba **desactualizado**: no contenía la versión vigente.
+- **`tools/skills-index.js`** (CLI nuevo): trocea por **estructura del markdown** — acumula
+  párrafos completos (los bloques ` ``` ` se mantienen enteros) hasta 800 caracteres,
+  cortando sólo en límites naturales; sólo un párrafo más largo que el techo se parte por
+  límite de palabra con solape. Cada chunk lleva su **ruta de encabezados** como prefijo, de
+  modo que BM25 encuentra una sección por su título aunque el párrafo no lo repita.
+  Regenera además el `snapshot_sha256` que declara `llms.txt` — si se actualizara uno sin el
+  otro, un consumidor que verifique el hash rechazaría el bundle entero.
+- Resultado: **2608 → 261 chunks**, mediana **27 → 630** caracteres, chunks minúsculos
+  **2387 → 1**, duplicados **901 → 0**, tamaño **545 KB → 196 KB**, y al día.
+- **`test/skills-index.js`** (22 chequeos, en `npm test` y en CI): sin-drift contra
+  `knowledge/`, determinismo, sha256 de `llms.txt`, contrato de forma que consume
+  `search_knowledge` (`{id, metadata:{content, okf_concept, okf_type, title}}`), **umbrales
+  de calidad del troceado** (mediana ≥ 200, <5% de chunks diminutos, >95% únicos — la
+  regresión concreta que rompió el índice), coherencia con `list_concepts`/`get_concept`, y
+  que el snapshot contenga la versión vigente del paquete.
+
+### Fixed — `knowledge/` podía driftear de los documentos raíz sin que nadie lo notara
+- Los 5 documentos de `knowledge/` son copias literales de los de la raíz, mantenidas **a
+  mano**, sin generador ni gate — justo el drift que el protocolo existe para impedir. Como
+  el bundle publicado se sirve desde `knowledge/`, una copia vieja hace que las skills
+  respondan con documentación caducada y que el snapshot indexe un spec que ya no es.
+- `test/skills-index.js` ahora exige que cada `knowledge/X.md` sea **idéntico** a su
+  documento raíz.
+
+### Fixed — el encabezado del README declaraba una versión vieja
+- La primera línea del README anunciaba `v2.18.0` mientras `package.json` y la propia
+  sección «Estado» del README ya decían `v2.19.0`. Corregido, y `test/lifecycle.js` gatea
+  ahora que **ambas** menciones de versión del README coincidan con `package.json`.
+
+### Fixed — el parser degradaba en silencio ante valores de flujo mal formados
+- `parseFlowMap`/`parseFlowList` hacían `slice(1, -1)` **a ciegas**, sin comprobar que el
+  valor cerrara. Un bracket sin cerrar no fallaba: **perdía datos sin aviso** — `a: [1, 2`
+  daba `[1]` (el `2` desaparecía) y `a: {k: 1` daba `{k: ''}`. Contradecía de frente lo que
+  [SPEC §1.2](./SPEC.md) y [§10](./SPEC.md) declaran ("falla fuerte, nunca degrada en
+  silencio"): `test/parser.js` cubría la **comilla** sin cerrar, no el **bracket**.
+- Nuevo `assertFlowWellFormed` en `tools/yaml-min.js`: ahora lanzan un error claro el
+  bracket sin cerrar, el cierre de más (`{k: 1}}`), los brackets cruzados (`{k: [1, 2}`),
+  el texto tras el cierre externo (`{k: 1} basura`) y la comilla sin cerrar dentro de un
+  flujo.
+- **Hueco interno por coma de más** (`[a, , b]`, `{x: 1, , y: 2}`) pasa a ser error: el
+  elemento vacío se descartaba en silencio. Una **coma final** (`[a, b, ]`) se sigue
+  tolerando.
+- **String vacío explícito preservado**: `[x, "", y]` daba `["x","y"]` por un
+  `filter(v => v !== '')` que no distinguía el `""` legítimo del hueco de sintaxis. Ahora
+  da `["x","","y"]`.
+- **Número no finito** (`1e999`, `Infinity`) pasa a ser error de parseo: `JSON.stringify`
+  lo convierte en `null`, así que el token se perdía **dentro del artefacto generado** sin
+  ningún aviso.
+- [SPEC §1.2](./SPEC.md) (gramática normativa: `number` = decimal **finito**; nuevos fallos
+  duros) y [§9.1](./SPEC.md) (lista de conformidad del parser) actualizados. 14 casos nuevos
+  en `test/parser.js` (16 → **30**). Los 18 `GAME.md` del repo siguen linteando 0 errores:
+  ninguno dependía del comportamiento laxo.
+
+### Fixed — el CI corría menos suites que `npm test`
+- El job `tests` de `.github/workflows/ci.yml` enumeraba **11** suites mientras `npm test`
+  encadenaba **14**: `perf-smoke`, `mutation-manual` y `data-seal` — el sellado de datos, la
+  feature estrella de `2.19.0` — **no estaban gateadas en CI**. Añadidas, más el nuevo
+  `game-new`.
+- **`test/ci-sync.js`** (nuevo, en `npm test` y en CI) impide la reincidencia: gatea que
+  `package.json` y `ci.yml` invoquen exactamente el mismo conjunto de suites y que ninguna
+  suite de `test/` quede huérfana. `perf-bench` queda excluido a propósito (es la medición
+  larga de `npm run bench`, no un gate). 16 suites gateadas.
+
+### Fixed — `version-migration` comparaba versiones como texto, no como versiones
+- `version: 0.1` **sin comillas** parsea como **número** (`0.1`), y `0.1.0` es la misma
+  versión que `0.1`; ambos casos caían en una comparación `!==` contra el string `'0.1'` y
+  emitían un **error autocontradictorio**: *"version 0.1 no soportada por este tooling (max
+  0.1); actualiza el tooling"* — imposible de resolver siguiendo el mensaje. En la práctica
+  el linter **castigaba escribir un `GAME.md` a mano** y premiaba copiar un ejemplo (los
+  ejemplos traen `version: "0.1"` entrecomillado). Ahora la comparación usa el `cmpVersion`
+  que el propio core ya tenía: sólo un desajuste **real** de versión emite hallazgo.
+- Es un cambio **aditivo** (estrictamente más permisivo): todo `GAME.md` que linteaba en 0
+  errores sigue linteando en 0. `'0.2'` (más nueva que el tooling) sigue siendo **error** y
+  `'0.0.9'` (más vieja) sigue siendo **warn**. Regresión congelada en `test/game-new.js`.
 
 ## [2.19.0] — 2026-07-11
 
