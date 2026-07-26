@@ -2,7 +2,38 @@
 
 ## [Unreleased]
 
-_No hay cambios pendientes._
+### Added — los schemas publican `bounds` como `minimum`/`maximum`/`exclusiveMinimum`
+- Cierra [#9](https://github.com/MauricioPerera/game-protocol/issues/9). `tools/game-schema.js`
+  traduce la familia `bounds` a las keywords numéricas nativas de JSON Schema, completando lo
+  que `2.21.0` empezó con `matches` → `pattern`: **las dos únicas familias del core con
+  equivalente nativo** ya viajan en el schema. `refs` y `dims` dependen de datos o de otras
+  colecciones y siguen en `x-references`.
+
+  | descriptor | JSON Schema |
+  |---|---|
+  | `gt` | `exclusiveMinimum` (numérico en draft-07, el dialecto que declaran los schemas) |
+  | `min` / `max` | `minimum` / `maximum` |
+  | `integer: true` | `type: "integer"` (si no, `type: "number"`) |
+  | `required: true` | entrada en el `required` del objeto |
+
+- **La fidelidad es exacta, y aquí la semántica es la CONTRARIA a `matches`.** En `matches` el
+  core *salta* los valores no-string, así que declarar `type` sin `required` habría hecho el
+  schema más estricto que el gate. En `bounds` el core marca error si el valor presente **no
+  es un número**, así que el tipo se declara **siempre** — y es seguro, porque `properties` de
+  JSON Schema solo aplica cuando el campo está presente, igual que el core, que ante un campo
+  ausente sin `required` no reporta nada.
+- Cubre las tres formas del descriptor: singleton (`arena.width`), colección (`ships.*.hp`) y
+  `arrayField`+`itemField` (`waves.*.spawns[].count`). `matches` y `bounds` pueden tocar el
+  mismo campo: el nodo hoja se **fusiona** en vez de sobrescribirse.
+- **Verificado comparando veredictos, no leyendo el resultado**: 13 casos pasados por el
+  linter y por un validador **Draft-07** real — base válida, `gt` con 0, negativo, ausente con
+  `required`, string donde va número, decimal con `integer`, campo opcional ausente, y los
+  tres niveles de anidamiento. **Los dos coinciden en los 13.** Además, los **18 `GAME.md`**
+  del repo validan contra el schema de su perfil.
+- Gate estructural ampliado en `test/profile-descriptor.js` (41 → **95** chequeos), sin añadir
+  dependencias: `ajv` contradiría el principio de cero dependencias (SPEC §8.7), así que la
+  equivalencia semántica se verificó una vez con Draft-07 y el gate diario impide la regresión
+  estructural.
 
 ## [2.21.0] — 2026-07-26
 

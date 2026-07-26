@@ -52,7 +52,17 @@
       "type": "object"
     },
     "balance": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "lives": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hints": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "text": {
       "type": "object"

@@ -75,27 +75,32 @@ for (const [name, mut] of bad) {
   fs.rmSync(TMP, { recursive: true, force: true });
 }
 
-// ---- (4) Los schemas reflejan la familia `matches` ----
-// `matches` es la unica familia del core con equivalente NATIVO en JSON Schema (`pattern`);
-// el resto depende de datos y vive en x-references. Si un perfil declara un patron y el
-// schema no lo publica, una herramienta externa valida menos que el linter sin avisar.
+// ---- (4) Los schemas reflejan las familias `matches` y `bounds` ----
+// Son las dos familias del core con equivalente NATIVO en JSON Schema (`pattern` y
+// `minimum`/`maximum`/...); el resto depende de datos y vive en x-references. Si un perfil
+// declara una restriccion y el schema no la publica, una herramienta externa valida menos
+// que el linter sin avisar.
 // El chequeo es estructural (Node puro, sin validador JSON Schema como dependencia): la
-// equivalencia semantica real se verifico contra Draft7 al implementar la traduccion.
+// equivalencia semantica real se verifico contra Draft7 al implementar cada traduccion.
 (function () {
+  // Localiza el nodo hoja de una entrada (misma navegacion para ambas familias).
+  const leafOf = (schema, e) => {
+    const token = (schema.properties || {})[e.collection || e.singleton];
+    const holder = e.singleton ? token : (token && token.additionalProperties);
+    const node = holder && holder.properties && holder.properties[e.arrayField || e.field];
+    return e.arrayField
+      ? (node && node.items && (e.itemField ? (node.items.properties || {})[e.itemField] : node.items))
+      : node;
+  };
   for (const f of files) {
     const p = require(path.join(REPO, 'profiles', f));
-    const entries = p.matches || [];
-    if (!entries.length) continue;
+    if (!(p.matches || []).length && !(p.bounds || []).length) continue;
     const schemaPath = path.join(REPO, 'schemas', p.id + '.schema.json');
     if (!fs.existsSync(schemaPath)) { ok(false, 'schema  falta schemas/' + p.id + '.schema.json'); continue; }
     const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-    for (const m of entries) {
-      const token = (schema.properties || {})[m.collection || m.singleton];
-      const holder = m.singleton ? token : (token && token.additionalProperties);
-      const node = holder && holder.properties && holder.properties[m.arrayField || m.field];
-      const leaf = m.arrayField
-        ? (node && node.items && (m.itemField ? (node.items.properties || {})[m.itemField] : node.items))
-        : node;
+
+    for (const m of (p.matches || [])) {
+      const leaf = leafOf(schema, m);
       ok(!!leaf && leaf.pattern === m.pattern,
         'schema  ' + p.id + ' publica el pattern de ' + m.rule + ' (' + (m.arrayField || m.field) + ')',
         JSON.stringify(leaf));
@@ -106,6 +111,24 @@ for (const [name, mut] of bad) {
         ok(!leaf || leaf.type === undefined,
           'schema  ' + p.id + '/' + m.rule + ' sin `required` no fuerza type:string (no-strings se saltan)',
           JSON.stringify(leaf));
+    }
+
+    for (const b of (p.bounds || [])) {
+      const leaf = leafOf(schema, b);
+      const want = b.integer ? 'integer' : 'number';
+      // A DIFERENCIA de matches: el core marca error si el valor presente no es numero,
+      // asi que el tipo SIEMPRE se declara. Es seguro porque `properties` solo aplica
+      // cuando el campo esta presente, igual que el core.
+      ok(!!leaf && leaf.type === want,
+        'schema  ' + p.id + ' publica el type de ' + b.rule + ' (' + (b.arrayField ? (b.itemField || b.arrayField) : b.field) + ' -> ' + want + ')',
+        JSON.stringify(leaf));
+      if (b.gt != null)
+        ok(leaf && leaf.exclusiveMinimum === b.gt,
+          'schema  ' + p.id + '/' + b.rule + ' traduce gt a exclusiveMinimum (draft-07)', JSON.stringify(leaf));
+      if (b.min != null)
+        ok(leaf && leaf.minimum === b.min, 'schema  ' + p.id + '/' + b.rule + ' traduce min a minimum', JSON.stringify(leaf));
+      if (b.max != null)
+        ok(leaf && leaf.maximum === b.max, 'schema  ' + p.id + '/' + b.rule + ' traduce max a maximum', JSON.stringify(leaf));
     }
   }
 })();
