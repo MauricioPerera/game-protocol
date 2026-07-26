@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.20.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.21.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -126,7 +126,20 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 
 ## Estado
 
-**Release `v2.20.0`** — aditivo. **Arranque limpio**: `node tools/game-new.js <perfil>
+**Release `v2.21.0`** — aditivo. **Cuarta etapa de reglas puras-de-datos**
+([SPEC §11](./SPEC.md)): la familia **`matches`** valida una propiedad de texto por
+expresión regular, y **`bounds` acepta `arrayField`** para alcanzar campos dentro de arrays
+anidados. Entre las dos cierran los **tres huecos** que los perfiles puro-datos declaraban
+en su propio `$comment` — los 81 caracteres de `grid`/`solution` en `sudoku`, las filas de
+7 de `peg-solitaire` y los `waves.*.spawns[].count/gap` de `shooter` pasan de "lo verifica
+la simulación" a ser dato validado. Los `schemas/` publican además `matches` como la
+keyword nativa `pattern`, con la semántica exacta del linter (los no-string se saltan salvo
+`required`), así que una herramienta externa exige la misma forma sin ejecutar nada. Ambas
+familias vienen del proyecto hermano [KDD](https://github.com/MauricioPerera/KDD), donde el
+motor de rule contracts ya había generalizado los `refs`/`bounds`/`enums` de este protocolo.
+204 casos de conformidad, mutation audit 20/20.
+
+`v2.20.0` — aditivo. **Arranque limpio**: `node tools/game-new.js <perfil>
 mi-juego.GAME.md` crea un `GAME.md` nuevo que lintea **0 errores** sin copiar nada de
 `examples/`. Cierra el hueco por el que un proyecto nacía heredando el contenido del ejemplo:
 el tooling nombraba `GAME.md` por defecto pero el repo no traía ninguno, y el `agentLoop`

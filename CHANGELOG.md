@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+_No hay cambios pendientes._
+
+## [2.21.0] — 2026-07-26
+
+Release **aditivo** sobre `2.20.0` (bump minor, [SPEC §7.0](./SPEC.md)): la **cuarta etapa
+de reglas puras-de-datos** ([SPEC §11](./SPEC.md)). Dos familias declarativas nuevas —
+`matches` (propiedad de texto por expresión regular) y `bounds` sobre `arrayField` (campos
+dentro de arrays anidados)— cierran los **tres huecos** que los perfiles puro-datos
+declaraban en su propio `$comment`: la forma de los strings de `sudoku` y `peg-solitaire`, y
+los campos anidados de `shooter`. Los schemas generados publican además `matches` como la
+keyword nativa `pattern`, de modo que una herramienta externa exige la misma forma que el
+linter sin ejecutar nada. Ambas familias vienen del proyecto hermano
+[KDD](https://github.com/MauricioPerera/KDD), con la semántica deliberadamente idéntica. La
+versión del protocolo sigue en `0.1`.
+
 ### Added — familias `matches` y `bounds` sobre `arrayField` (SPEC §11, cuarta etapa)
 - **`matches`** (familia declarativa nueva): propiedad de **texto por expresión regular**.
   Entrada `{ rule, level?, collection|singleton, field|arrayField(+itemField), pattern,
