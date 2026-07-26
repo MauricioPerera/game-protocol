@@ -21,7 +21,7 @@ project template and not part of your project. Those files are deletable. Read t
 see what shape a token takes; never inherit their content (species, tiles, maps) into a new
 game. `manifest.json` is the canonical machine-readable list of profiles, tokens and rules.
 
-<!-- skills-memory: {"snapshot":"/skills-index.snapshot","snapshot_sha256":"cf24645144d358bc0ce4587f25bc14fe5920335080b7298f2567d7ddf18b98df","format":"minimemory-okf-v1"} -->
+<!-- skills-memory: {"snapshot":"/skills-index.snapshot","snapshot_sha256":"7e67409127feb4b9d4ceb5aa34e480050b1508ddc2556451f3755dd54c9fd39e","format":"minimemory-okf-v1"} -->
 
 ## Skills
 
