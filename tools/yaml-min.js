@@ -7,6 +7,10 @@
  *  - respeta comillas al partir comas y el separador `:` en flujo (admite comas y `:` en strings);
  *  - LANZA error claro ante secuencias de bloque (`- item`) y lineas de front-matter sin `:`;
  *  - LANZA ante clave duplicada, string sin cerrar, tab en indentacion, sobre-indentacion;
+ *  - LANZA ante valores de flujo mal formados (bracket sin cerrar, cierre de mas, brackets
+ *    cruzados, texto tras el cierre) en vez de recortar a ciegas y PERDER datos;
+ *  - LANZA ante hueco interno por coma de mas ([a, , b]) y ante numeros no finitos (1e999),
+ *    que se convertirian en `null` al serializar el artefacto;
  *  - guarda la recursion de parseBlock a 64 niveles (anidamiento profundo lanza error claro,
  *    no desborda la pila);
  *  - tolera CRLF;
@@ -29,8 +33,42 @@ function parseScalar(s) {
   if (s === 'true') return true;
   if (s === 'false') return false;
   if (/^-?0\d/.test(s)) return s;                       // 007, -012 → string (no perder ceros)
-  if (s !== '' && !isNaN(Number(s))) return Number(s);
+  if (s !== '' && !isNaN(Number(s))) {
+    const n = Number(s);
+    // Un numero no finito (1e999, Infinity) se serializa como `null` en el artefacto
+    // generado: el dato se perderia EN SILENCIO al exportar. El subset no lo admite.
+    if (!Number.isFinite(n))
+      throw new Error('yaml-min: numero no finito "' + s + '" (no es representable en el artefacto)');
+    return n;
+  }
   return s;
+}
+// Verifica que un valor de FLUJO este bien formado antes de trocearlo: brackets balanceados
+// y del tipo correcto, comillas cerradas, y nada de basura despues del cierre externo.
+// Sin esto, `parseFlowMap`/`parseFlowList` hacian `slice(1, -1)` a ciegas y un valor sin
+// cerrar degradaba EN SILENCIO: `a: [1, 2` perdia el 2, `a: {k: 1` daba {k: ''}.
+function assertFlowWellFormed(s) {
+  const stack = [];
+  let q = null;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (q) { if (c === q) q = null; continue; }
+    if (c === '"' || c === "'") { q = c; continue; }
+    if (c === '{' || c === '[') { stack.push(c); continue; }
+    if (c === '}' || c === ']') {
+      const open = stack.pop();
+      if (open === undefined)
+        throw new Error('yaml-min: cierre "' + c + '" sin apertura en flujo: "' + s + '"');
+      if ((c === '}') !== (open === '{'))
+        throw new Error('yaml-min: cierre "' + c + '" no coincide con la apertura "' + open + '" en flujo: "' + s + '"');
+      continue;
+    }
+    if (stack.length === 0 && c.trim() !== '')
+      throw new Error('yaml-min: texto fuera del valor de flujo ("' + c + '") en: "' + s + '"');
+  }
+  if (q) throw new Error('yaml-min: string sin cerrar en flujo: "' + s + '"');
+  if (stack.length)
+    throw new Error('yaml-min: falta cerrar "' + stack[stack.length - 1] + '" en flujo: "' + s + '"');
 }
 // Recorre `s` respetando comillas; devuelve el indice del primer `ch` de nivel-0 fuera de comillas (o -1).
 function findTop(s, ch) {
@@ -46,6 +84,8 @@ function findTop(s, ch) {
   return -1;
 }
 // Parte por comas de nivel-0, respetando comillas y anidamiento {}/[].
+// Un hueco INTERNO (`[a, , b]`, `{x: 1, , y: 2}`) es un error: antes se colaba y el
+// elemento vacio desaparecia del resultado. Una coma FINAL (`[a, b, ]`) se sigue tolerando.
 function splitTop(s) {
   const out = []; let depth = 0, cur = '', q = null;
   for (const ch of s) {
@@ -53,15 +93,19 @@ function splitTop(s) {
     if (ch === '"' || ch === "'") { q = ch; cur += ch; continue; }
     if (ch === '{' || ch === '[') depth++;
     else if (ch === '}' || ch === ']') depth--;
-    if (ch === ',' && depth === 0) { out.push(cur); cur = ''; } else cur += ch;
+    if (ch === ',' && depth === 0) {
+      if (cur.trim() === '')
+        throw new Error('yaml-min: elemento vacio en flujo (coma de mas) en: "' + s + '"');
+      out.push(cur); cur = '';
+    } else cur += ch;
   }
   if (cur.trim() !== '') out.push(cur);
   return out;
 }
 function parseValue(s) {
   s = s.trim();
-  if (s.startsWith('{')) return parseFlowMap(s);
-  if (s.startsWith('[')) return parseFlowList(s);
+  if (s.startsWith('{')) { assertFlowWellFormed(s); return parseFlowMap(s); }
+  if (s.startsWith('[')) { assertFlowWellFormed(s); return parseFlowList(s); }
   return parseScalar(s);
 }
 function parseFlowMap(s) {
@@ -80,7 +124,9 @@ function parseFlowMap(s) {
 }
 function parseFlowList(s) {
   s = s.trim().slice(1, -1);
-  return splitTop(s).map(p => parseValue(p)).filter(v => v !== '');
+  // Sin filtro: un `""` explicito es un elemento legitimo y antes se borraba en silencio
+  // (`[x, "", y]` daba ["x","y"]). Los huecos de sintaxis los atrapa `splitTop`.
+  return splitTop(s).map(p => parseValue(p));
 }
 function parseYamlSubset(src) {
   const lines = String(src).replace(/\r\n?/g, '\n').split('\n');

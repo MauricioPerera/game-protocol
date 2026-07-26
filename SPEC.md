@@ -73,7 +73,8 @@ pair       = key ":" value ;      (* the ":" is the first top-level one outside 
 flow-list  = "[" [ value { "," value } ] "]" ;
 scalar     = quoted | number | boolean | plain ;
 quoted     = '"' { char } '"' | "'" { char } "'" ;   (* commas and ":" allowed inside *)
-number     = valid JS decimal ;   (* leading-zero integers ("007") stay strings *)
+number     = valid FINITE JS decimal ;  (* leading-zero integers ("007") stay strings;
+                                          a non-finite value (1e999, Infinity) is an error *)
 boolean    = "true" | "false" ;
 plain      = unquoted text ;      (* in flow context: no top-level "," or ":" *)
 ```
@@ -83,6 +84,9 @@ Semantics and hard failures (MUST raise a clear parse error, never degrade silen
 - Indentation is spaces only; a **TAB in indentation** is an error. A line indented deeper than its block without an opening parent (**over-indentation**) is an error.
 - **Block sequences** (`- item`) are not part of the subset — lists are flow-only (`[a, b]`).
 - A front-matter line without a top-level `:`, a **duplicate key** within a block, an **unclosed quoted string**, a flow pair without `:`, nesting **deeper than 64 levels**, and the three forbidden keys are all errors.
+- A **malformed flow value** is an error, never a partial parse: an unclosed `{`/`[`, a stray closer, mismatched brackets (`{k: [1, 2}`), text after the outer closer, and an unclosed quote inside a flow value. Silently slicing an unclosed value would *drop data* (`a: [1, 2` yielding `[1]`), which §10 forbids.
+- An **empty element from a stray comma** (`[a, , b]`, `{x: 1, , y: 2}`) is an error. A single **trailing comma** (`[a, b, ]`) is tolerated. An explicitly quoted empty string (`[a, "", b]`) is a legitimate element and MUST be preserved.
+- A **non-finite number** (`1e999`, `Infinity`) is an error: it would serialize to `null` in the compiled artifact, losing the token silently.
 - `\r\n` / `\r` line endings are normalized to `\n` before parsing. Line comments are stripped only on their own line — a `#` after a flow value is **not** a comment (it becomes part of the last scalar; see `tools/SPRITE_EXTRACTION.md`).
 
 ## 2. Core tokens (genre-agnostic)
@@ -126,11 +130,12 @@ Every CLI in `tools/` shares one exit-code contract (also shown by each `--help`
 | `1` | Validation | `game-lint.js` only: the source parsed and loaded, but the linter found `error`-level findings. |
 | `2` | Input / profile / syntax | File unreadable, front-matter missing or unparseable, `profile` unknown or unloadable, unknown CLI flag, or (for `render-png.js`) a generated file whose profile the renderer does not support. |
 
-`game-export.js`, `game-manifest.js`, `game-schema.js`, `game-seal.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
+`game-new.js`, `game-export.js`, `game-manifest.js`, `game-schema.js`, `game-seal.js`, `build-standalone.js`, and `render-png.js` never emit `1`: they either produce output (`0`) or fail on input/profile/syntax (`2`). Only `game-lint.js` distinguishes "ran but found problems" (`1`) from "could not run" (`2`). Scripts that consume these CLIs can rely on this table.
 
 **Usage notes.**
 
 - Every CLI accepts `--help` / `-h` (prints usage + the exit-code line above and exits `0`) and rejects unknown flags with a clear `flag desconocido` message on stderr (exit `2`).
+- `game-new.js <profile> [out.GAME.md]` is the **entry point for a new document**: it writes the minimal skeleton of a profile — the core tokens plus only the tokens without which that profile cannot lint clean — so a fresh `GAME.md` starts at zero errors and inherits nothing from `examples/`. `--list` prints the available profiles, `--name` sets the title, `--force` overwrites an existing file (without it, an existing output exits `2`). The per-profile seeds live in `tools/game-new-seeds.json` (pure data, `JSON.parse`d, never executed). Remaining `warn`-level findings in a fresh skeleton are intentional — they are the author's to-do list. `test/game-new.js` gates that **every** shipped profile's skeleton lints clean and exports.
 - `game-lint.js` prints a JSON report on stdout. A non-existent file exits `2` (`No se pudo leer <file>`); a parseable file with a broken front-matter exits `1` and the report contains a `parse-error` finding; an unknown/invalid `profile` exits `1` with a `profile-known` (unknown id) or `profile-load-error` (invalid id / broken syntax) finding.
 - `game-export.js` writes the generated artifact only on success (`0`). A non-existent source, unparseable front-matter, or an unknown/invalid profile all exit `2` with a one-line stderr message; no artifact is written.
 - `build-standalone.js` inlines every local `<script src="...">` (relative path resolved against the HTML file's directory) and leaves `http(s)://` CDN scripts untouched. A missing input file or a missing local script exits `2`; the latter still reports `externos sin inlinar` so the build is auditable.
@@ -295,7 +300,7 @@ The protocol has a lifecycle: tokens, rules, and profiles can be **deprecated** 
 
 GAME Protocol distinguishes the **reference implementation** (`tools/`) from the protocol itself. An alternative implementation is **conformant** if it satisfies all of the following:
 
-1. **Parser.** It parses the YAML subset of §1.1 identically to the reference parser, including the hard-failure cases: block sequences (`- item`), front-matter lines without `:`, duplicate keys, unclosed strings, tab indentation, over-indentation, nesting deeper than 64 levels, and the forbidden keys `__proto__`/`constructor`/`prototype`. `test/parser.js` is the executable definition of these cases. Implementations MAY substitute a full YAML parser as long as the documented subset parses identically.
+1. **Parser.** It parses the YAML subset of §1.1 identically to the reference parser, including the hard-failure cases: block sequences (`- item`), front-matter lines without `:`, duplicate keys, unclosed strings, tab indentation, over-indentation, nesting deeper than 64 levels, the forbidden keys `__proto__`/`constructor`/`prototype`, malformed flow values (unclosed, stray or mismatched brackets, trailing text), stray-comma gaps in flow, and non-finite numbers. `test/parser.js` is the executable definition of these cases. Implementations MAY substitute a full YAML parser as long as the documented subset parses identically.
 2. **Linter.** It emits the core rules of §4 at the documented levels, executes the active profile's reference graph (`refs`, broken-ref family) and rule functions, and reports findings as `{level, rule, msg}` (plus `since`/`removedIn` at the `deprecated` level). A document is valid iff it produces zero `error`-level findings. `test/conformance.js` is the executable reference: every valid example MUST lint clean and every invalid case MUST trigger its rule.
 3. **Compiler.** Its output is a pure function of the source (§3). For the reference artifact format (`window.GAME` as JSON), output MUST be byte-identical to `tools/game-export.js`: universal meta first (`generatedFrom`, `profile`, `name`, `description`, `platform`, `palettesCount`), then the profile's `derive` keys in declaration order, serialized as JSON with 2-space indent and LF line endings. The `profile` meta key lets multi-profile consumers dispatch a runtime without key-sniffing heuristics.
 4. **Exit codes.** CLI surfaces follow the §3.1 contract (`0` OK / `1` validation, lint only / `2` input, profile or syntax). `test/cli-errors.js` is the executable reference.

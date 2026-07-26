@@ -1,6 +1,6 @@
 # GAME Protocol — *Gameplay as Data*
 
-> **Especificación `v2.18.0`** para describir el **contenido y el balance** de un juego 2D
+> **Especificación `v2.19.0`** para describir el **contenido y el balance** de un juego 2D
 > por tiles como **datos declarativos** —no como código incrustado en el motor— usando un único archivo
 > `GAME.md` (**YAML + Markdown**), validado e integrado por CLI.
 >
@@ -58,6 +58,34 @@ El protocolo tokeniza *datos*, no *lógica*. Ver [§7 de la spec](./SPEC.md).
 
 Requisitos: **Node.js** (sin dependencias, sin `npm install`).
 
+### Empezar un juego nuevo
+
+```bash
+# 1. Crear el documento (esqueleto limpio, 0 errores de lint)
+node tools/game-new.js --list                        # ver los perfiles disponibles
+node tools/game-new.js adventure mi-juego.GAME.md --name "Mi Juego"
+
+# 2. Editarlo y validar — los `hint` dicen exactamente qué falta
+node tools/game-lint.js mi-juego.GAME.md --agent
+
+# 3. Compilar al artefacto que consume el motor
+node tools/game-export.js mi-juego.GAME.md mi-juego.generated.js
+```
+
+`game-new.js` emite el **mínimo estructural** del perfil elegido: pasa el gate desde el
+primer segundo y no arrastra una sola línea de contenido de los ejemplos. Los `warn` que
+deja (`goal-missing`, `win-text`…) son deliberados: son tu lista de tareas.
+
+> ### ⚠️ `examples/` son ejemplos, no una plantilla de proyecto
+>
+> Cada `examples/*.GAME.md` es un **juego terminado** que demuestra el protocolo. No son el
+> punto de partida de un proyecto nuevo y **son perfectamente borrables**: si empiezas
+> copiando uno, heredas sus criaturas, tiles y mapas y terminas editando el juego de otro.
+> Para empezar el tuyo usa `game-new.js`; consulta los ejemplos solo como referencia de qué
+> forma tiene un token.
+
+### Explorar los ejemplos
+
 ```bash
 # Validar el documento de ejemplo (0 errores / 0 warnings)
 node tools/game-lint.js examples/GAME.md
@@ -79,12 +107,14 @@ encuentros, una casa con interior, un entrenador, un NPC, ítems y un starter �
 | Ruta | Rol |
 |---|---|
 | [`SPEC.md`](./SPEC.md) | **La especificación del protocolo** (formato, tokens, artefacto, 137 reglas — core §4 + perfiles §6; hints de arreglo en [`tools/rule-hints.js`](./tools/rule-hints.js) —, frontera datos/código). |
+| [`tools/game-new.js`](./tools/game-new.js) | **Punto de partida**: crea un `GAME.md` limpio para un perfil (semillas en [`game-new-seeds.json`](./tools/game-new-seeds.json)). |
 | [`tools/yaml-min.js`](./tools/yaml-min.js) | Parser del subconjunto YAML (isomorfo Node/navegador). |
 | [`tools/game-lint-core.js`](./tools/game-lint-core.js) | Reglas de validación puras (`lintGame`), isomorfas. |
 | [`tools/game-lint.js`](./tools/game-lint.js) | CLI del validador (cruces con el motor opcionales vía `GAME_ENGINE`). |
 | [`tools/game-build-core.js`](./tools/game-build-core.js) | Compilación genérica dirigida por `profile.derive`; isomorfa. |
 | [`tools/game-export.js`](./tools/game-export.js) | CLI del compilador → `game-data.generated.js`. |
 | [`examples/GAME.md`](./examples/GAME.md) | Documento de ejemplo mínimo y autocontenido. |
+| [`tools/skills-index.js`](./tools/skills-index.js) | Genera `skills-index.snapshot` (índice BM25 de [`knowledge/`](./knowledge)) y su sha256 en [`llms.txt`](./llms.txt). |
 | [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) | CI: lint + sin-drift del generado. |
 | [`CONTRIBUTING.md`](./CONTRIBUTING.md) | Cómo proponer cambios + política breaking/versionado. |
 | [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) | Código de conducta del proyecto. |

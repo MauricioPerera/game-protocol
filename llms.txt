@@ -9,7 +9,19 @@
 - [Spec](/SPEC.md)
 - [Repository](https://github.com/MauricioPerera/game-protocol)
 
-<!-- skills-memory: {"snapshot":"/skills-index.snapshot","snapshot_sha256":"7c7a7e0816ef9e837d3b1e8cdeb3c7304b14fa1105923d254c27591f464a7dc5","format":"minimemory-okf-v1"} -->
+## Start here (agents, read this first)
+
+To build a game with this protocol, **generate a fresh document — do not copy an example**:
+`node tools/game-new.js <profile> mi-juego.GAME.md` writes a clean skeleton that lints at
+zero errors. Then loop: edit → `node tools/game-lint.js mi-juego.GAME.md --agent` → apply
+each `hint` → repeat until `errors: 0` → `node tools/game-export.js`.
+
+Everything under `examples/` is a **finished demo game** that exercises the protocol, not a
+project template and not part of your project. Those files are deletable. Read them only to
+see what shape a token takes; never inherit their content (species, tiles, maps) into a new
+game. `manifest.json` is the canonical machine-readable list of profiles, tokens and rules.
+
+<!-- skills-memory: {"snapshot":"/skills-index.snapshot","snapshot_sha256":"9a45d85325f80ce19a22a804e3b5dddba5bf10dd2137258e011b60d9b9be5ec4","format":"minimemory-okf-v1"} -->
 
 ## Skills
 

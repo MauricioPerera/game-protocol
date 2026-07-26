@@ -61,6 +61,18 @@ jobs:
         run: node test/build-standalone.js
       - name: Lifecycle (deprecation policy + migración + breaking)
         run: node test/lifecycle.js
+      - name: Performance (lint < 50ms sobre 10K datos)
+        run: node test/perf-smoke.js
+      - name: Mutation audit (el linter atrapa mutantes del dato)
+        run: node test/mutation-manual.js
+      - name: Sellado de datos (dataSha256 + regla data-seal)
+        run: node test/data-seal.js
+      - name: "Arranque limpio (game-new.js: esqueleto 0 errores en TODOS los perfiles)"
+        run: node test/game-new.js
+      - name: Índice de skills (snapshot sin drift + calidad del troceado)
+        run: node test/skills-index.js
+      - name: CI sincronizado con npm test (sin suites huérfanas)
+        run: node test/ci-sync.js
 
   agent-artifacts:
     runs-on: ubuntu-latest

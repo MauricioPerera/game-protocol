@@ -8,7 +8,9 @@
     "lint": "node tools/game-lint.js examples/GAME.md",
     "export": "node tools/game-export.js examples/GAME.md examples/game-data.generated.js",
     "examples": "node test/all-examples.js",
-    "test": "node test/parser.js && node test/profile-descriptor.js && node test/game3d-logic.js && node test/multi-genre.js && node test/conformance.js && node test/all-examples.js && node test/cli-errors.js && node test/buildGame-content.js && node test/render-png.js && node test/build-standalone.js && node test/lifecycle.js && node test/perf-smoke.js && node test/mutation-manual.js && node test/data-seal.js",
+    "new": "node tools/game-new.js",
+    "skills-index": "node tools/skills-index.js",
+    "test": "node test/parser.js && node test/profile-descriptor.js && node test/game3d-logic.js && node test/multi-genre.js && node test/conformance.js && node test/all-examples.js && node test/cli-errors.js && node test/buildGame-content.js && node test/render-png.js && node test/build-standalone.js && node test/lifecycle.js && node test/perf-smoke.js && node test/mutation-manual.js && node test/data-seal.js && node test/game-new.js && node test/skills-index.js && node test/ci-sync.js",
     "bench": "node test/perf-bench.js"
   }
 }

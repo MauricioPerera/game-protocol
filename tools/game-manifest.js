@@ -78,9 +78,14 @@ const manifest = {
   description: 'Formato generico para declarar contenido de juego como datos (hibrido YAML+Markdown). El core es agnostico al genero; cada genero es un perfil.',
   hybridContract: 'Un GAME.md es a la vez contrato de datos (front-matter) y documentacion canonica (cuerpo Markdown). Linaje: design.md de Google.',
   dataVsLogic: 'El spec declara QUE (tokens, referencias, derivaciones). El motor implementa COMO (render, input, formulas). Un agente edita el dato y valida con el linter; el motor es codigo.',
-  pipeline: ['lint (game-lint.js) → validar', 'export (game-export.js) → window.GAME', 'consumir con fallback embebido'],
-  agentLoop: 'editar GAME.md → node tools/game-lint.js GAME.md --agent → corregir con los `hint` → repetir hasta 0 errores → export.',
+  pipeline: ['new (game-new.js) → esqueleto', 'lint (game-lint.js) → validar', 'export (game-export.js) → window.GAME', 'consumir con fallback embebido'],
+  // PASO 0 explicito: sin el, un agente que llega en frio no encuentra ningun GAME.md
+  // propio (el tooling nombra `GAME.md` por defecto pero el repo no trae uno) y termina
+  // copiando `examples/*.GAME.md`, heredando el contenido del ejemplo como si fuera su juego.
+  agentLoop: 'PASO 0 — crear el documento: node tools/game-new.js <perfil> mi-juego.GAME.md (esqueleto limpio, 0 errores). NO copies examples/: son ejemplos del protocolo, no plantillas de proyecto. Luego: editar el GAME.md → node tools/game-lint.js mi-juego.GAME.md --agent → corregir con los `hint` → repetir hasta 0 errores → export.',
+  examplesAreExamples: 'Todo `examples/*.GAME.md` es una DEMOSTRACION del protocolo (un juego terminado), no el punto de partida de un proyecto nuevo. Son borrables y reemplazables: para empezar un juego usa `game-new.js`, y consulta los ejemplos solo como referencia de que forma tiene un token.',
   cli: {
+    new: 'node tools/game-new.js <perfil> [salida.GAME.md] [--name "Mi Juego"] [--force] [--list]',
     lint: 'node tools/game-lint.js [GAME.md] [--agent]',
     export: 'node tools/game-export.js [GAME.md] [salida.js]',
     schema: 'node tools/game-schema.js [profileId]',

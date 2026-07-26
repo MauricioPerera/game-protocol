@@ -1,0 +1,61 @@
+{
+  "$comment": "Semillas MINIMAS por perfil para tools/game-new.js. Puro-datos (JSON.parse, nunca se ejecuta). Solo contienen los tokens SIN LOS CUALES el perfil no puede lintear 0 errores: 8 de los 14 perfiles no necesitan ninguno y por eso no aparecen aca. Un perfil ausente = semilla vacia. NO son contenido de juego: son el minimo estructural para que un GAME.md recien creado pase el gate y el autor pueda empezar a llenarlo. Los `warn` que quedan (goal-missing, win-text...) son deliberados: son la lista de tareas del autor, visible con `game-lint.js --agent`.",
+
+  "adventure": {
+    "$why": "grids[scene] exige rows no vacias (scene-rows); rulePlayer exige player.start dentro de la escena (player-start).",
+    "scene": {
+      "rows": ["........", "........", "........", "........", "........", "........"]
+    },
+    "player": { "start": { "col": 1, "row": 1 } }
+  },
+
+  "dungeon": {
+    "$why": "grids[scenes] exige rows no vacias (scene-rows); ruleScenes exige player.start.scene existente (player-start).",
+    "scenes": {
+      "start": {
+        "rows": ["........", "........", "........", "........", "........", "........"]
+      }
+    },
+    "player": { "start": { "scene": "start" } }
+  },
+
+  "roguelike": {
+    "$why": "ruleGenerator exige `generator` con seed/roomW/roomH/maxDepth (generator-missing, generator-field) y roomW/roomH >= 5 (generator-size).",
+    "generator": { "seed": 1, "roomW": 7, "roomH": 7, "maxDepth": 3 },
+    "player": { "hp": 10 }
+  },
+
+  "shooter": {
+    "$why": "player-ship-ref exige player.ship en `ships`; arena-bounds exige arena.width/height > 0; ship-bounds y weapon-bounds son required sobre las colecciones declaradas.",
+    "weapons": { "BLASTER": { "damage": 1, "rate": 2, "bulletSpeed": 8 } },
+    "ships": { "SCOUT": { "weapon": "BLASTER", "speed": 4, "hp": 3 } },
+    "arena": { "width": 16, "height": 24 },
+    "player": { "ship": "SCOUT" },
+    "balance": { "lives": 3, "powerupChance": 0.1 }
+  },
+
+  "peg-solitaire": {
+    "$why": "player-start-ref exige player.start en `boards`; board-goal y board-difficulty son enums required. El layout es el tablero ingles clasico en cruz (hueco central), soluble.",
+    "boards": {
+      "B1": {
+        "goal": "center",
+        "difficulty": "normal",
+        "layout": ["__ooo__", "__ooo__", "ooooooo", "ooo.ooo", "ooooooo", "__ooo__", "__ooo__"]
+      }
+    },
+    "player": { "start": "B1" }
+  },
+
+  "sudoku": {
+    "$why": "player-start-ref exige player.start en `puzzles`; puzzle-difficulty es enum required. El puzzle de arranque es la solucion completa menos las dos primeras celdas — trivial A PROPOSITO (unicidad garantizada, y deja claro que es un placeholder a reemplazar).",
+    "puzzles": {
+      "P1": {
+        "grid": "..3456789456789123789123456234567891567891234891234567345678912678912345912345678",
+        "solution": "123456789456789123789123456234567891567891234891234567345678912678912345912345678",
+        "difficulty": "easy"
+      }
+    },
+    "player": { "start": "P1" },
+    "balance": { "lives": 3, "hints": 3 }
+  }
+}
