@@ -58,6 +58,17 @@ ok(orphans.length === 0, 'test/  ninguna suite en disco queda sin correr',
 const ghosts = inNpm.filter(s => !fs.existsSync(path.join(REPO, 'test', s + '.js')));
 ok(ghosts.length === 0, '`npm test`  no invoca suites inexistentes', 'no existen: ' + ghosts.join(', '));
 
+// ---- ci.yml: nombres de step con ":" sin comillas ----
+// En YAML un escalar plano no puede contener ": " — es el separador clave/valor. Un
+// `- name: Arranque limpio (game-new.js: esqueleto ...)` rompe el workflow ENTERO, y
+// GitHub lo reporta como "workflow file issue" sin decir que linea es. El propio protocolo
+// valida esto en su subset (SPEC §1.2); el CI del protocolo se lo habia comido.
+const badNames = [...ci.matchAll(/^\s*-?\s*name:\s*(.+)$/gm)]
+  .map(m => m[1].trim())
+  .filter(v => !/^['"]/.test(v) && /:\s/.test(v));
+ok(badNames.length === 0, 'ci.yml  ningun `name:` sin comillas contiene ": " (rompe el YAML)',
+   badNames.map(v => '  ' + v).join('\n'));
+
 console.log('\n' + (fail === 0
   ? ('OK — ' + pass + ' chequeos de sincronizacion pasan (' + inNpm.length + ' suites gateadas)')
   : (fail + ' FALLOS de ' + (pass + fail))));
