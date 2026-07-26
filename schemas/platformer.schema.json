@@ -32,13 +32,43 @@
       "type": "object"
     },
     "enemies": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "hp": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "damage": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "hp"
+        ]
+      }
     },
     "levels": {
       "type": "object"
     },
     "physics": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "gravity": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "jump": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "runSpeed": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
     },
     "player": {
       "type": "object"

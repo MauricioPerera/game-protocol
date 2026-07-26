@@ -29,28 +29,147 @@
       "minimum": 0
     },
     "ships": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "speed": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "hp": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "speed",
+          "hp"
+        ]
+      }
     },
     "weapons": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "damage": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "rate": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "bulletSpeed": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "damage",
+          "rate",
+          "bulletSpeed"
+        ]
+      }
     },
     "enemies": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "hp": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "speed": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "points": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "hp",
+          "speed"
+        ]
+      }
     },
     "waves": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "spawns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "gap": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "powerups": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "duration": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
     },
     "arena": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ]
     },
     "player": {
       "type": "object"
     },
     "balance": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "powerupChance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "lives": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "text": {
       "type": "object"

@@ -32,10 +32,36 @@
       "type": "object"
     },
     "questions": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "seconds": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 120
+          }
+        },
+        "required": [
+          "points"
+        ]
+      }
     },
     "rounds": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "reward": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
     },
     "text": {
       "type": "object"
