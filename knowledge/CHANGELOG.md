@@ -33,6 +33,28 @@
 - Sin cambios de rendimiento: `perf-smoke` se mantiene en el rango habitual (2,6–3,4 ms
   sobre 10K datos) pese al refactor de `processBound`.
 
+### Added — los schemas publican `matches` como `pattern` de JSON Schema
+- `tools/game-schema.js` traduce la familia `matches` a la keyword nativa **`pattern`**:
+  es la única familia del core con equivalente directo en JSON Schema (`bounds`/`refs`/`dims`
+  dependen de datos o de otras colecciones y siguen viviendo en `x-references`). Una
+  herramienta externa —un editor con JSON Schema, un validador de terceros— pasa a exigir la
+  misma forma de string que el linter, sin ejecutar nada.
+- **Fidelidad exacta con el core, no aproximada.** El linter *salta* los valores no-string
+  (eso es trabajo de `bounds`), y `pattern` de JSON Schema se comporta igual: solo aplica si
+  la instancia es un string. Por eso el nodo hoja **no** declara `type: 'string'` — salvo
+  cuando la entrada es `required`, que en el core sí exige "presente **y** string": ahí se
+  declara el tipo y el campo entra en el `required` del objeto. Declarar el tipo siempre
+  habría hecho el schema **más estricto que el linter**.
+- Cubre las tres formas: campo de colección (`puzzles.*.grid`), array de strings
+  (`boards.*.layout[]`, vía `items`) y array de objetos (`items.properties.<itemField>`).
+- Verificado contra un validador **Draft-07 real**: los 3 ejemplos afectados validan, las 5
+  mutaciones que atrapa el linter también rompen el schema, y un no-string dentro de un array
+  sin `required` se salta en ambos. En el repo queda un gate estructural
+  (`test/profile-descriptor.js`, sección 4, 37 → **41** chequeos) que no añade dependencias:
+  si un perfil declara un patrón y el schema no lo publica, falla.
+- Arreglo de paso: `game-schema.js` no incluía en los tokens las colecciones que solo
+  aparecen en `matches`; ahora sí.
+
 ## [2.20.0] — 2026-07-26
 
 Release **aditivo** sobre `2.19.0` (bump minor, [SPEC §7.0](./SPEC.md)): el **arranque

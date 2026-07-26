@@ -19,13 +19,54 @@ function tokenType(name) {
   return { type: 'object' };
 }
 
+// Traduce la familia `matches` del descriptor a la keyword `pattern` de JSON Schema —
+// la unica familia del core que SI tiene equivalente nativo (bounds/refs/dims dependen de
+// datos o de otras colecciones y siguen viviendo en x-references / game-lint.js).
+//
+// Detalle de fidelidad: el core SALTA los valores no-string (eso es trabajo de bounds), y
+// `pattern` de JSON Schema se comporta igual — solo aplica si la instancia es un string.
+// Por eso el nodo hoja NO declara `type: 'string'`... salvo cuando la entrada es
+// `required`, que en el core sí exige "presente Y string": ahí el tipo se declara y el
+// campo entra en `required`. Así el schema acepta exactamente lo mismo que el linter.
+function applyMatches(p, properties) {
+  const holderOf = (m) => {
+    const token = properties[m.collection || m.singleton];
+    if (!token) return null;
+    token.type = 'object';
+    if (m.singleton) {                       // el token ES el objeto
+      token.properties = token.properties || {};
+      return token;
+    }
+    // coleccion: las entradas son los VALORES del objeto
+    if (!token.additionalProperties || typeof token.additionalProperties !== 'object')
+      token.additionalProperties = { type: 'object', properties: {} };
+    token.additionalProperties.properties = token.additionalProperties.properties || {};
+    return token.additionalProperties;
+  };
+  for (const m of (p.matches || [])) {
+    const holder = holderOf(m);
+    if (!holder) continue;
+    const leaf = m.required ? { type: 'string', pattern: m.pattern } : { pattern: m.pattern };
+    const field = m.arrayField || m.field;
+    holder.properties[field] = m.arrayField
+      ? { type: 'array', items: m.itemField ? { type: 'object', properties: { [m.itemField]: leaf } } : leaf }
+      : leaf;
+    if (m.required && !m.arrayField) {
+      holder.required = holder.required || [];
+      if (!holder.required.includes(field)) holder.required.push(field);
+    }
+  }
+}
+
 function schemaFor(p) {
   const tokens = new Set(['version', 'name', 'description', 'profile', 'platform', 'palettesCount']);
   for (const d of (p.derive || [])) if ('from' in d) tokens.add(d.from);
   for (const r of (p.refs || [])) { const s = r.src; if (s.collection) tokens.add(s.collection); if (s.singleton) tokens.add(s.singleton); if (s.listMap) tokens.add(s.listMap); if (r.target && r.target.collection) tokens.add(r.target.collection); }
+  for (const m of (p.matches || [])) tokens.add(m.collection || m.singleton);
   const properties = {};
   for (const t of tokens) properties[t] = tokenType(t);
   properties.profile = { const: p.id };
+  applyMatches(p, properties);
   const required = Array.from(new Set((p.required || ['version', 'name']).concat(['profile'])));
   return {
     $schema: 'http://json-schema.org/draft-07/schema#',

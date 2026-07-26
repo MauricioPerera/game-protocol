@@ -29,7 +29,24 @@
       "minimum": 0
     },
     "puzzles": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "grid": {
+            "type": "string",
+            "pattern": "^[1-9.]{81}$"
+          },
+          "solution": {
+            "type": "string",
+            "pattern": "^[1-9]{81}$"
+          }
+        },
+        "required": [
+          "grid",
+          "solution"
+        ]
+      }
     },
     "player": {
       "type": "object"
