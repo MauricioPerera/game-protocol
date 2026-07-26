@@ -3,6 +3,7 @@
  * (1) Los 10 perfiles reales del repo pasan validateProfile (null).
  * (2) Descriptores sintéticos malformados devuelven un mensaje accionable.
  * (3) El CLI reporta un descriptor malformado como profile-load-error (no TypeError).
+ * (4) Los schemas generados reflejan la familia `matches` como `pattern` de JSON Schema.
  * Uso: node test/profile-descriptor.js
  */
 const fs = require('fs'), path = require('path'), os = require('os');
@@ -73,6 +74,41 @@ for (const [name, mut] of bad) {
   ok(validateProfile(okProf) === null, 'validador  ref sin msg es valida (mensaje por defecto del core)');
   fs.rmSync(TMP, { recursive: true, force: true });
 }
+
+// ---- (4) Los schemas reflejan la familia `matches` ----
+// `matches` es la unica familia del core con equivalente NATIVO en JSON Schema (`pattern`);
+// el resto depende de datos y vive en x-references. Si un perfil declara un patron y el
+// schema no lo publica, una herramienta externa valida menos que el linter sin avisar.
+// El chequeo es estructural (Node puro, sin validador JSON Schema como dependencia): la
+// equivalencia semantica real se verifico contra Draft7 al implementar la traduccion.
+(function () {
+  for (const f of files) {
+    const p = require(path.join(REPO, 'profiles', f));
+    const entries = p.matches || [];
+    if (!entries.length) continue;
+    const schemaPath = path.join(REPO, 'schemas', p.id + '.schema.json');
+    if (!fs.existsSync(schemaPath)) { ok(false, 'schema  falta schemas/' + p.id + '.schema.json'); continue; }
+    const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+    for (const m of entries) {
+      const token = (schema.properties || {})[m.collection || m.singleton];
+      const holder = m.singleton ? token : (token && token.additionalProperties);
+      const node = holder && holder.properties && holder.properties[m.arrayField || m.field];
+      const leaf = m.arrayField
+        ? (node && node.items && (m.itemField ? (node.items.properties || {})[m.itemField] : node.items))
+        : node;
+      ok(!!leaf && leaf.pattern === m.pattern,
+        'schema  ' + p.id + ' publica el pattern de ' + m.rule + ' (' + (m.arrayField || m.field) + ')',
+        JSON.stringify(leaf));
+      // Fidelidad: el core SALTA los no-string salvo que la entrada sea `required`.
+      // `pattern` de JSON Schema hace lo mismo, asi que declarar `type: string` sin
+      // `required` haria el schema MAS estricto que el linter.
+      if (!m.required)
+        ok(!leaf || leaf.type === undefined,
+          'schema  ' + p.id + '/' + m.rule + ' sin `required` no fuerza type:string (no-strings se saltan)',
+          JSON.stringify(leaf));
+    }
+  }
+})();
 
 console.log('\n' + (fail === 0 ? ('OK — ' + pass + ' chequeos del descriptor pasan') : (fail + ' FALLOS de ' + (pass + fail))));
 process.exit(fail === 0 ? 0 : 1);

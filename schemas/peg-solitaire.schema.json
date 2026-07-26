@@ -29,7 +29,18 @@
       "minimum": 0
     },
     "boards": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "layout": {
+            "type": "array",
+            "items": {
+              "pattern": "^[_o.]{7}$"
+            }
+          }
+        }
+      }
     },
     "player": {
       "type": "object"
