@@ -109,6 +109,31 @@ ok(throws(() => parseYamlSubset('a: 1e999')),
 ok(throws(() => parseYamlSubset('a: Infinity')),
   'Infinity literal lanza error');
 
+// --- Literales no decimales: la implementacion contradecia su propia gramatica ---
+// SPEC 1.2 define `number` como decimal, pero Number() acepta hex/binario/octal, asi que
+// `0x1f` entraba como 31 y `0b101` como 5 sin que nada lo declarara.
+ok(throws(() => parseYamlSubset('a: 0x1f')), 'hex lanza error (antes: 31)');
+ok(throws(() => parseYamlSubset('a: 0X1F')), 'hex en mayusculas lanza error');
+ok(throws(() => parseYamlSubset('a: 0b101')), 'binario lanza error (antes: 5)');
+ok(throws(() => parseYamlSubset('a: 0o17')), 'octal lanza error (antes: 15)');
+ok(throws(() => parseYamlSubset('a: [1, 0x10]')), 'literal no decimal dentro de un flujo lanza error');
+
+// el mensaje ofrece las dos salidas: decimal, o comillas si se queria texto.
+let hexMsg = '';
+try { parseYamlSubset('a: 0x1f'); } catch (e) { hexMsg = e.message; }
+ok(/decimal/.test(hexMsg) && /31/.test(hexMsg) && /entrecomill/.test(hexMsg),
+  'el error de literal no decimal es accionable (decimal o comillas)', hexMsg);
+
+// --- Lo que NO debe romperse: los decimales legitimos siguen siendo numeros ---
+ok(parseYamlSubset('a: 1e3').a === 1000, 'notacion exponencial sigue siendo numero');
+ok(parseYamlSubset('a: .5').a === 0.5, 'decimal sin cero inicial sigue siendo numero');
+ok(parseYamlSubset('a: +5').a === 5, 'decimal con signo + sigue siendo numero');
+ok(parseYamlSubset('a: -0.5').a === -0.5, 'decimal negativo sigue siendo numero');
+// un texto con pinta de hex que Number() NO resuelve sigue siendo string, como antes.
+ok(parseYamlSubset('a: 0xZZ').a === '0xZZ', 'texto no numerico con prefijo 0x sigue siendo string');
+// entrecomillado es la via de escape documentada en el mensaje de error.
+ok(parseYamlSubset("a: '0x1f'").a === '0x1f', 'un literal hex entrecomillado se acepta como texto');
+
 // --- Lo que NO debe romperse con el endurecimiento anterior ---
 // un "" explicito es un elemento legitimo; antes lo borraba un filter(v => v !== '').
 ok(eq(parseYamlSubset('a: [x, "", y]').a, ['x', '', 'y']),

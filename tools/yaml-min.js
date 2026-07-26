@@ -11,6 +11,8 @@
  *    cruzados, texto tras el cierre) en vez de recortar a ciegas y PERDER datos;
  *  - LANZA ante hueco interno por coma de mas ([a, , b]) y ante numeros no finitos (1e999),
  *    que se convertirian en `null` al serializar el artefacto;
+ *  - LANZA ante literales no decimales (0x1f, 0b101, 0o17): la gramatica define `number`
+ *    como decimal, pero Number() los aceptaba y entraban en silencio;
  *  - guarda la recursion de parseBlock a 64 niveles (anidamiento profundo lanza error claro,
  *    no desborda la pila);
  *  - tolera CRLF;
@@ -34,6 +36,14 @@ function parseScalar(s) {
   if (s === 'false') return false;
   if (/^-?0\d/.test(s)) return s;                       // 007, -012 → string (no perder ceros)
   if (s !== '' && !isNaN(Number(s))) {
+    // La gramatica normativa (SPEC 1.2) define `number` como decimal: hex/binario/octal
+    // NO son parte del subset. Number() si los acepta, asi que `0x1f` se colaba como 31 y
+    // `0b101` como 5 — la implementacion de referencia contradecia su propia gramatica.
+    // Se lanza en vez de degradar a string: convertirlo en texto en silencio dejaria un
+    // string donde el autor puso un numero, que es justo el fallo que el subset evita.
+    if (/^[+-]?0[xXbBoO]/.test(s))
+      throw new Error('yaml-min: literal no decimal "' + s + '" (hex/binario/octal no son parte del subset): ' +
+                      'escribilo en decimal (' + Number(s) + '), o entrecomillalo ("' + s + '") si querias texto');
     const n = Number(s);
     // Un numero no finito (1e999, Infinity) se serializa como `null` en el artefacto
     // generado: el dato se perderia EN SILENCIO al exportar. El subset no lo admite.
